@@ -14,6 +14,7 @@
         "Actor.ts",
         "Entity.ts",
         "Scene.ts",
-        "Stage.ts"
+        "Stage.ts",
+        "Tile.ts"
     ]
 }
