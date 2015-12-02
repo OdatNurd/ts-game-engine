@@ -17,6 +17,7 @@
         "Stage.ts",
         "Tile.ts",
         "Tileset.ts",
-        "LevelData.ts"
+        "LevelData.ts",
+        "Level.ts"
     ]
 }

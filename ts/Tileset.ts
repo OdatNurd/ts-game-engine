@@ -79,11 +79,23 @@ module nurdz.game
          * the tile name provided is not recognized.
          *
          * @param name the name of the tileID to search for
-         * @returns {Tile|null} the tile with the provided name, or null if the name is invalid.
+         * @returns {Tile} the tile with the provided name, or null if the name is invalid.
          */
         tileForName (name : string) : Tile
         {
             return this.tilesByName[name];
+        }
+
+        /**
+         * Given a tile id, return back the tile object that represents this tile. The value will be null
+         * if the tile id provided is not recognized.
+         *
+         * @param id the numeric id value of the tile to search for
+         * @returns {Tile} the tile with the provided value, ornull if the name is invalid.
+         */
+        tileForID (id : number) : Tile
+        {
+            return this.tilesByValue[id];
         }
 
         /**

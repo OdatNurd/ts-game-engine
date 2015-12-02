@@ -33,7 +33,7 @@ module nurdz.game
          *
          * @type {Point}
          */
-        protected mapPosition : Point;
+        public mapPosition : Point;
 
         /**
          * The width of this actor, in pixels.
