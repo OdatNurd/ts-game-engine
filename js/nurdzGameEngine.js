@@ -1,5 +1,56 @@
 var nurdz;
 (function (nurdz) {
+    /**
+     * In a browser non-specific way, watch to determine when the DOM is fully loaded and then invoke
+     * the function that is provided.
+     *
+     * This code was written by Diego Perini (diego.perini at gmail.com) and was taken from the
+     * following URL:
+     *     http://javascript.nwbox.com/ContentLoaded/
+     *
+     * @param win reference to the browser window object
+     * @param fn the function to invoke when the DOM is ready.
+     */
+    function contentLoaded(win, fn) {
+        var done = false, top = true, 
+        // The typecast below was added for TypeScript compatibility because HTMLElement doesn't include
+        // the doScroll() method used below when the browser is IE.
+        doc = win.document, root = doc.documentElement, modern = doc.addEventListener, add = modern ? 'addEventListener' : 'attachEvent', rem = modern ? 'removeEventListener' : 'detachEvent', pre = modern ? '' : 'on', init = function (e) {
+            if (e.type == 'readystatechange' && doc.readyState != 'complete')
+                return;
+            (e.type == 'load' ? win : doc)[rem](pre + e.type, init, false);
+            if (!done && (done = true))
+                fn.call(win, e.type || e);
+        }, poll = function () {
+            try {
+                root.doScroll('left');
+            }
+            catch (e) {
+                setTimeout(poll, 50);
+                return;
+            }
+            init('poll');
+        };
+        if (doc.readyState == 'complete')
+            fn.call(win, 'lazy');
+        else {
+            if (!modern && root.doScroll) {
+                try {
+                    top = !win.frameElement;
+                }
+                catch (e) { }
+                if (top)
+                    poll();
+            }
+            doc[add](pre + 'DOMContentLoaded', init, false);
+            doc[add](pre + 'readystatechange', init, false);
+            win[add](pre + 'load', init, false);
+        }
+    }
+    nurdz.contentLoaded = contentLoaded;
+})(nurdz || (nurdz = {}));
+var nurdz;
+(function (nurdz) {
     var game;
     (function (game) {
         /**
@@ -2257,4 +2308,65 @@ var nurdz;
         })();
         game.Level = Level;
     })(game = nurdz.game || (nurdz.game = {}));
+})(nurdz || (nurdz = {}));
+var nurdz;
+(function (nurdz) {
+    var main;
+    (function (main) {
+        /**
+         * Set up the button on the page to toggle the state of the game.
+         *
+         * @param stage the stage to control
+         * @param buttonID the ID of the button to mark up to control the game state
+         */
+        function setupButton(stage, buttonID) {
+            // True when the game is running, false when it is not. This state is toggled by the button. We
+            // assume that the game is going to start running.
+            var gameRunning = true;
+            // Get the button.
+            var button = document.getElementById(buttonID);
+            if (button == null)
+                throw new ReferenceError("No button found with ID '" + buttonID + "'");
+            // Set up the button to toggle the stage.
+            button.addEventListener("click", function () {
+                // Try to toggle the game state. This will only throw an error if we try to put the game into
+                // a state it is already in, which can only happen if the engine stops itself when we didn't
+                // expect it.
+                try {
+                    if (gameRunning)
+                        stage.stop();
+                    else
+                        stage.run();
+                }
+                // Log and then rethrow the error.
+                catch (error) {
+                    console.log("Exception generated while toggling game state");
+                    throw error;
+                }
+                finally {
+                    // No matter what, toggle the state.
+                    gameRunning = !gameRunning;
+                    button.innerHTML = gameRunning ? "Stop Game" : "Restart Game";
+                }
+            });
+        }
+        // Once the DOM is loaded, set things up.
+        nurdz.contentLoaded(window, function () {
+            try {
+                // Set up the stage.
+                var stage = new nurdz.game.Stage('gameContent');
+                // Set up the button that will stop the game if something goes wrong.
+                setupButton(stage, "controlBtn");
+                // Register all of our scenes.
+                stage.addScene("sceneName", new nurdz.game.Scene("A Scene", stage));
+                // Switch to the initial scene and run the game.
+                stage.switchToScene("sceneName");
+                stage.run();
+            }
+            catch (error) {
+                console.log("Error starting the game");
+                throw error;
+            }
+        });
+    })(main = nurdz.main || (nurdz.main = {}));
 })(nurdz || (nurdz = {}));
