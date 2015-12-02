@@ -162,15 +162,16 @@ module nurdz.game
                 this.addActor (actorArray[i]);
         }
 
-        // TODO extend this API to also allow finding actors by map location
-
         /**
          * Return a list of actors whose position matches the position passed in. This is probably most useful
          * when actors are at rigidly defined locations, such as in a tile based game. Note that this
          * checks the world position of the actor and not its map position.
          *
-         * @param location the location to search for actors at
+         * @param location the location to search for actors at, in world coordinates
          * @returns {Array<Actor>} the actors found at the given location, which may be none
+         * @see Scene.actorsAtXY
+         * @see Scene.actorsAtMap
+         * @see Scene.actorsAtMapXY
          */
         actorsAt (location : Point)
         {
@@ -182,10 +183,12 @@ module nurdz.game
          * when actors are at rigidly defined locations, such as in a tile based game. Note that this
          * checks the world position of the actor and not its map position.
          *
-         * @param x the x coordinate to search for actors at
-         * @param y the y coordinate to search for actors at
-         *
+         * @param x the x coordinate to search for actors at, in world coordinates
+         * @param y the y coordinate to search for actors at, in world coordinates
          * @returns {Array<Actor>} the actors found at the given location, which may be none
+         * @see Scene.actorsAt
+         * @see Scene.actorsAtMap
+         * @see Scene.actorsAtMapXY
          */
         actorsAtXY (x : number, y : number) : Array<Actor>
         {
@@ -194,6 +197,50 @@ module nurdz.game
             {
                 var actor = this.actorList[i];
                 if (actor.position.x == x && actor.position.y == y)
+                    retVal.push (actor);
+            }
+
+            return retVal;
+        }
+
+        /**
+         * Return a list of actors whose position matches the position passed in. This checks the map
+         * position of entities, and so is probably more useful than actorsAt() is in the general case. In
+         * particular, since the map position and the world position are maintained, this lets you find
+         * entities that are positioned anywhere within the tile grid.
+         *
+         * @param location the location to search for actors at, in map coordinates
+         *
+         * @returns {Array<Actor>} the actors found at the given location, which may be none
+         * @see Scene.actorsAt
+         * @see Scene.actorsAtXY
+         * @see Scene.actorsAtMapXY
+         */
+        actorsAtMap (location : Point)
+        {
+            return this.actorsAtMapXY (location.x, location.y);
+        }
+
+        /**
+         * Return a list of actors whose position matches the position passed in. This checks the map
+         * position of entities, and so is probably more useful than actorsAtXY() is in the general case. In
+         * particular, since the map position and the world position are maintained, this lets you find
+         * entities that are positioned anywhere within the tile grid.
+         *
+         * @param x the x coordinate to search for actors at, in map coordinates
+         * @param y the y coordinate to search for actors at, in map coordinates
+         * @returns {Array<Actor>} the actors found at the given location, which may be none
+         * @see Scene.actorsAt
+         * @see Scene.actorsAtXY
+         * @see Scene.actorsAtMap
+         */
+        actorsAtMapXY (x : number, y : number) : Array<Actor>
+        {
+            var retVal = [];
+            for (var i = 0 ; i < this.actorList.length ; i++)
+            {
+                var actor = this.actorList[i];
+                if (actor.mapPosition.x == x && actor.mapPosition.y == y)
                     retVal.push (actor);
             }
 
