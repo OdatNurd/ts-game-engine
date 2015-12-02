@@ -52,12 +52,20 @@ module nurdz.game
             this.tilesByName = {};
             this.tilesByValue = [];
 
-            // TODO This should make sure that tiles are unique (and possibly contiguous?)
             // Iterate and store all values. We don't just copy the tile array given as our tilesByValue
             // because we want to ensure that their indexes are their actual values.
             for (var i = 0 ; i < tiles.length ; i++)
             {
-                var thisTile : Tile = tiles[i];
+                var thisTile = tiles[i];
+
+                // If this tile has a name or numeric ID of an existing tile, generate a warning to the
+                // console so that the developer knows that he's boned something up.
+                if (this.tilesByName[thisTile.tileName] != null)
+                    console.log (`Duplicate tile with textual name '${thisTile.tileName}' found`);
+
+                if (this.tilesByValue[thisTile.id] != null)
+                    console.log (`Duplicate tile with numeric id '${thisTile.id}' found`);
+
                 this.tilesByName[thisTile.tileName] = thisTile;
                 this.tilesByValue[thisTile.id] = thisTile;
             }
