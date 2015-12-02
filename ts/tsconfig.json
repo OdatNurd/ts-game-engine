@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": false,
+        "outDir": "../js",
+        "declaration": false,
+        "sourceMap": false,
+        "outFile": "../js/nurdzGameEngine.js"
+    },
+    "files": [
+        "GameEngine.ts",
+        "Point.ts",
+        "Actor.ts",
+        "Entity.ts",
+        "Scene.ts",
+        "Stage.ts"
+    ]
+}
