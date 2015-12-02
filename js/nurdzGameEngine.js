@@ -1728,6 +1728,26 @@ var nurdz;
                 this.tileID = internalID;
                 this.debugColor = debugColor;
             }
+            Object.defineProperty(Tile.prototype, "tileName", {
+                /**
+                 * Get the textual name of this tile.
+                 *
+                 * @returns {string}
+                 */
+                get: function () { return this.name; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Tile.prototype, "id", {
+                /**
+                 * Get the numeric id of this tile.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this.tileID; },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * Query whether this tile blocks the movement of actors on the map or not.
              *
@@ -1760,5 +1780,70 @@ var nurdz;
             return Tile;
         })();
         game.Tile = Tile;
+    })(game = nurdz.game || (nurdz.game = {}));
+})(nurdz || (nurdz = {}));
+var nurdz;
+(function (nurdz) {
+    var game;
+    (function (game) {
+        /**
+         * This class represents a Tileset in a game, which is basically just an array of Tile instances that
+         * will be used to render a level. The class provides the ability to look up tiles based on either
+         * their name or their numeric ID values, as well as validating whether or not tiles are valid.
+         */
+        var Tileset = (function () {
+            /**
+             * Construct a new tile instance with the given name and ID values. This instance will render
+             * itself using the debug color provided (as a filled rectangle).
+             *
+             * @param name the textual name of this tile type, for debugging purposes
+             * @param tiles the list of tiles that this tileset should contain
+             */
+            function Tileset(name, tiles) {
+                // Save the name and the list of the tile length.
+                this.name = name;
+                this.length = tiles.length;
+                // Set up our two cross reference object.
+                this.tilesByName = {};
+                this.tilesByValue = [];
+                // TODO This should make sure that tiles are unique (and possibly contiguous?)
+                // Iterate and store all values. We don't just copy the tile array given as our tilesByValue
+                // because we want to ensure that their indexes are their actual values.
+                for (var i = 0; i < tiles.length; i++) {
+                    var thisTile = tiles[i];
+                    this.tilesByName[thisTile.tileName] = thisTile;
+                    this.tilesByValue[thisTile.id] = thisTile;
+                }
+            }
+            /**
+             * Given a tileID, return true if this tileset contains that tile or false if it does not.
+             *
+             * @param tileID the tileID to check.
+             * @returns {boolean} true if the tileID given corresponds to a valid tile, false otherwise
+             */
+            Tileset.prototype.isValidTile = function (tileID) {
+                return this.tilesByValue[tileID] != null;
+            };
+            /**
+             * Given a tile name, return back the tile object that represents this tile. The value will be null if
+             * the tile name provided is not recognized.
+             *
+             * @param name the name of the tileID to search for
+             * @returns {Tile|null} the tile with the provided name, or null if the name is invalid.
+             */
+            Tileset.prototype.tileForName = function (name) {
+                return this.tilesByName[name];
+            };
+            /**
+             * Return a string representation of the object, for debugging purposes.
+             *
+             * @returns {String} a debug string representation
+             */
+            Tileset.prototype.toString = function () {
+                return "[TileSET name=" + this.name + " tileCount=" + this.length + "]";
+            };
+            return Tileset;
+        })();
+        game.Tileset = Tileset;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));

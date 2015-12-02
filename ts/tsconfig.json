@@ -15,6 +15,7 @@
         "Entity.ts",
         "Scene.ts",
         "Stage.ts",
-        "Tile.ts"
+        "Tile.ts",
+        "Tileset.ts"
     ]
 }
