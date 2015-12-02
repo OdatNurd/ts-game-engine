@@ -9,15 +9,15 @@
         "outFile": "../js/nurdzGameEngine.js"
     },
     "files": [
-        "GameEngine.ts",
-        "Point.ts",
-        "Actor.ts",
-        "Entity.ts",
-        "Scene.ts",
-        "Stage.ts",
-        "Tile.ts",
-        "Tileset.ts",
-        "LevelData.ts",
-        "Level.ts"
+        "engine/GameEngine.ts",
+        "engine/Point.ts",
+        "engine/Actor.ts",
+        "engine/Entity.ts",
+        "engine/Scene.ts",
+        "engine/Stage.ts",
+        "engine/Tile.ts",
+        "engine/Tileset.ts",
+        "engine/LevelData.ts",
+        "engine/Level.ts"
     ]
 }
