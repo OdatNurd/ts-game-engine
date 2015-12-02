@@ -38,6 +38,15 @@ module nurdz.game
          */
         protected properties : EntityProperties;
 
+        // TODO This has a horrific name
+        /**
+         * The list of properties that is assigned to this entity.
+         *
+         * @returns {EntityProperties}
+         */
+        get props () : EntityProperties
+        { return this.properties; }
+
         // TODO This does not have the notion of default properties to apply yet
 
         /**

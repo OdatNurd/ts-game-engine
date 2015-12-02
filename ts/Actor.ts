@@ -71,7 +71,24 @@ module nurdz.game
          *
          * @returns {number}
          */
-        get layer () : number { return this.zOrder; }
+        get layer () : number
+        { return this.zOrder; }
+
+        /**
+         * Get the stage that owns this actor.
+         *
+         * @returns {Stage}
+         */
+        get owningStage () : Stage
+        { return this.stage; }
+
+        /**
+         * Set the stage that owns this actor.
+         *
+         * @param newStage
+         */
+        set owningStage (newStage : Stage)
+        { this.stage = newStage; }
 
         /**
          *
