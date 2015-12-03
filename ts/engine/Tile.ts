@@ -92,7 +92,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return `[Tile name=${this.name} id=${this.tileID}]`;
+            return String.format ("[Tile name={0} id={1}]", this.name, this.tileID);
         }
     }
 }

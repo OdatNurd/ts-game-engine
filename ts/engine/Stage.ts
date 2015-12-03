@@ -828,8 +828,8 @@ module nurdz.game
         }
 
         /**
-         * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse is
-         * clicked over the canvas.
+         * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
+         * is clicked over the canvas.
          *
          * @param evt the event object for this event
          */
@@ -874,7 +874,8 @@ module nurdz.game
          */
         toString () : string
         {
-            return `[Stage dimensions=${this.width}x${this.height} tileSize=${TILE_SIZE}]`;
+            return String.format ("[Stage dimensions={0}x{1}, tileSize={2}]",
+                                  this.width, this.height, TILE_SIZE);
         }
 
     }

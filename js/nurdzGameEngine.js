@@ -1,3 +1,39 @@
+// Only attempt to include this static method if it does not already exist. This of course means that if
+// it DOES already exist, our code is going to be unhappy. However, I would rather make my own code
+// unstable than someone else's in this situation because I (hopefully) understand what my own code does.
+if (!String.format) {
+    /**
+     * Takes a format string and one or more other strings, and does a replacement, returning a copy of the newly
+     * formatted string.
+     *
+     * The format string can contain sequences like {0} or {1} or {n}, where that text (including the braces)
+     * will get replaced with the argument at that location.
+     *
+     * Example: String.format ("Hello, {0}", "Terence"); returns the string "Hello, Terence".
+     *
+     * Note that in TypeScript this sort of thing is already possible because TypeScript includes support for
+     * EcmaScript 6 template strings, which it compiles down. However in some cases such strings are not
+     * desirable from a readability standpoint, particularly when there are a lot of substitutions and/or the
+     * expressions are lengthy.
+     *
+     * As such, this function is provided for use in such situations.
+     *
+     * @param formatString the template string to format
+     * @param params the objects to use in the replacements
+     * @returns {string} the formatted string
+     */
+    String.format = function (formatString) {
+        var params = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            params[_i - 1] = arguments[_i];
+        }
+        return formatString.replace(/{(\d+)}/g, function (match, number) {
+            return typeof params[number] != 'undefined'
+                ? params[number]
+                : match;
+        });
+    };
+}
 var nurdz;
 (function (nurdz) {
     /**
@@ -12,10 +48,9 @@ var nurdz;
      * @param fn the function to invoke when the DOM is ready.
      */
     function contentLoaded(win, fn) {
-        var done = false, top = true, 
         // The typecast below was added for TypeScript compatibility because HTMLElement doesn't include
         // the doScroll() method used below when the browser is IE.
-        doc = win.document, root = doc.documentElement, modern = doc.addEventListener, add = modern ? 'addEventListener' : 'attachEvent', rem = modern ? 'removeEventListener' : 'detachEvent', pre = modern ? '' : 'on', init = function (e) {
+        var done = false, top = true, doc = win.document, root = doc.documentElement, modern = doc.addEventListener, add = modern ? 'addEventListener' : 'attachEvent', rem = modern ? 'removeEventListener' : 'detachEvent', pre = modern ? '' : 'on', init = function (e) {
             if (e.type == 'readystatechange' && doc.readyState != 'complete')
                 return;
             (e.type == 'load' ? win : doc)[rem](pre + e.type, init, false);
@@ -401,8 +436,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Point.prototype.toString = function () {
-                // TODO This looks kinda ugly to me, bring String.format over instead
-                return "[" + this.x + ", " + this.y;
+                return String.format("[{0}, {1}]", this.x, this.y);
             };
             return Point;
         })();
@@ -538,7 +572,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Actor.prototype.toString = function () {
-                return "[Actor name=" + this.name + "]";
+                return String.format("[Actor name={0}]", this.name);
             };
             return Actor;
         })();
@@ -720,7 +754,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Entity.prototype.toString = function () {
-                return "[Entity name=" + this.name + "]";
+                return String.format("[Entity name={0}]", this.name);
             };
             /**
              * Every time an entity ID is automatically generated, this value is appended to it to give it a
@@ -1025,7 +1059,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Scene.prototype.toString = function () {
-                return "[Scene name=" + this.name + "]";
+                return String.format("[Scene name={0}]", this.name);
             };
             /**
              * Every time a screenshot is generated, this value is used in the filename. It is then incremented.
@@ -1725,8 +1759,8 @@ var nurdz;
                 Stage.currentScene.inputMouseMove(evt);
             };
             /**
-             * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse is
-             * clicked over the canvas.
+             * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
+             * is clicked over the canvas.
              *
              * @param evt the event object for this event
              */
@@ -1763,7 +1797,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Stage.prototype.toString = function () {
-                return "[Stage dimensions=" + this.width + "x" + this.height + " tileSize=" + game.TILE_SIZE + "]";
+                return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", this.width, this.height, game.TILE_SIZE);
             };
             /**
              * The currently active scene on the stage. This is the scene that gets all of the user input and
@@ -1895,7 +1929,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Tile.prototype.toString = function () {
-                return "[Tile name=" + this.name + " id=" + this.tileID + "]";
+                return String.format("[Tile name={0} id={1}]", this.name, this.tileID);
             };
             return Tile;
         })();
@@ -1975,7 +2009,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Tileset.prototype.toString = function () {
-                return "[TileSET name=" + this.name + " tileCount=" + this.length + "]";
+                return String.format("[Tileset name={0} tileCount={1}]", this.name, this.length);
             };
             return Tileset;
         })();
@@ -2078,7 +2112,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             LevelData.prototype.toString = function () {
-                return "[LevelData name=" + this.name + " size=" + this.width + "x" + this.height + "]";
+                return String.format("[LevelData name={0}, size={1}x{2]]", this.name, this.width, this.height);
             };
             return LevelData;
         })();
@@ -2349,7 +2383,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Level.prototype.toString = function () {
-                return "[LevelData size=" + this.width + "x" + this.height + "]";
+                return String.format("[LevelData size={0}x{1}]", this.width, this.height);
             };
             return Level;
         })();

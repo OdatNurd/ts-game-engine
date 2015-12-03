@@ -220,7 +220,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return `[Entity name=${this.name}]`;
+            return String.format ("[Entity name={0}]", this.name);
         }
     }
 }

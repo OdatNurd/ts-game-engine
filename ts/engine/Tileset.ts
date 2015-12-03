@@ -113,7 +113,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return `[TileSET name=${this.name} tileCount=${this.length}]`;
+            return String.format ("[Tileset name={0} tileCount={1}]", this.name, this.length);
         }
     }
 }

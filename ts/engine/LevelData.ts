@@ -165,7 +165,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return `[LevelData name=${this.name} size=${this.width}x${this.height}]`;
+            return String.format ("[LevelData name={0}, size={1}x{2]]", this.name, this.width, this.height);
         }
     }
 }

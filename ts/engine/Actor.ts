@@ -197,7 +197,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return `[Actor name=${this.name}]`;
+            return String.format ("[Actor name={0}]", this.name);
         }
     }
 }

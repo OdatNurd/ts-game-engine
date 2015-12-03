@@ -367,7 +367,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return `[Scene name=${this.name}]`;
+            return String.format ("[Scene name={0}]", this.name);
         }
     }
 }

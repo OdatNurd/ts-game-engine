@@ -10,7 +10,6 @@ module nurdz.game
      */
     export class Point
     {
-        // TODO Should these members be private and accessed via accessor functions? Is that really slow?
         /**
          * X-coordinate of this point.
          *
@@ -307,8 +306,7 @@ module nurdz.game
          */
         toString () : string
         {
-            // TODO This looks kinda ugly to me, bring String.format over instead
-            return `[${this.x}, ${this.y}`;
+            return String.format ("[{0}, {1}]", this.x, this.y);
         }
     }
 }

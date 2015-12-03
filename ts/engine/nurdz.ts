@@ -1,3 +1,51 @@
+/**
+ * This little bit of trickery causes the TypeScript compiler to blend this interface with the one that it
+ * ships with (in lib.d.ts) which describes the String constructor (the String static object).\
+ *
+ * This allows us to cram some extra static methods onto the class object.
+ */
+interface StringConstructor
+{
+    format(formatString : string, ... params) : string;
+}
+
+// Only attempt to include this static method if it does not already exist. This of course means that if
+// it DOES already exist, our code is going to be unhappy. However, I would rather make my own code
+// unstable than someone else's in this situation because I (hopefully) understand what my own code does.
+if (!String.format)
+{
+    /**
+     * Takes a format string and one or more other strings, and does a replacement, returning a copy of the newly
+     * formatted string.
+     *
+     * The format string can contain sequences like {0} or {1} or {n}, where that text (including the braces)
+     * will get replaced with the argument at that location.
+     *
+     * Example: String.format ("Hello, {0}", "Terence"); returns the string "Hello, Terence".
+     *
+     * Note that in TypeScript this sort of thing is already possible because TypeScript includes support for
+     * EcmaScript 6 template strings, which it compiles down. However in some cases such strings are not
+     * desirable from a readability standpoint, particularly when there are a lot of substitutions and/or the
+     * expressions are lengthy.
+     *
+     * As such, this function is provided for use in such situations.
+     *
+     * @param formatString the template string to format
+     * @param params the objects to use in the replacements
+     * @returns {string} the formatted string
+     */
+    String.format = function (formatString : string, ... params) : string
+    {
+        return formatString.replace(/{(\d+)}/g, function (match, number)
+        {
+            return typeof params[number] != 'undefined'
+                ? params[number]
+                : match
+                ;
+        });
+    };
+}
+
 module nurdz
 {
     /**
@@ -28,10 +76,9 @@ module nurdz
 
     export function contentLoaded (win : Window, fn : Function)
     {
+        // The typecast below was added for TypeScript compatibility because HTMLElement doesn't include
+        // the doScroll() method used below when the browser is IE.
         var done = false, top = true,
-
-            // The typecast below was added for TypeScript compatibility because HTMLElement doesn't include
-            // the doScroll() method used below when the browser is IE.
             doc = win.document,
             root = <BrokenIEHTMLElement>doc.documentElement,
             modern = doc.addEventListener,
