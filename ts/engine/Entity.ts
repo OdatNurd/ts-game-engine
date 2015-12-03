@@ -173,11 +173,16 @@ module nurdz.game
         }
 
         /**
-         * Query whether this entity blocks movement of actors or not. By default, all entities are solid.
+         * Query whether this entity should block movement of the actor provided or not.
          *
+         * By default, entities block all actor movement. Note that this means that there is no API contract
+         * as far as the core engine code is concerned with regards to the actor value passed in being
+         * non-null.
+         *
+         * @param actor the actor to check blocking for, or null if it doesn't matter
          * @returns {boolean}
          */
-        blocksActorMovement () : boolean
+        blocksActorMovement (actor : Actor) : boolean
         {
             return true;
         }
@@ -200,8 +205,8 @@ module nurdz.game
 
         /**
          * This method is invoked whenever this entity gets triggered by another entity as a result of a
-         * direct collision (touch). This can happen programmatically or in response to interactions with other
-         * entities. This does not include non-collision interactions (see trigger() for that).
+         * direct collision (touch). This can happen programmatically or in response to interactions with
+         * other entities. This does not include non-collision interactions (see trigger() for that).
          *
          * The method gets passed the Actor that caused the trigger to happen.
          *

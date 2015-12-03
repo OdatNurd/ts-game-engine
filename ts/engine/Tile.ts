@@ -61,11 +61,16 @@ module nurdz.game
         }
 
         /**
-         * Query whether this tile blocks the movement of actors on the map or not.
+         * Query whether this tile blocks the movement of the provided actor on the map or not.
          *
-         * @returns {boolean}
+         * By default all actors are blocked on this tile. Note that this means that there is no API contract
+         * as far as the core engine code is concerned with regards to the actor value passed in being
+         * non-null.
+         *
+         * @param actor the actor to check blocking for
+         * @returns {boolean} true if the actor given cannot move over this tile, or false otherwise.
          */
-        blocksActorMovement () : boolean
+        blocksActorMovement (actor : Actor) : boolean
         {
             return true;
         }

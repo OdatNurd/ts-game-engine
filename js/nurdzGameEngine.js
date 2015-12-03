@@ -715,11 +715,16 @@ var nurdz;
                 this.isPropertyValid("id", "string", true);
             };
             /**
-             * Query whether this entity blocks movement of actors or not. By default, all entities are solid.
+             * Query whether this entity should block movement of the actor provided or not.
              *
+             * By default, entities block all actor movement. Note that this means that there is no API contract
+             * as far as the core engine code is concerned with regards to the actor value passed in being
+             * non-null.
+             *
+             * @param actor the actor to check blocking for, or null if it doesn't matter
              * @returns {boolean}
              */
-            Entity.prototype.blocksActorMovement = function () {
+            Entity.prototype.blocksActorMovement = function (actor) {
                 return true;
             };
             /**
@@ -738,8 +743,8 @@ var nurdz;
             };
             /**
              * This method is invoked whenever this entity gets triggered by another entity as a result of a
-             * direct collision (touch). This can happen programmatically or in response to interactions with other
-             * entities. This does not include non-collision interactions (see trigger() for that).
+             * direct collision (touch). This can happen programmatically or in response to interactions with
+             * other entities. This does not include non-collision interactions (see trigger() for that).
              *
              * The method gets passed the Actor that caused the trigger to happen.
              *
@@ -1903,11 +1908,16 @@ var nurdz;
                 configurable: true
             });
             /**
-             * Query whether this tile blocks the movement of actors on the map or not.
+             * Query whether this tile blocks the movement of the provided actor on the map or not.
              *
-             * @returns {boolean}
+             * By default all actors are blocked on this tile. Note that this means that there is no API contract
+             * as far as the core engine code is concerned with regards to the actor value passed in being
+             * non-null.
+             *
+             * @param actor the actor to check blocking for
+             * @returns {boolean} true if the actor given cannot move over this tile, or false otherwise.
              */
-            Tile.prototype.blocksActorMovement = function () {
+            Tile.prototype.blocksActorMovement = function (actor) {
                 return true;
             };
             /**
@@ -2319,27 +2329,32 @@ var nurdz;
             };
             /**
              * Given coordinates in the map, return back a boolean that indicates if that space is blocked or not
-             * as far as movement is concerned.
+             * as far as movement is concerned for the actor provided.
+             *
+             * The provided actor can be non-null, so long as all Tile and Entity instances being used in the
+             * level are capable of determining blocking against a null tile reference. The default
+             * implementations are capable of this.
              *
              * @param x the X-coordinate to check, in map coordinates
              * @param y the Y-coordinate to check, in map coordinates
-             * @returns {boolean} true if the level location is blocked and cannot be moved to, or false
-             *     otherwise.
+             * @param actor the actor to check the blocking of
+             * @returns {boolean} true if the level location is blocked for this actor and cannot be moved to, or
+             * false otherwise.
              */
-            Level.prototype.isBlockedAtXY = function (x, y) {
-                // Get the tile; it's blocked if it is a wall.
+            Level.prototype.isBlockedAtXY = function (x, y, actor) {
+                // Get the tile; it's blocked if it is out of bounds of the level.
                 var tile = this.tileAtXY(x, y);
                 if (tile == null)
                     return true;
                 // If the tile at this location blocks actor movement, then the move is blocked.
-                if (tile.blocksActorMovement())
+                if (tile.blocksActorMovement(actor))
                     return true;
                 // Get the list of entities that are at this location on the map. If there are any and any of them
                 // blocks actor movement, the move is blocked.
                 var entities = this.entitiesAtMapXY(x, y);
                 if (entities != null) {
                     for (var i = 0; i < entities.length; i++) {
-                        if (entities[i].blocksActorMovement())
+                        if (entities[i].blocksActorMovement(actor))
                             return true;
                     }
                 }
@@ -2348,14 +2363,19 @@ var nurdz;
             };
             /**
              * Given coordinates in the map, return back a boolean that indicates if that space is blocked or not
-             * as far as movement is concerned.
+             * as far as movement is concerned for the actor provided.
+             *
+             * The provided actor can be non-null, so long as all Tile instances being used in the level are
+             * capable of determining blocking against a null tile reference. The default Tile implementation
+             * is capable of this.
              *
              * @param location the location to check, in map coordinates
-             * @returns {boolean} true if the level location is blocked and cannot be moved to, or false
-             *     otherwise.
+             * @param actor the actor to check the blocking of
+             * @returns {boolean} true if the level location is blocked for this actor and cannot be moved to, or
+             * false otherwise.
              */
-            Level.prototype.isBlockedAt = function (location) {
-                return this.isBlockedAtXY(location.x, location.y);
+            Level.prototype.isBlockedAt = function (location, actor) {
+                return this.isBlockedAtXY(location.x, location.y, actor);
             };
             /**
              * Render this level to the stage provided. This is done by delegating the rendering of each

@@ -284,22 +284,27 @@ module nurdz.game
 
         /**
          * Given coordinates in the map, return back a boolean that indicates if that space is blocked or not
-         * as far as movement is concerned.
+         * as far as movement is concerned for the actor provided.
+         *
+         * The provided actor can be non-null, so long as all Tile and Entity instances being used in the
+         * level are capable of determining blocking against a null tile reference. The default
+         * implementations are capable of this.
          *
          * @param x the X-coordinate to check, in map coordinates
          * @param y the Y-coordinate to check, in map coordinates
-         * @returns {boolean} true if the level location is blocked and cannot be moved to, or false
-         *     otherwise.
+         * @param actor the actor to check the blocking of
+         * @returns {boolean} true if the level location is blocked for this actor and cannot be moved to, or
+         * false otherwise.
          */
-        isBlockedAtXY (x : number, y : number) : boolean
+        isBlockedAtXY (x : number, y : number, actor : Actor) : boolean
         {
-            // Get the tile; it's blocked if it is a wall.
+            // Get the tile; it's blocked if it is out of bounds of the level.
             var tile = this.tileAtXY (x, y);
             if (tile == null)
                 return true;
 
             // If the tile at this location blocks actor movement, then the move is blocked.
-            if (tile.blocksActorMovement ())
+            if (tile.blocksActorMovement (actor))
                 return true;
 
             // Get the list of entities that are at this location on the map. If there are any and any of them
@@ -309,7 +314,7 @@ module nurdz.game
             {
                 for (var i = 0 ; i < entities.length ; i++)
                 {
-                    if (entities[i].blocksActorMovement ())
+                    if (entities[i].blocksActorMovement (actor))
                         return true;
                 }
             }
@@ -320,15 +325,20 @@ module nurdz.game
 
         /**
          * Given coordinates in the map, return back a boolean that indicates if that space is blocked or not
-         * as far as movement is concerned.
+         * as far as movement is concerned for the actor provided.
+         *
+         * The provided actor can be non-null, so long as all Tile instances being used in the level are
+         * capable of determining blocking against a null tile reference. The default Tile implementation
+         * is capable of this.
          *
          * @param location the location to check, in map coordinates
-         * @returns {boolean} true if the level location is blocked and cannot be moved to, or false
-         *     otherwise.
+         * @param actor the actor to check the blocking of
+         * @returns {boolean} true if the level location is blocked for this actor and cannot be moved to, or
+         * false otherwise.
          */
-        isBlockedAt (location : Point) : boolean
+        isBlockedAt (location : Point, actor : Actor) : boolean
         {
-            return this.isBlockedAtXY (location.x, location.y);
+            return this.isBlockedAtXY (location.x, location.y, actor);
         }
 
         /**
