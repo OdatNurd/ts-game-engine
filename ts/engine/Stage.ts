@@ -286,7 +286,14 @@ module nurdz.game
          */
         switchToScene (sceneName : string = null)
         {
+            // Indicate that we want to switch to the scene provided.
             this._sceneManager.switchToScene (sceneName);
+
+            // If the game is not currently running, then perform the switch right now; external code
+            // might want to switch the scene while the game is not running and we want the currentScene
+            // property to track property.
+            if (_gameTimerID == null)
+                this._sceneManager.checkSceneSwitch ();
         }
 
         /**
