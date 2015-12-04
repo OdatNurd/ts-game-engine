@@ -24,6 +24,13 @@ module nurdz.game
         private _canvasContext : CanvasRenderingContext2D;
 
         /**
+         * The object that manages our list of scenes for us.
+         *
+         * @type {SceneManager}
+         */
+        private _sceneManager : SceneManager;
+
+        /**
          * The width of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @type {number} the width of the stage area in pixels
@@ -72,34 +79,7 @@ module nurdz.game
          * @returns {Scene}
          */
         get currentScene () : Scene
-        { return Stage._currentScene; }
-
-        /**
-         * The currently active scene on the stage. This is the scene that gets all of the user input and
-         * the one that the stage reflects all update and render calls to during the game loop.
-         *
-         * @type {Scene}
-         */
-        private static _currentScene : Scene = new Scene ("defaultScene", null);
-
-        /**
-         * The scene that should become active next (if any). When a scene change request happens, the
-         * scene to be switched to is stored in this value to ensure that the switch happens at the end of
-         * the current update cycle, which happens asynchronously.
-         *
-         * The value here is null when there is no scene change scheduled.
-         *
-         * @type {Scene|null}
-         */
-        private static _nextScene : Scene = null;
-
-        /**
-         * A list of all of the registered scenes in the stage. The keys are a symbolic string name and
-         * the values are the actual Scene instance objects that the names represent.
-         *
-         * @type {{}}
-         */
-        private static _sceneList : Object = {};
+        { return this._sceneManager.currentScene; }
 
         /**
          * When the engine is running, this is the timer ID of the system timer that keeps the game loop
@@ -150,6 +130,9 @@ module nurdz.game
          */
         constructor (containerDivID : string, initialColor : string = 'black')
         {
+            // Set up our scene manager object.
+            this._sceneManager = new SceneManager (this);
+
             // Obtain the container element that we want to insert the canvas into.
             var container = document.getElementById (containerDivID);
             if (container == null)
@@ -180,7 +163,7 @@ module nurdz.game
          *
          * In practice, this gets invoked on a timer at the desired FPS that the game should run at.
          */
-        private static sceneLoop ()
+        private sceneLoop = () =>
         {
             // Get the current time for this frame and the elapsed time since we started.
             var currentTime = new Date ().getTime();
@@ -202,27 +185,13 @@ module nurdz.game
 
             try
             {
-                // If there is a scene change scheduled, change it now.
-                if (Stage._nextScene != null && Stage._nextScene !== Stage._currentScene)
-                {
-                    // Tell the current scene that it is deactivating and what scene is coming next.
-                    Stage._currentScene.deactivating (Stage._nextScene);
-
-                    // Save the current scene, then swap to the new one
-                    var previousScene = Stage._currentScene;
-                    Stage._currentScene = Stage._nextScene;
-
-                    // Now tell the current scene that it is activating, telling it what scene used to be in
-                    // effect.
-                    Stage._currentScene.activating (previousScene);
-
-                    // Clear the flag now.
-                    Stage._nextScene = null;
-                }
+                // Before we start the frame update, make sure that the current scene is correct, in case
+                // anyone asked for an update to occur.
+                this._sceneManager.checkSceneSwitch ();
 
                 // Do the frame update now
-                Stage._currentScene.update ();
-                Stage._currentScene.render ();
+                this._sceneManager.currentScene.update ();
+                this._sceneManager.currentScene.render ();
             }
             catch (error)
             {
@@ -231,7 +200,7 @@ module nurdz.game
                 Stage._gameTimerID = null;
                 throw error;
             }
-        }
+        };
 
         /**
          * Start the game running. This will start with the scene that is currently set. The game will run
@@ -253,10 +222,10 @@ module nurdz.game
             Stage._frameNumber = 0;
 
             // Fire off a timer to invoke our scene loop using an appropriate interval.
-            Stage._gameTimerID = setInterval (Stage.sceneLoop, 1000 / fps);
+            Stage._gameTimerID = setInterval (this.sceneLoop, 1000 / fps);
 
             // Turn on input events.
-            Stage.enableInputEvents (this._canvas);
+            this.enableInputEvents (this._canvas);
         }
 
         /**
@@ -279,7 +248,7 @@ module nurdz.game
             Stage._gameTimerID = null;
 
             // Turn off input events.
-            Stage.disableInputEvents (this._canvas);
+            this.disableInputEvents (this._canvas);
         }
 
         /**
@@ -300,12 +269,7 @@ module nurdz.game
          */
         addScene (name : string, newScene : Scene = null)
         {
-            // If this name is in use and we were given a scene object, we should complain.
-            if (Stage._sceneList[name] != null && newScene != null)
-                console.log ("Warning: overwriting scene registration for scene named " + name);
-
-            // Save the scene
-            Stage._sceneList[name] = newScene;
+            this._sceneManager.addScene (name, newScene);
         }
 
         /**
@@ -322,17 +286,7 @@ module nurdz.game
          */
         switchToScene (sceneName : string = null)
         {
-            // Get the actual new scene, which might be null if the scene named passed in is null.
-            var newScene = sceneName != null ? Stage._sceneList[sceneName] : null;
-
-            // If we were given a scene name and there was no such scene, complain before we leave.
-            if (sceneName != null && newScene == null)
-            {
-                console.log ("Attempt to switch to unknown scene named " + sceneName);
-                return;
-            }
-
-            Stage._nextScene = newScene;
+            this._sceneManager.switchToScene (sceneName);
         }
 
         /**
@@ -782,11 +736,11 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        static keyDownEvent (evt : Event)
+        private keyDownEvent = (evt : Event) =>
         {
-            if (Stage._currentScene.inputKeyDown (evt))
+            if (this._sceneManager.currentScene.inputKeyDown (evt))
                 evt.preventDefault ();
-        }
+        };
 
         /**
          * Handler for key up events. This gets triggered whenever the game is running and any key is
@@ -794,11 +748,11 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        static keyUpEvent (evt : Event)
+        private keyUpEvent = (evt : Event) =>
         {
-            if (Stage._currentScene.inputKeyUp (evt))
+            if (this._sceneManager.currentScene.inputKeyUp (evt))
                 evt.preventDefault ();
-        }
+        };
 
         /**
          * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
@@ -806,10 +760,10 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        static mouseMoveEvent (evt : Event)
+        private mouseMoveEvent = (evt : Event) =>
         {
-            Stage._currentScene.inputMouseMove (evt);
-        }
+            this._sceneManager.currentScene.inputMouseMove (evt);
+        };
 
         /**
          * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
@@ -817,10 +771,10 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        static mouseClickEvent (evt : Event)
+        private mouseClickEvent = (evt : Event) =>
         {
-            Stage._currentScene.inputMouseClick (evt);
-        }
+            this._sceneManager.currentScene.inputMouseClick (evt);
+        };
 
         /**
          * Turn on input handling for the game. This will capture keyboard events from the document and mouse
@@ -828,28 +782,28 @@ module nurdz.game
          *
          * @param canvas the canvas to listen for mouse events on.
          */
-        static enableInputEvents (canvas : HTMLCanvasElement)
+        private enableInputEvents = (canvas : HTMLCanvasElement) =>
         {
             // Mouse events are specific to the canvas.
-            canvas.addEventListener ('mousemove', Stage.mouseMoveEvent);
-            canvas.addEventListener ('mousedown', Stage.mouseClickEvent);
+            canvas.addEventListener ('mousemove', this.mouseMoveEvent);
+            canvas.addEventListener ('mousedown', this.mouseClickEvent);
 
             // Keyboard events are document wide because a canvas can't hold the input focus.
-            document.addEventListener ('keydown', Stage.keyDownEvent);
-            document.addEventListener ('keyup', Stage.keyUpEvent);
-        }
+            document.addEventListener ('keydown', this.keyDownEvent);
+            document.addEventListener ('keyup', this.keyUpEvent);
+        };
 
         /**
          * Turn off input handling for the game. This will turn off keyboard events from the document and
          * mouse events for the canvas provided.
          */
-        static disableInputEvents (canvas : HTMLCanvasElement)
+        private disableInputEvents = (canvas : HTMLCanvasElement) =>
         {
-            canvas.removeEventListener ('mousemove', Stage.mouseMoveEvent);
-            canvas.removeEventListener ('mousedown', Stage.mouseClickEvent);
-            document.removeEventListener ('keydown', Stage.keyDownEvent);
-            document.removeEventListener ('keyup', Stage.keyUpEvent);
-        }
+            canvas.removeEventListener ('mousemove', this.mouseMoveEvent);
+            canvas.removeEventListener ('mousedown', this.mouseClickEvent);
+            document.removeEventListener ('keydown', this.keyDownEvent);
+            document.removeEventListener ('keyup', this.keyUpEvent);
+        };
 
         /**
          * Return a string representation of the object, for debugging purposes.

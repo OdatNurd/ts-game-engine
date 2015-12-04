@@ -1156,7 +1156,107 @@ var nurdz;
              * @throws {ReferenceError} if there is no element with the ID provided
              */
             function Stage(containerDivID, initialColor) {
+                var _this = this;
                 if (initialColor === void 0) { initialColor = 'black'; }
+                /**
+                 * This function gets executed in a loop to run the game. Each execution will cause an update and
+                 * render to be issued to the current scene.
+                 *
+                 * In practice, this gets invoked on a timer at the desired FPS that the game should run at.
+                 */
+                this.sceneLoop = function () {
+                    // Get the current time for this frame and the elapsed time since we started.
+                    var currentTime = new Date().getTime();
+                    var elapsedTime = (currentTime - Stage._startTime) / 1000;
+                    // This counts as a frame.
+                    Stage._frameNumber++;
+                    // Calculate the FPS now
+                    Stage._fps = Stage._frameNumber / elapsedTime;
+                    // If a second or more has elapsed, reset the count. We don't want an average over time, we want
+                    // the most recent numbers so that we can see momentary drops.
+                    if (elapsedTime > 1) {
+                        Stage._startTime = new Date().getTime();
+                        Stage._frameNumber = 0;
+                    }
+                    try {
+                        // Before we start the frame update, make sure that the current scene is correct, in case
+                        // anyone asked for an update to occur.
+                        _this._sceneManager.checkSceneSwitch();
+                        // Do the frame update now
+                        _this._sceneManager.currentScene.update();
+                        _this._sceneManager.currentScene.render();
+                    }
+                    catch (error) {
+                        console.log("Caught exception in sceneLoop(), stopping the game");
+                        clearInterval(Stage._gameTimerID);
+                        Stage._gameTimerID = null;
+                        throw error;
+                    }
+                };
+                /**
+                 * Handler for key down events. This gets triggered whenever the game is running and any key is
+                 * pressed.
+                 *
+                 * @param evt the event object for this event
+                 */
+                this.keyDownEvent = function (evt) {
+                    if (_this._sceneManager.currentScene.inputKeyDown(evt))
+                        evt.preventDefault();
+                };
+                /**
+                 * Handler for key up events. This gets triggered whenever the game is running and any key is
+                 * released.
+                 *
+                 * @param evt the event object for this event
+                 */
+                this.keyUpEvent = function (evt) {
+                    if (_this._sceneManager.currentScene.inputKeyUp(evt))
+                        evt.preventDefault();
+                };
+                /**
+                 * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
+                 * moves over the stage.
+                 *
+                 * @param evt the event object for this event
+                 */
+                this.mouseMoveEvent = function (evt) {
+                    _this._sceneManager.currentScene.inputMouseMove(evt);
+                };
+                /**
+                 * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
+                 * is clicked over the canvas.
+                 *
+                 * @param evt the event object for this event
+                 */
+                this.mouseClickEvent = function (evt) {
+                    _this._sceneManager.currentScene.inputMouseClick(evt);
+                };
+                /**
+                 * Turn on input handling for the game. This will capture keyboard events from the document and mouse
+                 * events for the canvas provided.
+                 *
+                 * @param canvas the canvas to listen for mouse events on.
+                 */
+                this.enableInputEvents = function (canvas) {
+                    // Mouse events are specific to the canvas.
+                    canvas.addEventListener('mousemove', _this.mouseMoveEvent);
+                    canvas.addEventListener('mousedown', _this.mouseClickEvent);
+                    // Keyboard events are document wide because a canvas can't hold the input focus.
+                    document.addEventListener('keydown', _this.keyDownEvent);
+                    document.addEventListener('keyup', _this.keyUpEvent);
+                };
+                /**
+                 * Turn off input handling for the game. This will turn off keyboard events from the document and
+                 * mouse events for the canvas provided.
+                 */
+                this.disableInputEvents = function (canvas) {
+                    canvas.removeEventListener('mousemove', _this.mouseMoveEvent);
+                    canvas.removeEventListener('mousedown', _this.mouseClickEvent);
+                    document.removeEventListener('keydown', _this.keyDownEvent);
+                    document.removeEventListener('keyup', _this.keyUpEvent);
+                };
+                // Set up our scene manager object.
+                this._sceneManager = new game.SceneManager(this);
                 // Obtain the container element that we want to insert the canvas into.
                 var container = document.getElementById(containerDivID);
                 if (container == null)
@@ -1235,55 +1335,10 @@ var nurdz;
                  *
                  * @returns {Scene}
                  */
-                get: function () { return Stage._currentScene; },
+                get: function () { return this._sceneManager.currentScene; },
                 enumerable: true,
                 configurable: true
             });
-            /**
-             * This function gets executed in a loop to run the game. Each execution will cause an update and
-             * render to be issued to the current scene.
-             *
-             * In practice, this gets invoked on a timer at the desired FPS that the game should run at.
-             */
-            Stage.sceneLoop = function () {
-                // Get the current time for this frame and the elapsed time since we started.
-                var currentTime = new Date().getTime();
-                var elapsedTime = (currentTime - Stage._startTime) / 1000;
-                // This counts as a frame.
-                Stage._frameNumber++;
-                // Calculate the FPS now
-                Stage._fps = Stage._frameNumber / elapsedTime;
-                // If a second or more has elapsed, reset the count. We don't want an average over time, we want
-                // the most recent numbers so that we can see momentary drops.
-                if (elapsedTime > 1) {
-                    Stage._startTime = new Date().getTime();
-                    Stage._frameNumber = 0;
-                }
-                try {
-                    // If there is a scene change scheduled, change it now.
-                    if (Stage._nextScene != null && Stage._nextScene !== Stage._currentScene) {
-                        // Tell the current scene that it is deactivating and what scene is coming next.
-                        Stage._currentScene.deactivating(Stage._nextScene);
-                        // Save the current scene, then swap to the new one
-                        var previousScene = Stage._currentScene;
-                        Stage._currentScene = Stage._nextScene;
-                        // Now tell the current scene that it is activating, telling it what scene used to be in
-                        // effect.
-                        Stage._currentScene.activating(previousScene);
-                        // Clear the flag now.
-                        Stage._nextScene = null;
-                    }
-                    // Do the frame update now
-                    Stage._currentScene.update();
-                    Stage._currentScene.render();
-                }
-                catch (error) {
-                    console.log("Caught exception in sceneLoop(), stopping the game");
-                    clearInterval(Stage._gameTimerID);
-                    Stage._gameTimerID = null;
-                    throw error;
-                }
-            };
             /**
              * Start the game running. This will start with the scene that is currently set. The game will run
              * (or attempt to) at the frame rate you provide.
@@ -1302,9 +1357,9 @@ var nurdz;
                 Stage._startTime = 0;
                 Stage._frameNumber = 0;
                 // Fire off a timer to invoke our scene loop using an appropriate interval.
-                Stage._gameTimerID = setInterval(Stage.sceneLoop, 1000 / fps);
+                Stage._gameTimerID = setInterval(this.sceneLoop, 1000 / fps);
                 // Turn on input events.
-                Stage.enableInputEvents(this._canvas);
+                this.enableInputEvents(this._canvas);
             };
             /**
              * Stop a running game. This halts the update loop but otherwise has no effect. Thus after this call,
@@ -1323,7 +1378,7 @@ var nurdz;
                 clearInterval(Stage._gameTimerID);
                 Stage._gameTimerID = null;
                 // Turn off input events.
-                Stage.disableInputEvents(this._canvas);
+                this.disableInputEvents(this._canvas);
             };
             /**
              * Register a scene object with the stage using a textual name. This scene can then be switched to
@@ -1343,11 +1398,7 @@ var nurdz;
              */
             Stage.prototype.addScene = function (name, newScene) {
                 if (newScene === void 0) { newScene = null; }
-                // If this name is in use and we were given a scene object, we should complain.
-                if (Stage._sceneList[name] != null && newScene != null)
-                    console.log("Warning: overwriting scene registration for scene named " + name);
-                // Save the scene
-                Stage._sceneList[name] = newScene;
+                this._sceneManager.addScene(name, newScene);
             };
             /**
              * Register a request to change the current scene to a different scene. The change will take effect at
@@ -1363,14 +1414,7 @@ var nurdz;
              */
             Stage.prototype.switchToScene = function (sceneName) {
                 if (sceneName === void 0) { sceneName = null; }
-                // Get the actual new scene, which might be null if the scene named passed in is null.
-                var newScene = sceneName != null ? Stage._sceneList[sceneName] : null;
-                // If we were given a scene name and there was no such scene, complain before we leave.
-                if (sceneName != null && newScene == null) {
-                    console.log("Attempt to switch to unknown scene named " + sceneName);
-                    return;
-                }
-                Stage._nextScene = newScene;
+                this._sceneManager.switchToScene(sceneName);
             };
             /**
              * Clear the entire stage with the provided color.
@@ -1765,68 +1809,6 @@ var nurdz;
                 return new game.Point(mouseX, mouseY);
             };
             /**
-             * Handler for key down events. This gets triggered whenever the game is running and any key is
-             * pressed.
-             *
-             * @param evt the event object for this event
-             */
-            Stage.keyDownEvent = function (evt) {
-                if (Stage._currentScene.inputKeyDown(evt))
-                    evt.preventDefault();
-            };
-            /**
-             * Handler for key up events. This gets triggered whenever the game is running and any key is
-             * released.
-             *
-             * @param evt the event object for this event
-             */
-            Stage.keyUpEvent = function (evt) {
-                if (Stage._currentScene.inputKeyUp(evt))
-                    evt.preventDefault();
-            };
-            /**
-             * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
-             * moves over the stage.
-             *
-             * @param evt the event object for this event
-             */
-            Stage.mouseMoveEvent = function (evt) {
-                Stage._currentScene.inputMouseMove(evt);
-            };
-            /**
-             * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
-             * is clicked over the canvas.
-             *
-             * @param evt the event object for this event
-             */
-            Stage.mouseClickEvent = function (evt) {
-                Stage._currentScene.inputMouseClick(evt);
-            };
-            /**
-             * Turn on input handling for the game. This will capture keyboard events from the document and mouse
-             * events for the canvas provided.
-             *
-             * @param canvas the canvas to listen for mouse events on.
-             */
-            Stage.enableInputEvents = function (canvas) {
-                // Mouse events are specific to the canvas.
-                canvas.addEventListener('mousemove', Stage.mouseMoveEvent);
-                canvas.addEventListener('mousedown', Stage.mouseClickEvent);
-                // Keyboard events are document wide because a canvas can't hold the input focus.
-                document.addEventListener('keydown', Stage.keyDownEvent);
-                document.addEventListener('keyup', Stage.keyUpEvent);
-            };
-            /**
-             * Turn off input handling for the game. This will turn off keyboard events from the document and
-             * mouse events for the canvas provided.
-             */
-            Stage.disableInputEvents = function (canvas) {
-                canvas.removeEventListener('mousemove', Stage.mouseMoveEvent);
-                canvas.removeEventListener('mousedown', Stage.mouseClickEvent);
-                document.removeEventListener('keydown', Stage.keyDownEvent);
-                document.removeEventListener('keyup', Stage.keyUpEvent);
-            };
-            /**
              * Return a string representation of the object, for debugging purposes.
              *
              * @returns {String} a debug string representation
@@ -1834,30 +1816,6 @@ var nurdz;
             Stage.prototype.toString = function () {
                 return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", game.STAGE_WIDTH, game.STAGE_HEIGHT, game.TILE_SIZE);
             };
-            /**
-             * The currently active scene on the stage. This is the scene that gets all of the user input and
-             * the one that the stage reflects all update and render calls to during the game loop.
-             *
-             * @type {Scene}
-             */
-            Stage._currentScene = new game.Scene("defaultScene", null);
-            /**
-             * The scene that should become active next (if any). When a scene change request happens, the
-             * scene to be switched to is stored in this value to ensure that the switch happens at the end of
-             * the current update cycle, which happens asynchronously.
-             *
-             * The value here is null when there is no scene change scheduled.
-             *
-             * @type {Scene|null}
-             */
-            Stage._nextScene = null;
-            /**
-             * A list of all of the registered scenes in the stage. The keys are a symbolic string name and
-             * the values are the actual Scene instance objects that the names represent.
-             *
-             * @type {{}}
-             */
-            Stage._sceneList = {};
             /**
              * When the engine is running, this is the timer ID of the system timer that keeps the game loop
              * running. Otherwise, this is null.
@@ -1890,6 +1848,140 @@ var nurdz;
             return Stage;
         })();
         game.Stage = Stage;
+    })(game = nurdz.game || (nurdz.game = {}));
+})(nurdz || (nurdz = {}));
+var nurdz;
+(function (nurdz) {
+    var game;
+    (function (game) {
+        /**
+         * This class wraps a list of known Scene instances and allows for switching between them and
+         * querying/modifying the list of known scenes.
+         *
+         * This is used by the Stage class to manage the scenes in the game and switch between them.
+         */
+        var SceneManager = (function () {
+            /**
+             * Create a new instance of the Scene manager that will manage scenes for the passed in stage.
+             *
+             * @param stage the stage whose scenes we are managing.
+             */
+            function SceneManager(stage) {
+                /**
+                 * The currently active scene. This defaults to an empty instance initially so that all operations
+                 * still work as expected while the engine is being set up, and to guard the developer from
+                 * himself by forgetting to add one.
+                 *
+                 * @type {Scene}
+                 */
+                this._currentScene = null;
+                /**
+                 * The scene that should become active next (if any). When a scene change request happens, the
+                 * scene to be switched to is stored in this value to ensure that the switch happens at the end of
+                 * the current update cycle, which happens asynchronously.
+                 *
+                 * The value here is null when there is no scene change scheduled.
+                 *
+                 * @type {Scene|null}
+                 */
+                this._nextScene = null;
+                /**
+                 * A list of all of the registered scenes in the stage. The keys are a symbolic string name and
+                 * the values are the actual Scene instance objects that the names represent.
+                 *
+                 * @type {Object<String,Scene>}
+                 */
+                this._sceneList = null;
+                // Set up a default current scene, so that things work while setup is happening.
+                this._currentScene = new game.Scene("defaultScene", stage);
+                // The scene list starts out initially empty.
+                this._sceneList = {};
+            }
+            Object.defineProperty(SceneManager.prototype, "currentScene", {
+                /**
+                 * The currently active scene in the game.
+                 *
+                 * @returns {Scene} the current scene
+                 */
+                get: function () { return this._currentScene; },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Register a scene object using a textual name for reference. This scene can then be switched to
+             * via the switchToScene method.
+             *
+             * You can invoke this with null as a scene object to remove a scene from the internal scene list or
+             * register the same object multiple times with different names, if that's interesting to you.
+             *
+             * It is an error to attempt to register a scene using the name of a scene that already exists.
+             *
+             * @param name the symbolic name to use for this scene
+             * @param newScene the scene object to add
+             * @see Scene.switchToScene
+             */
+            SceneManager.prototype.addScene = function (name, newScene) {
+                if (newScene === void 0) { newScene = null; }
+                // If this name is in use and we were given a scene object, we should complain.
+                if (this._sceneList[name] != null && newScene != null)
+                    console.log("Warning: overwriting scene registration for scene named " + name);
+                // Save the scene
+                this._sceneList[name] = newScene;
+            };
+            /**
+             * Register a request to change the current scene to a different scene.
+             *
+             * NOTE: Such a change will not occur until the next call to checkSceneSwitch(), which you should
+             * do prior to any frame update. This means sure that the frame update keeps the same scene active
+             * throughout (e.g. calling into one scene for update and another for render).
+             *
+             * If null is provided, a pending scene change will be cancelled out.
+             *
+             * This method has no effect if the scene specified is already the current scene, is already going to
+             * be switched to, or has a name that we do not recognize. In that last case, a console log is
+             * generated to indicate why the scene change is not happening.
+             *
+             * @param {String} sceneName the name of the new scene to change to, or null to cancel a pending
+             * change
+             */
+            SceneManager.prototype.switchToScene = function (sceneName) {
+                if (sceneName === void 0) { sceneName = null; }
+                // Get the actual new scene, which might be null if the scene named passed in is null.
+                var newScene = sceneName != null ? this._sceneList[sceneName] : null;
+                // If we were given a scene name and there was no such scene, complain before we leave.
+                if (sceneName != null && newScene == null) {
+                    console.log("Attempt to switch to unknown scene named " + sceneName);
+                    return;
+                }
+                this._nextScene = newScene;
+            };
+            /**
+             * Check to see if there is a pending scene switch that should happen, as requested by an
+             * invocation to switchToScene().
+             *
+             * If there is, the current scene is switched, with the scenes being notified as appropriate. If
+             * there isn't, then nothing else happens.
+             *
+             * @see SceneManager.switchToScene
+             */
+            SceneManager.prototype.checkSceneSwitch = function () {
+                // If there is a scene change scheduled, change it now.
+                if (this._nextScene != null && this._nextScene !== this._currentScene) {
+                    // Tell the current scene that it is deactivating and what scene is coming next.
+                    this._currentScene.deactivating(this._nextScene);
+                    // Save the current scene, then swap to the new one
+                    var previousScene = this._currentScene;
+                    this._currentScene = this._nextScene;
+                    // Now tell the current scene that it is activating, telling it what scene used to be in
+                    // effect.
+                    this._currentScene.activating(previousScene);
+                    // Clear the flag now.
+                    this._nextScene = null;
+                }
+            };
+            return SceneManager;
+        })();
+        game.SceneManager = SceneManager;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
 var nurdz;
