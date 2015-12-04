@@ -70,7 +70,7 @@ module nurdz.game
             this.stage = stage;
             this.width = levelData.width;
             this.height = levelData.height;
-            this.levelData = levelData.levelData;
+            this.levelData = levelData.mapData;
             this.entities = levelData.entities;
             this.entitiesByID = levelData.entitiesByID;
             this.tileset = levelData.tileset;

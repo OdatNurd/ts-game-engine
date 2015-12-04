@@ -2098,19 +2098,19 @@ var nurdz;
              */
             function LevelData(name, width, height, levelData, entityList, tileset) {
                 // Save the provided values.
-                this.name = name;
-                this.width = width;
-                this.height = height;
-                this.levelData = levelData;
-                this.entities = entityList;
-                this.tileset = tileset;
+                this._name = name;
+                this._width = width;
+                this._height = height;
+                this._levelData = levelData;
+                this._entities = entityList;
+                this._tileset = tileset;
                 // Set up the entity list that associates with entity ID values.
-                this.entitiesByID = {};
+                this._entitiesByID = {};
                 // Iterate over all entities. For each one, insert it into the entitiesByID table and so some
                 // validation.
-                for (var i = 0; i < this.entities.length; i++) {
+                for (var i = 0; i < this._entities.length; i++) {
                     // Get the entity and it's ID property. If there is no ID property, generate an error.
-                    var entity = this.entities[i];
+                    var entity = this._entities[i];
                     var entityID = entity.properties.id;
                     if (entityID == null)
                         throw new Error("LevelData passed an entity with no 'id' property");
@@ -2119,13 +2119,79 @@ var nurdz;
                         throw new Error("LevelData passed an entity that has no stage, id=" + entityID);
                     // Now store this entity in the lookup table; generate a warning if such an ID already
                     // exists, as it will clobber.
-                    if (this.entitiesByID[entityID])
+                    if (this._entitiesByID[entityID])
                         console.log("LevelData has an entity with a duplicate 'id' property: " + entityID);
-                    this.entitiesByID[entityID] = entity;
+                    this._entitiesByID[entityID] = entity;
                 }
                 // Validate the data now
                 this.validateData();
             }
+            Object.defineProperty(LevelData.prototype, "width", {
+                /**
+                 * The width of this level data, in tiles.
+                 *
+                 * @returns {number} the width of the map data in tiles.
+                 */
+                get: function () { return this._width; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LevelData.prototype, "height", {
+                /**
+                 * The height of this level data, in tiles.
+                 *
+                 * @returns {number} the height of the map data in tiles
+                 */
+                get: function () { return this._height; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LevelData.prototype, "mapData", {
+                /**
+                 * The underlying map data that describes the map in this instance. This is an array of numbers
+                 * that are interpreted as numeric tile ID values and is width * height numbers long.
+                 *
+                 * @returns {Array<number>} the underlying map data
+                 */
+                get: function () { return this._levelData; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LevelData.prototype, "tileset", {
+                /**
+                 * The tileset that is used to render the map in this level data; the data in the mapData array is
+                 * verified to only contain tiles that appear in this tileset.
+                 *
+                 * @returns {Tileset} the tileset to use to render this map
+                 */
+                get: function () { return this._tileset; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LevelData.prototype, "entities", {
+                /**
+                 * The list of all entities that are associated with this particular level data instance. This is
+                 * just an array of entity objects.
+                 *
+                 * @returns {Array<Entity>} the list of entities
+                 * @see LevelData.entitiesByID
+                 */
+                get: function () { return this._entities; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LevelData.prototype, "entitiesByID", {
+                /**
+                 * A duplicate list of entities, where the entities are indexed by their ID values for faster
+                 * lookup at runtime.
+                 *
+                 * @returns {Object<String,Entity>} an object which contains the entities, keyed by their id values.
+                 * @see LevelData.entities
+                 */
+                get: function () { return this._entitiesByID; },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * A simple helper that handles a validation failure by throwing an error.
              *
@@ -2145,18 +2211,18 @@ var nurdz;
             LevelData.prototype.validateData = function () {
                 // Ensure that the length of the level data agrees with the dimensions that we were given, to make
                 // sure we didn't get sorted.
-                if (this.levelData.length != this.width * this.height)
-                    this.error("Level data '" + this.name + "' has an incorrect length given its dimensions");
+                if (this._levelData.length != this._width * this._height)
+                    this.error("Level data '" + this._name + "' has an incorrect length given its dimensions");
                 // For now, there is no scrolling of levels, so it is important that the dimensions be the same
                 // as the constant for the viewport.
-                if (this.width != nurdz.game.STAGE_TILE_WIDTH || this.height != nurdz.game.STAGE_TILE_HEIGHT)
-                    this.error("Scrolling is not implemented; level '" + this.name + "' must be the same size as the viewport");
+                if (this._width != game.STAGE_TILE_WIDTH || this._height != game.STAGE_TILE_HEIGHT)
+                    this.error("Scrolling is not implemented; level '" + this._name + "' must be the same size as the viewport");
                 // Validate that all tiles are valid.
-                for (var y = 0; y < this.height; y++) {
-                    for (var x = 0; x < this.width; x++) {
+                for (var y = 0; y < this._height; y++) {
+                    for (var x = 0; x < this._width; x++) {
                         // Pull a tileID out of the level data, and validate that the tileset knows what it is.
-                        var tileID = this.levelData[y * this.width + x];
-                        if (this.tileset.isValidTileID(tileID) == false)
+                        var tileID = this._levelData[y * this._width + x];
+                        if (this._tileset.isValidTileID(tileID) == false)
                             this.error("Invalid tileID '${tileID}' found at [${x}, ${y}] in level ${this.name}");
                     }
                 }
@@ -2167,7 +2233,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             LevelData.prototype.toString = function () {
-                return String.format("[LevelData name={0}, size={1}x{2]]", this.name, this.width, this.height);
+                return String.format("[LevelData name={0}, size={1}x{2]]", this._name, this._width, this._height);
             };
             return LevelData;
         })();
@@ -2196,7 +2262,7 @@ var nurdz;
                 this.stage = stage;
                 this.width = levelData.width;
                 this.height = levelData.height;
-                this.levelData = levelData.levelData;
+                this.levelData = levelData.mapData;
                 this.entities = levelData.entities;
                 this.entitiesByID = levelData.entitiesByID;
                 this.tileset = levelData.tileset;
