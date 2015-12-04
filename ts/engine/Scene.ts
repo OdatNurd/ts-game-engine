@@ -16,7 +16,7 @@ module nurdz.game
          *
          * @type {string}
          */
-        protected name : string;
+        protected _name : string;
 
         /**
          * The stage that this scene is being displayed to. This is a reference to the stage given at the
@@ -24,7 +24,7 @@ module nurdz.game
          *
          * @type {Stage}
          */
-        protected stage : Stage;
+        protected _stage : Stage;
 
         /**
          * The list of all actors that are currently associated with this scene. These actors will get
@@ -32,14 +32,14 @@ module nurdz.game
          *
          * @type {Array<Actor>}
          */
-        protected actorList : Array<Actor>;
+        protected _actorList : Array<Actor>;
 
         /**
          * Every time a screenshot is generated, this value is used in the filename. It is then incremented.
          *
          * @type {number}
          */
-        private static ss_number : number = 0;
+        private static _ss_number : number = 0;
 
         /**
          * This template is used to determine the number at the end of a screenshot filename. The end
@@ -48,15 +48,15 @@ module nurdz.game
          *
          * @type {string}
          */
-        private static ss_format : string = "0000";
+        private static _ss_format : string = "0000";
 
-        /**
-         * Get the complete list of actors that are currently registered with this scene.
-         *
-         * @returns {Array<Actor>}
-         */
-        get actors ()
-        { return this.actorList; }
+        ///**
+        // * Get the complete list of actors that are currently registered with this scene.
+        // *
+        // * @returns {Array<Actor>}
+        // */
+        //get actors ()
+        //{ return this.actorList; }
 
         /**
          * Construct a new scene instances that has the given name and is managed by the provided stage.
@@ -70,11 +70,11 @@ module nurdz.game
         constructor (name : string, stage : Stage)
         {
             // Store the name and stage provided.
-            this.name = name;
-            this.stage = stage;
+            this._name = name;
+            this._stage = stage;
 
             // Start with an empty actor list
-            this.actorList = [];
+            this._actorList = [];
         }
 
         /**
@@ -86,8 +86,8 @@ module nurdz.game
          */
         update ()
         {
-            for (var i = 0 ; i < this.actorList.length ; i++)
-                this.actorList[i].update (this.stage);
+            for (var i = 0 ; i < this._actorList.length ; i++)
+                this._actorList[i].update (this._stage);
         }
 
         /**
@@ -99,8 +99,8 @@ module nurdz.game
          */
         render ()
         {
-            for (var i = 0 ; i < this.actorList.length ; i++)
-                this.actorList[i].render (this.stage);
+            for (var i = 0 ; i < this._actorList.length ; i++)
+                this._actorList[i].render (this._stage);
         }
 
         /**
@@ -145,7 +145,7 @@ module nurdz.game
          */
         addActor (actor : Actor)
         {
-            this.actorList.push (actor);
+            this._actorList.push (actor);
         }
 
         /**
@@ -193,9 +193,9 @@ module nurdz.game
         actorsAtXY (x : number, y : number) : Array<Actor>
         {
             var retVal = [];
-            for (var i = 0 ; i < this.actorList.length ; i++)
+            for (var i = 0 ; i < this._actorList.length ; i++)
             {
-                var actor = this.actorList[i];
+                var actor = this._actorList[i];
                 if (actor.position.x == x && actor.position.y == y)
                     retVal.push (actor);
             }
@@ -237,9 +237,9 @@ module nurdz.game
         actorsAtMapXY (x : number, y : number) : Array<Actor>
         {
             var retVal = [];
-            for (var i = 0 ; i < this.actorList.length ; i++)
+            for (var i = 0 ; i < this._actorList.length ; i++)
             {
-                var actor = this.actorList[i];
+                var actor = this._actorList[i];
                 if (actor.mapPosition.x == x && actor.mapPosition.y == y)
                     retVal.push (actor);
             }
@@ -256,7 +256,7 @@ module nurdz.game
          */
         sortActors ()
         {
-            this.actorList.sort (function (left, right) { return left.zOrder - right.zOrder; });
+            this._actorList.sort (function (left, right) { return left.zOrder - right.zOrder; });
         }
 
         /**
@@ -338,13 +338,13 @@ module nurdz.game
             var wind = window.open ("about:blank", "screenshot");
 
             // Create a special data URI which the browser will interpret as an image to display.
-            var imageURL = this.stage.canvas.toDataURL ();
+            var imageURL = this._stage.canvas.toDataURL ();
 
             // Append the screenshot number to the window title and also to the filename for the generated
             // image, then advance the screenshot counter for the next image.
-            filename += ((Scene.ss_format + Scene.ss_number).slice (-Scene.ss_format.length)) + ".png";
-            windowTitle += " " + Scene.ss_number;
-            Scene.ss_number++;
+            filename += ((Scene._ss_format + Scene._ss_number).slice (-Scene._ss_format.length)) + ".png";
+            windowTitle += " " + Scene._ss_number;
+            Scene._ss_number++;
 
             // Now we need to write some HTML into the new document. The image tag using our data URL will
             // cause the browser to display the image. Wrapping it in the anchor tag with the same URL and a
@@ -367,7 +367,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return String.format ("[Scene name={0}]", this.name);
+            return String.format ("[Scene name={0}]", this._name);
         }
     }
 }

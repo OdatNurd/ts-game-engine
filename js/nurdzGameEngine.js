@@ -833,6 +833,13 @@ var nurdz;
          * implement your own specific handling as needed.
          */
         var Scene = (function () {
+            ///**
+            // * Get the complete list of actors that are currently registered with this scene.
+            // *
+            // * @returns {Array<Actor>}
+            // */
+            //get actors ()
+            //{ return this.actorList; }
             /**
              * Construct a new scene instances that has the given name and is managed by the provided stage.
              *
@@ -844,21 +851,11 @@ var nurdz;
              */
             function Scene(name, stage) {
                 // Store the name and stage provided.
-                this.name = name;
-                this.stage = stage;
+                this._name = name;
+                this._stage = stage;
                 // Start with an empty actor list
-                this.actorList = [];
+                this._actorList = [];
             }
-            Object.defineProperty(Scene.prototype, "actors", {
-                /**
-                 * Get the complete list of actors that are currently registered with this scene.
-                 *
-                 * @returns {Array<Actor>}
-                 */
-                get: function () { return this.actorList; },
-                enumerable: true,
-                configurable: true
-            });
             /**
              * This method is invoked at the start of every game frame to allow this scene to update the state of
              * all objects that it contains.
@@ -867,8 +864,8 @@ var nurdz;
              * scene.
              */
             Scene.prototype.update = function () {
-                for (var i = 0; i < this.actorList.length; i++)
-                    this.actorList[i].update(this.stage);
+                for (var i = 0; i < this._actorList.length; i++)
+                    this._actorList[i].update(this._stage);
             };
             /**
              * This method is invoked every frame after the update() method is invoked to allow this scene to
@@ -878,8 +875,8 @@ var nurdz;
              * stage.
              */
             Scene.prototype.render = function () {
-                for (var i = 0; i < this.actorList.length; i++)
-                    this.actorList[i].render(this.stage);
+                for (var i = 0; i < this._actorList.length; i++)
+                    this._actorList[i].render(this._stage);
             };
             /**
              * This method is invoked when this scene is becoming the active scene in the game. This can be used
@@ -919,7 +916,7 @@ var nurdz;
              * @see Scene.addActorArray
              */
             Scene.prototype.addActor = function (actor) {
-                this.actorList.push(actor);
+                this._actorList.push(actor);
             };
             /**
              * Add all of the actors from the passed in array to the list of actors that exist in this scene. This
@@ -961,8 +958,8 @@ var nurdz;
              */
             Scene.prototype.actorsAtXY = function (x, y) {
                 var retVal = [];
-                for (var i = 0; i < this.actorList.length; i++) {
-                    var actor = this.actorList[i];
+                for (var i = 0; i < this._actorList.length; i++) {
+                    var actor = this._actorList[i];
                     if (actor.position.x == x && actor.position.y == y)
                         retVal.push(actor);
                 }
@@ -999,8 +996,8 @@ var nurdz;
              */
             Scene.prototype.actorsAtMapXY = function (x, y) {
                 var retVal = [];
-                for (var i = 0; i < this.actorList.length; i++) {
-                    var actor = this.actorList[i];
+                for (var i = 0; i < this._actorList.length; i++) {
+                    var actor = this._actorList[i];
                     if (actor.mapPosition.x == x && actor.mapPosition.y == y)
                         retVal.push(actor);
                 }
@@ -1014,7 +1011,7 @@ var nurdz;
              * Note that the sort used is not stable.
              */
             Scene.prototype.sortActors = function () {
-                this.actorList.sort(function (left, right) { return left.zOrder - right.zOrder; });
+                this._actorList.sort(function (left, right) { return left.zOrder - right.zOrder; });
             };
             /**
              * This gets triggered while the game is running, this scene is the current scene, and a key has been
@@ -1087,12 +1084,12 @@ var nurdz;
                 // Create a window to hold the screen shot.
                 var wind = window.open("about:blank", "screenshot");
                 // Create a special data URI which the browser will interpret as an image to display.
-                var imageURL = this.stage.canvas.toDataURL();
+                var imageURL = this._stage.canvas.toDataURL();
                 // Append the screenshot number to the window title and also to the filename for the generated
                 // image, then advance the screenshot counter for the next image.
-                filename += ((Scene.ss_format + Scene.ss_number).slice(-Scene.ss_format.length)) + ".png";
-                windowTitle += " " + Scene.ss_number;
-                Scene.ss_number++;
+                filename += ((Scene._ss_format + Scene._ss_number).slice(-Scene._ss_format.length)) + ".png";
+                windowTitle += " " + Scene._ss_number;
+                Scene._ss_number++;
                 // Now we need to write some HTML into the new document. The image tag using our data URL will
                 // cause the browser to display the image. Wrapping it in the anchor tag with the same URL and a
                 // download attribute is a hint to the browser that when the image is clicked, it should download
@@ -1111,14 +1108,14 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Scene.prototype.toString = function () {
-                return String.format("[Scene name={0}]", this.name);
+                return String.format("[Scene name={0}]", this._name);
             };
             /**
              * Every time a screenshot is generated, this value is used in the filename. It is then incremented.
              *
              * @type {number}
              */
-            Scene.ss_number = 0;
+            Scene._ss_number = 0;
             /**
              * This template is used to determine the number at the end of a screenshot filename. The end
              * characters are replaced with the current number of the screenshot. This implicitly specifies
@@ -1126,7 +1123,7 @@ var nurdz;
              *
              * @type {string}
              */
-            Scene.ss_format = "0000";
+            Scene._ss_format = "0000";
             return Scene;
         })();
         game.Scene = Scene;
