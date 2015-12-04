@@ -338,7 +338,7 @@ module nurdz.game
             var wind = window.open ("about:blank", "screenshot");
 
             // Create a special data URI which the browser will interpret as an image to display.
-            var imageURL = this.stage.canvasObject.toDataURL ();
+            var imageURL = this.stage.canvas.toDataURL ();
 
             // Append the screenshot number to the window title and also to the filename for the generated
             // image, then advance the screenshot counter for the next image.

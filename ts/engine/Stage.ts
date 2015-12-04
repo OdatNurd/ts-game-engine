@@ -9,13 +9,14 @@ module nurdz.game
      */
     export class Stage
     {
+        // TODO The width and height don't need to be members if they're always the same value, doorknob.
         /**
          * The width of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @const
          * @type {number}
          */
-        private width : number = STAGE_WIDTH;
+        private _width : number = STAGE_WIDTH;
 
         /**
          * The height of the stage, in pixels. This is set at creation time and cannot change.
@@ -23,37 +24,45 @@ module nurdz.game
          * @const
          * @type {number}
          */
-        private height : number = STAGE_HEIGHT;
+        private _height : number = STAGE_HEIGHT;
 
         /**
          * The canvas that the stage renders itself to.
          *
          * @type {HTMLCanvasElement}
          */
-        private canvas : HTMLCanvasElement;
+        private _canvas : HTMLCanvasElement;
 
         /**
          * The rendering context for our canvas. This is the gateway to rendering magic.
          *
          * @type {CanvasRenderingContext2D}
          */
-        private canvasContext : CanvasRenderingContext2D;
+        private _canvasContext : CanvasRenderingContext2D;
 
         /**
          * The width of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @type {number} the width of the stage area in pixels
          */
-        get pixelWidth () : number
-        { return this.width; }
+        get width () : number
+        { return this._width; }
 
         /**
          * The height of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @type {number} the height of the stage area in pixels
          */
-        get pixelHeight () : number
-        { return this.height; }
+        get height () : number
+        { return this._height; }
+
+        /**
+         * Get the underlying canvas object for the stage.
+         *
+         * @returns {HTMLCanvasElement} the underlying canvas element for the stage
+         */
+        get canvas () : HTMLCanvasElement
+        { return this._canvas; }
 
         /**
          * Get the underlying rendering context for the stage.
@@ -61,15 +70,7 @@ module nurdz.game
          * @returns {CanvasRenderingContext2D} the underlying rendering context for the stage
          */
         get context () : CanvasRenderingContext2D
-        { return this.canvasContext; }
-
-        /**
-         * Get the underlying canvas object for the stage.
-         *
-         * @returns {HTMLCanvasElement} the underlying canvas element for the stage
-         */
-        get canvasObject () : HTMLCanvasElement
-        { return this.canvas; }
+        { return this._canvasContext; }
 
         /**
          * The stage keeps track of the current frame rate that the update loop is being called at, and this
@@ -80,7 +81,7 @@ module nurdz.game
          * @returns {Number} the current fps, which is o when the game is stopped orr just started
          */
         get fps () : number
-        { return Stage.fps; }
+        { return Stage._fps; }
 
         /**
          * Determine what scene is the current scene on this stage.
@@ -88,7 +89,7 @@ module nurdz.game
          * @returns {Scene}
          */
         get currentScene () : Scene
-        { return Stage.currentScene; }
+        { return Stage._currentScene; }
 
         /**
          * The currently active scene on the stage. This is the scene that gets all of the user input and
@@ -96,7 +97,7 @@ module nurdz.game
          *
          * @type {Scene}
          */
-        private static currentScene : Scene = new Scene ("defaultScene", null);
+        private static _currentScene : Scene = new Scene ("defaultScene", null);
 
         /**
          * The scene that should become active next (if any). When a scene change request happens, the
@@ -107,7 +108,7 @@ module nurdz.game
          *
          * @type {Scene|null}
          */
-        private static nextScene : Scene = null;
+        private static _nextScene : Scene = null;
 
         /**
          * A list of all of the registered scenes in the stage. The keys are a symbolic string name and
@@ -115,7 +116,7 @@ module nurdz.game
          *
          * @type {{}}
          */
-        private static sceneList : Object = {};
+        private static _sceneList : Object = {};
 
         /**
          * When the engine is running, this is the timer ID of the system timer that keeps the game loop
@@ -123,7 +124,7 @@ module nurdz.game
          *
          * @type {number|null}
          */
-        private static gameTimerID : number = null;
+        private static _gameTimerID : number = null;
 
         /**
          * The FPS that the engine is currently running at. This is recalculated once per second so that
@@ -131,7 +132,7 @@ module nurdz.game
          *
          * @type {number}
          */
-        private static fps : number = 0;
+        private static _fps : number = 0;
 
         /**
          * When calculating FPS, this is the time that the most recent frame count started. Once we have
@@ -139,7 +140,7 @@ module nurdz.game
          *
          * @type {number}
          */
-        private static startTime : number = 0;
+        private static _startTime : number = 0;
 
         /**
          * When calculating FPS, this is the number of frames that we have seen over the last second. When
@@ -148,7 +149,7 @@ module nurdz.game
          *
          * @type {number}
          */
-        private static frameNumber : number = 0;
+        private static _frameNumber : number = 0;
 
         /**
          * Create the stage on which all rendering for the game will be done.
@@ -172,22 +173,22 @@ module nurdz.game
                 throw new ReferenceError ("Unable to create stage: No such element with ID '" + containerDivID + "'");
 
             // Create the canvas and give it the appropriate dimensions.
-            this.canvas = document.createElement ("canvas");
-            this.canvas.width = this.width;
-            this.canvas.height = this.height;
+            this._canvas = document.createElement ("canvas");
+            this._canvas.width = this._width;
+            this._canvas.height = this._height;
 
             // Modify the style of the container div to make it center horizontally.
-            container.style.width = this.width + "px";
-            container.style.height = this.height + "px";
+            container.style.width = this._width + "px";
+            container.style.height = this._height + "px";
             container.style.marginLeft = "auto";
             container.style.marginRight = "auto";
 
             // Get the context for the canvas and then clear it.
-            this.canvasContext = this.canvas.getContext ('2d');
+            this._canvasContext = this._canvas.getContext ('2d');
             this.clear (initialColor);
 
             // Append the canvas to the container
-            container.appendChild (this.canvas);
+            container.appendChild (this._canvas);
         }
 
         /**
@@ -200,51 +201,51 @@ module nurdz.game
         {
             // Get the current time for this frame and the elapsed time since we started.
             var currentTime = new Date ().getTime();
-            var elapsedTime = (currentTime - Stage.startTime) / 1000;
+            var elapsedTime = (currentTime - Stage._startTime) / 1000;
 
             // This counts as a frame.
-            Stage.frameNumber++;
+            Stage._frameNumber++;
 
             // Calculate the FPS now
-            Stage.fps = Stage.frameNumber / elapsedTime;
+            Stage._fps = Stage._frameNumber / elapsedTime;
 
             // If a second or more has elapsed, reset the count. We don't want an average over time, we want
             // the most recent numbers so that we can see momentary drops.
             if (elapsedTime > 1)
             {
-                Stage.startTime = new Date ().getTime ();
-                Stage.frameNumber = 0;
+                Stage._startTime = new Date ().getTime ();
+                Stage._frameNumber = 0;
             }
 
             try
             {
                 // If there is a scene change scheduled, change it now.
-                if (Stage.nextScene != null && Stage.nextScene !== Stage.currentScene)
+                if (Stage._nextScene != null && Stage._nextScene !== Stage._currentScene)
                 {
                     // Tell the current scene that it is deactivating and what scene is coming next.
-                    Stage.currentScene.deactivating (Stage.nextScene);
+                    Stage._currentScene.deactivating (Stage._nextScene);
 
                     // Save the current scene, then swap to the new one
-                    var previousScene = Stage.currentScene;
-                    Stage.currentScene = Stage.nextScene;
+                    var previousScene = Stage._currentScene;
+                    Stage._currentScene = Stage._nextScene;
 
                     // Now tell the current scene that it is activating, telling it what scene used to be in
                     // effect.
-                    Stage.currentScene.activating (previousScene);
+                    Stage._currentScene.activating (previousScene);
 
                     // Clear the flag now.
-                    Stage.nextScene = null;
+                    Stage._nextScene = null;
                 }
 
                 // Do the frame update now
-                Stage.currentScene.update ();
-                Stage.currentScene.render ();
+                Stage._currentScene.update ();
+                Stage._currentScene.render ();
             }
             catch (error)
             {
                 console.log ("Caught exception in sceneLoop(), stopping the game");
-                clearInterval (Stage.gameTimerID);
-                Stage.gameTimerID = null;
+                clearInterval (Stage._gameTimerID);
+                Stage._gameTimerID = null;
                 throw error;
             }
         }
@@ -261,18 +262,18 @@ module nurdz.game
          */
         run (fps : number = 30)
         {
-            if (Stage.gameTimerID != null)
+            if (Stage._gameTimerID != null)
                 throw new Error ("Attempt to start the game running when it is already running");
 
             // Reset the variables we use for frame counts.
-            Stage.startTime = 0;
-            Stage.frameNumber = 0;
+            Stage._startTime = 0;
+            Stage._frameNumber = 0;
 
             // Fire off a timer to invoke our scene loop using an appropriate interval.
-            Stage.gameTimerID = setInterval (Stage.sceneLoop, 1000 / fps);
+            Stage._gameTimerID = setInterval (Stage.sceneLoop, 1000 / fps);
 
             // Turn on input events.
-            Stage.enableInputEvents (this.canvas);
+            Stage.enableInputEvents (this._canvas);
         }
 
         /**
@@ -287,15 +288,15 @@ module nurdz.game
         stop ()
         {
             // Make sure the game is running.
-            if (Stage.gameTimerID == null)
+            if (Stage._gameTimerID == null)
                 throw new Error ("Attempt to stop the game when it is not running");
 
             // Stop it.
-            clearInterval (Stage.gameTimerID);
-            Stage.gameTimerID = null;
+            clearInterval (Stage._gameTimerID);
+            Stage._gameTimerID = null;
 
             // Turn off input events.
-            Stage.disableInputEvents (this.canvas);
+            Stage.disableInputEvents (this._canvas);
         }
 
         /**
@@ -317,11 +318,11 @@ module nurdz.game
         addScene (name : string, newScene : Scene = null)
         {
             // If this name is in use and we were given a scene object, we should complain.
-            if (Stage.sceneList[name] != null && newScene != null)
+            if (Stage._sceneList[name] != null && newScene != null)
                 console.log ("Warning: overwriting scene registration for scene named " + name);
 
             // Save the scene
-            Stage.sceneList[name] = newScene;
+            Stage._sceneList[name] = newScene;
         }
 
         /**
@@ -339,7 +340,7 @@ module nurdz.game
         switchToScene (sceneName : string = null)
         {
             // Get the actual new scene, which might be null if the scene named passed in is null.
-            var newScene = sceneName != null ? Stage.sceneList[sceneName] : null;
+            var newScene = sceneName != null ? Stage._sceneList[sceneName] : null;
 
             // If we were given a scene name and there was no such scene, complain before we leave.
             if (sceneName != null && newScene == null)
@@ -348,7 +349,7 @@ module nurdz.game
                 return;
             }
 
-            Stage.nextScene = newScene;
+            Stage._nextScene = newScene;
         }
 
         /**
@@ -358,8 +359,8 @@ module nurdz.game
          */
         clear (color : string = 'black')
         {
-            this.canvasContext.fillStyle = color;
-            this.canvasContext.fillRect (0, 0, this.width, this.height);
+            this._canvasContext.fillStyle = color;
+            this._canvasContext.fillRect (0, 0, this._width, this._height);
         }
 
         /**
@@ -374,8 +375,8 @@ module nurdz.game
          */
         fillRect (x : number, y : number, width : number, height : number, color : string)
         {
-            this.canvasContext.fillStyle = color;
-            this.canvasContext.fillRect (x, y, width, height);
+            this._canvasContext.fillStyle = color;
+            this._canvasContext.fillRect (x, y, width, height);
         }
 
         /**
@@ -388,10 +389,10 @@ module nurdz.game
          */
         fillCircle (x : number, y : number, radius : number, color : string)
         {
-            this.canvasContext.fillStyle = color;
-            this.canvasContext.beginPath ();
-            this.canvasContext.arc (x, y, radius, 0, Math.PI * 2, true);
-            this.canvasContext.fill ();
+            this._canvasContext.fillStyle = color;
+            this._canvasContext.beginPath ();
+            this._canvasContext.arc (x, y, radius, 0, Math.PI * 2, true);
+            this._canvasContext.fill ();
         }
 
         /**
@@ -408,9 +409,9 @@ module nurdz.game
          */
         setLineStyle (color : string, lineWidth : number = 3, lineCap : string = "round")
         {
-            this.canvasContext.strokeStyle = color;
-            this.canvasContext.lineWidth = lineWidth;
-            this.canvasContext.lineCap = lineCap;
+            this._canvasContext.strokeStyle = color;
+            this._canvasContext.lineWidth = lineWidth;
+            this._canvasContext.lineCap = lineCap;
         }
 
         // TODO This can use an enum for the style now, to make code look nicer
@@ -441,11 +442,11 @@ module nurdz.game
 
             // First, the common drawing operations. Generate a line from the left of the arrow head to the
             // point of the arrow and then down the other side.
-            this.canvasContext.save ();
-            this.canvasContext.beginPath ();
-            this.canvasContext.moveTo (x0, y0);
-            this.canvasContext.lineTo (x1, y1);
-            this.canvasContext.lineTo (x2, y2);
+            this._canvasContext.save ();
+            this._canvasContext.beginPath ();
+            this._canvasContext.moveTo (x0, y0);
+            this._canvasContext.lineTo (x1, y1);
+            this._canvasContext.lineTo (x2, y2);
 
             // Now use the style to finish the arrow head.
             switch (style)
@@ -453,23 +454,23 @@ module nurdz.game
                 // The arrow head has a curved line that connects the two sides together.
                 case 0:
                     backDistance = Math.sqrt (((x2 - x0) * (x2 - x0)) + ((y2 - y0) * (y2 - y0)));
-                    this.canvasContext.arcTo (x1, y1, x0, y0, .55 * backDistance);
-                    this.canvasContext.fill ();
+                    this._canvasContext.arcTo (x1, y1, x0, y0, .55 * backDistance);
+                    this._canvasContext.fill ();
                     break;
 
                 // The arrow head has a straight line that connects the two sides together.
                 case 1:
-                    this.canvasContext.beginPath ();
-                    this.canvasContext.moveTo (x0, y0);
-                    this.canvasContext.lineTo (x1, y1);
-                    this.canvasContext.lineTo (x2, y2);
-                    this.canvasContext.lineTo (x0, y0);
-                    this.canvasContext.fill ();
+                    this._canvasContext.beginPath ();
+                    this._canvasContext.moveTo (x0, y0);
+                    this._canvasContext.lineTo (x1, y1);
+                    this._canvasContext.lineTo (x2, y2);
+                    this._canvasContext.lineTo (x0, y0);
+                    this._canvasContext.fill ();
                     break;
 
                 // The arrow head is unfilled, so we're already done.
                 case 2:
-                    this.canvasContext.stroke ();
+                    this._canvasContext.stroke ();
                     break;
 
                 // The arrow head has a curved line, but the arc is a quadratic curve instead of just a
@@ -477,8 +478,8 @@ module nurdz.game
                 case 3:
                     var cpx = (x0 + x1 + x2) / 3;
                     var cpy = (y0 + y1 + y2) / 3;
-                    this.canvasContext.quadraticCurveTo (cpx, cpy, x0, y0);
-                    this.canvasContext.fill ();
+                    this._canvasContext.quadraticCurveTo (cpx, cpy, x0, y0);
+                    this._canvasContext.fill ();
                     break;
 
                 // The arrow has a curved line, but the arc is a bezier curve instead of just a simple arc.
@@ -511,11 +512,11 @@ module nurdz.game
                         cp2y = yMid + dY;
                     }
 
-                    this.canvasContext.bezierCurveTo (cp1x, cp1y, cp2x, cp2y, x0, y0);
-                    this.canvasContext.fill ();
+                    this._canvasContext.bezierCurveTo (cp1x, cp1y, cp2x, cp2y, x0, y0);
+                    this._canvasContext.fill ();
                     break;
             }
-            this.canvasContext.restore ();
+            this._canvasContext.restore ();
         }
 
         /**
@@ -529,9 +530,9 @@ module nurdz.game
          */
         setArrowStyle (color : string, lineWidth : number = 2)
         {
-            this.canvasContext.strokeStyle = color;
-            this.canvasContext.fillStyle = color;
-            this.canvasContext.lineWidth = lineWidth;
+            this._canvasContext.strokeStyle = color;
+            this._canvasContext.fillStyle = color;
+            this._canvasContext.lineWidth = lineWidth;
         }
 
         // TODO this can use Enums for the style and also the which
@@ -606,10 +607,10 @@ module nurdz.game
             }
 
             // Draw the shaft of the arrow
-            this.canvasContext.beginPath ();
-            this.canvasContext.moveTo (fromX, fromY);
-            this.canvasContext.lineTo (toX, toY);
-            this.canvasContext.stroke ();
+            this._canvasContext.beginPath ();
+            this._canvasContext.moveTo (fromX, fromY);
+            this._canvasContext.lineTo (toX, toY);
+            this._canvasContext.stroke ();
 
             // Calculate the angle that the line is going so that we can align the arrow head properly.
             var lineAngle = Math.atan2 (y2 - y1, x2 - x1);
@@ -661,8 +662,8 @@ module nurdz.game
          */
         drawTxt (text : string, x : number, y : number, color : string)
         {
-            this.canvasContext.fillStyle = color;
-            this.canvasContext.fillText (text, x, y);
+            this._canvasContext.fillStyle = color;
+            this._canvasContext.fillText (text, x, y);
         }
 
         /**
@@ -676,7 +677,7 @@ module nurdz.game
          */
         drawBmp (bitmap : HTMLImageElement, x : number, y : number)
         {
-            this.canvasContext.drawImage (bitmap, x, y);
+            this._canvasContext.drawImage (bitmap, x, y);
         }
 
         // TODO this and the methods below should use our internal method for translation and/or rotation
@@ -691,10 +692,10 @@ module nurdz.game
          */
         drawBmpCentered (bitmap : HTMLImageElement, x : number, y : number)
         {
-            this.canvasContext.save ();
-            this.canvasContext.translate (x, y);
-            this.canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
-            this.canvasContext.restore ();
+            this._canvasContext.save ();
+            this._canvasContext.translate (x, y);
+            this._canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
+            this._canvasContext.restore ();
         }
 
         // TODO this should take the angle in degrees, or have a duplicate that takes them
@@ -711,11 +712,11 @@ module nurdz.game
          */
         drawBmpCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number)
         {
-            this.canvasContext.save ();
-            this.canvasContext.translate (x, y);
-            this.canvasContext.rotate (angle);
-            this.canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
-            this.canvasContext.restore ();
+            this._canvasContext.save ();
+            this._canvasContext.translate (x, y);
+            this._canvasContext.rotate (angle);
+            this._canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
+            this._canvasContext.restore ();
 
         }
 
@@ -740,21 +741,21 @@ module nurdz.game
          *
          * @param x the amount to translate on the X axis or null for no translation
          * @param y the amount to translate on the Y axis or null for no translation
-         * @param angle the angle to rotate the canvas, in degreesm or null for no translation
+         * @param angle the angle to rotate the canvas, in degrees or null for no translation
          * @see Stage.restore
          */
         translateAndRotate (x : number = null, y : number = null, angle : number = null)
         {
             // First, save the canvas context.
-            this.canvasContext.save ();
+            this._canvasContext.save ();
 
             // If we are translating, translate now.
             if (x != null && y != null)
-                this.canvasContext.translate (x, y);
+                this._canvasContext.translate (x, y);
 
             // If we are rotating, rotate now.
             if (angle != null)
-                this.canvasContext.rotate (angle * (Math.PI / 180));
+                this._canvasContext.rotate (angle * (Math.PI / 180));
         }
 
         /**
@@ -766,7 +767,7 @@ module nurdz.game
          */
         restore ()
         {
-            this.canvasContext.restore ();
+            this._canvasContext.restore ();
         }
 
         /**
@@ -784,7 +785,7 @@ module nurdz.game
             //
             // As a result, we need to ensure that we take into account the position of the canvas in the
             // document AND the scroll position of the document.
-            var rect = this.canvas.getBoundingClientRect ();
+            var rect = this._canvas.getBoundingClientRect ();
             var root = document.documentElement;
             var mouseX = mouseEvent.clientX - rect.left - root.scrollLeft;
             var mouseY = mouseEvent.clientY - rect.top - root.scrollTop;
@@ -800,7 +801,7 @@ module nurdz.game
          */
         static keyDownEvent (evt : Event)
         {
-            if (Stage.currentScene.inputKeyDown (evt))
+            if (Stage._currentScene.inputKeyDown (evt))
                 evt.preventDefault ();
         }
 
@@ -812,7 +813,7 @@ module nurdz.game
          */
         static keyUpEvent (evt : Event)
         {
-            if (Stage.currentScene.inputKeyUp (evt))
+            if (Stage._currentScene.inputKeyUp (evt))
                 evt.preventDefault ();
         }
 
@@ -824,7 +825,7 @@ module nurdz.game
          */
         static mouseMoveEvent (evt : Event)
         {
-            Stage.currentScene.inputMouseMove (evt);
+            Stage._currentScene.inputMouseMove (evt);
         }
 
         /**
@@ -835,7 +836,7 @@ module nurdz.game
          */
         static mouseClickEvent (evt : Event)
         {
-            Stage.currentScene.inputMouseClick (evt);
+            Stage._currentScene.inputMouseClick (evt);
         }
 
         /**
@@ -875,7 +876,7 @@ module nurdz.game
         toString () : string
         {
             return String.format ("[Stage dimensions={0}x{1}, tileSize={2}]",
-                                  this.width, this.height, TILE_SIZE);
+                                  this._width, this._height, TILE_SIZE);
         }
 
     }

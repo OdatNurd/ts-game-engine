@@ -446,8 +446,8 @@ var nurdz;
              * @returns {Point} this point after the clamp is completed, for chaining calls.
              */
             Point.prototype.clampToStage = function (stage) {
-                this.clampX(0, stage.pixelWidth - 1);
-                this.clampY(0, stage.pixelHeight - 1);
+                this.clampX(0, stage.width - 1);
+                this.clampY(0, stage.height - 1);
                 return this;
             };
             /**
@@ -1087,7 +1087,7 @@ var nurdz;
                 // Create a window to hold the screen shot.
                 var wind = window.open("about:blank", "screenshot");
                 // Create a special data URI which the browser will interpret as an image to display.
-                var imageURL = this.stage.canvasObject.toDataURL();
+                var imageURL = this.stage.canvas.toDataURL();
                 // Append the screenshot number to the window title and also to the filename for the generated
                 // image, then advance the screenshot counter for the next image.
                 filename += ((Scene.ss_format + Scene.ss_number).slice(-Scene.ss_format.length)) + ".png";
@@ -1160,56 +1160,67 @@ var nurdz;
              */
             function Stage(containerDivID, initialColor) {
                 if (initialColor === void 0) { initialColor = 'black'; }
+                // TODO The width and height don't need to be members if they're always the same value, doorknob.
                 /**
                  * The width of the stage, in pixels. This is set at creation time and cannot change.
                  *
                  * @const
                  * @type {number}
                  */
-                this.width = game.STAGE_WIDTH;
+                this._width = game.STAGE_WIDTH;
                 /**
                  * The height of the stage, in pixels. This is set at creation time and cannot change.
                  *
                  * @const
                  * @type {number}
                  */
-                this.height = game.STAGE_HEIGHT;
+                this._height = game.STAGE_HEIGHT;
                 // Obtain the container element that we want to insert the canvas into.
                 var container = document.getElementById(containerDivID);
                 if (container == null)
                     throw new ReferenceError("Unable to create stage: No such element with ID '" + containerDivID + "'");
                 // Create the canvas and give it the appropriate dimensions.
-                this.canvas = document.createElement("canvas");
-                this.canvas.width = this.width;
-                this.canvas.height = this.height;
+                this._canvas = document.createElement("canvas");
+                this._canvas.width = this._width;
+                this._canvas.height = this._height;
                 // Modify the style of the container div to make it center horizontally.
-                container.style.width = this.width + "px";
-                container.style.height = this.height + "px";
+                container.style.width = this._width + "px";
+                container.style.height = this._height + "px";
                 container.style.marginLeft = "auto";
                 container.style.marginRight = "auto";
                 // Get the context for the canvas and then clear it.
-                this.canvasContext = this.canvas.getContext('2d');
+                this._canvasContext = this._canvas.getContext('2d');
                 this.clear(initialColor);
                 // Append the canvas to the container
-                container.appendChild(this.canvas);
+                container.appendChild(this._canvas);
             }
-            Object.defineProperty(Stage.prototype, "pixelWidth", {
+            Object.defineProperty(Stage.prototype, "width", {
                 /**
                  * The width of the stage, in pixels. This is set at creation time and cannot change.
                  *
                  * @type {number} the width of the stage area in pixels
                  */
-                get: function () { return this.width; },
+                get: function () { return this._width; },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Stage.prototype, "pixelHeight", {
+            Object.defineProperty(Stage.prototype, "height", {
                 /**
                  * The height of the stage, in pixels. This is set at creation time and cannot change.
                  *
                  * @type {number} the height of the stage area in pixels
                  */
-                get: function () { return this.height; },
+                get: function () { return this._height; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Stage.prototype, "canvas", {
+                /**
+                 * Get the underlying canvas object for the stage.
+                 *
+                 * @returns {HTMLCanvasElement} the underlying canvas element for the stage
+                 */
+                get: function () { return this._canvas; },
                 enumerable: true,
                 configurable: true
             });
@@ -1219,17 +1230,7 @@ var nurdz;
                  *
                  * @returns {CanvasRenderingContext2D} the underlying rendering context for the stage
                  */
-                get: function () { return this.canvasContext; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Stage.prototype, "canvasObject", {
-                /**
-                 * Get the underlying canvas object for the stage.
-                 *
-                 * @returns {HTMLCanvasElement} the underlying canvas element for the stage
-                 */
-                get: function () { return this.canvas; },
+                get: function () { return this._canvasContext; },
                 enumerable: true,
                 configurable: true
             });
@@ -1242,7 +1243,7 @@ var nurdz;
                  *
                  * @returns {Number} the current fps, which is o when the game is stopped orr just started
                  */
-                get: function () { return Stage.fps; },
+                get: function () { return Stage._fps; },
                 enumerable: true,
                 configurable: true
             });
@@ -1252,7 +1253,7 @@ var nurdz;
                  *
                  * @returns {Scene}
                  */
-                get: function () { return Stage.currentScene; },
+                get: function () { return Stage._currentScene; },
                 enumerable: true,
                 configurable: true
             });
@@ -1265,39 +1266,39 @@ var nurdz;
             Stage.sceneLoop = function () {
                 // Get the current time for this frame and the elapsed time since we started.
                 var currentTime = new Date().getTime();
-                var elapsedTime = (currentTime - Stage.startTime) / 1000;
+                var elapsedTime = (currentTime - Stage._startTime) / 1000;
                 // This counts as a frame.
-                Stage.frameNumber++;
+                Stage._frameNumber++;
                 // Calculate the FPS now
-                Stage.fps = Stage.frameNumber / elapsedTime;
+                Stage._fps = Stage._frameNumber / elapsedTime;
                 // If a second or more has elapsed, reset the count. We don't want an average over time, we want
                 // the most recent numbers so that we can see momentary drops.
                 if (elapsedTime > 1) {
-                    Stage.startTime = new Date().getTime();
-                    Stage.frameNumber = 0;
+                    Stage._startTime = new Date().getTime();
+                    Stage._frameNumber = 0;
                 }
                 try {
                     // If there is a scene change scheduled, change it now.
-                    if (Stage.nextScene != null && Stage.nextScene !== Stage.currentScene) {
+                    if (Stage._nextScene != null && Stage._nextScene !== Stage._currentScene) {
                         // Tell the current scene that it is deactivating and what scene is coming next.
-                        Stage.currentScene.deactivating(Stage.nextScene);
+                        Stage._currentScene.deactivating(Stage._nextScene);
                         // Save the current scene, then swap to the new one
-                        var previousScene = Stage.currentScene;
-                        Stage.currentScene = Stage.nextScene;
+                        var previousScene = Stage._currentScene;
+                        Stage._currentScene = Stage._nextScene;
                         // Now tell the current scene that it is activating, telling it what scene used to be in
                         // effect.
-                        Stage.currentScene.activating(previousScene);
+                        Stage._currentScene.activating(previousScene);
                         // Clear the flag now.
-                        Stage.nextScene = null;
+                        Stage._nextScene = null;
                     }
                     // Do the frame update now
-                    Stage.currentScene.update();
-                    Stage.currentScene.render();
+                    Stage._currentScene.update();
+                    Stage._currentScene.render();
                 }
                 catch (error) {
                     console.log("Caught exception in sceneLoop(), stopping the game");
-                    clearInterval(Stage.gameTimerID);
-                    Stage.gameTimerID = null;
+                    clearInterval(Stage._gameTimerID);
+                    Stage._gameTimerID = null;
                     throw error;
                 }
             };
@@ -1313,15 +1314,15 @@ var nurdz;
              */
             Stage.prototype.run = function (fps) {
                 if (fps === void 0) { fps = 30; }
-                if (Stage.gameTimerID != null)
+                if (Stage._gameTimerID != null)
                     throw new Error("Attempt to start the game running when it is already running");
                 // Reset the variables we use for frame counts.
-                Stage.startTime = 0;
-                Stage.frameNumber = 0;
+                Stage._startTime = 0;
+                Stage._frameNumber = 0;
                 // Fire off a timer to invoke our scene loop using an appropriate interval.
-                Stage.gameTimerID = setInterval(Stage.sceneLoop, 1000 / fps);
+                Stage._gameTimerID = setInterval(Stage.sceneLoop, 1000 / fps);
                 // Turn on input events.
-                Stage.enableInputEvents(this.canvas);
+                Stage.enableInputEvents(this._canvas);
             };
             /**
              * Stop a running game. This halts the update loop but otherwise has no effect. Thus after this call,
@@ -1334,13 +1335,13 @@ var nurdz;
              */
             Stage.prototype.stop = function () {
                 // Make sure the game is running.
-                if (Stage.gameTimerID == null)
+                if (Stage._gameTimerID == null)
                     throw new Error("Attempt to stop the game when it is not running");
                 // Stop it.
-                clearInterval(Stage.gameTimerID);
-                Stage.gameTimerID = null;
+                clearInterval(Stage._gameTimerID);
+                Stage._gameTimerID = null;
                 // Turn off input events.
-                Stage.disableInputEvents(this.canvas);
+                Stage.disableInputEvents(this._canvas);
             };
             /**
              * Register a scene object with the stage using a textual name. This scene can then be switched to
@@ -1361,10 +1362,10 @@ var nurdz;
             Stage.prototype.addScene = function (name, newScene) {
                 if (newScene === void 0) { newScene = null; }
                 // If this name is in use and we were given a scene object, we should complain.
-                if (Stage.sceneList[name] != null && newScene != null)
+                if (Stage._sceneList[name] != null && newScene != null)
                     console.log("Warning: overwriting scene registration for scene named " + name);
                 // Save the scene
-                Stage.sceneList[name] = newScene;
+                Stage._sceneList[name] = newScene;
             };
             /**
              * Register a request to change the current scene to a different scene. The change will take effect at
@@ -1381,13 +1382,13 @@ var nurdz;
             Stage.prototype.switchToScene = function (sceneName) {
                 if (sceneName === void 0) { sceneName = null; }
                 // Get the actual new scene, which might be null if the scene named passed in is null.
-                var newScene = sceneName != null ? Stage.sceneList[sceneName] : null;
+                var newScene = sceneName != null ? Stage._sceneList[sceneName] : null;
                 // If we were given a scene name and there was no such scene, complain before we leave.
                 if (sceneName != null && newScene == null) {
                     console.log("Attempt to switch to unknown scene named " + sceneName);
                     return;
                 }
-                Stage.nextScene = newScene;
+                Stage._nextScene = newScene;
             };
             /**
              * Clear the entire stage with the provided color.
@@ -1396,8 +1397,8 @@ var nurdz;
              */
             Stage.prototype.clear = function (color) {
                 if (color === void 0) { color = 'black'; }
-                this.canvasContext.fillStyle = color;
-                this.canvasContext.fillRect(0, 0, this.width, this.height);
+                this._canvasContext.fillStyle = color;
+                this._canvasContext.fillRect(0, 0, this._width, this._height);
             };
             /**
              * Render a filled rectangle with its upper left corner at the position provided and with the provided
@@ -1410,8 +1411,8 @@ var nurdz;
              * @param color the color to fill the rectangle with
              */
             Stage.prototype.fillRect = function (x, y, width, height, color) {
-                this.canvasContext.fillStyle = color;
-                this.canvasContext.fillRect(x, y, width, height);
+                this._canvasContext.fillStyle = color;
+                this._canvasContext.fillRect(x, y, width, height);
             };
             /**
              * Render a filled circle with its center at the position provided.
@@ -1422,10 +1423,10 @@ var nurdz;
              * @param color the color to fill the circle with
              */
             Stage.prototype.fillCircle = function (x, y, radius, color) {
-                this.canvasContext.fillStyle = color;
-                this.canvasContext.beginPath();
-                this.canvasContext.arc(x, y, radius, 0, Math.PI * 2, true);
-                this.canvasContext.fill();
+                this._canvasContext.fillStyle = color;
+                this._canvasContext.beginPath();
+                this._canvasContext.arc(x, y, radius, 0, Math.PI * 2, true);
+                this._canvasContext.fill();
             };
             /**
              * This helper method sets all of the styles necessary for rendering lines to the stage. This can be
@@ -1442,9 +1443,9 @@ var nurdz;
             Stage.prototype.setLineStyle = function (color, lineWidth, lineCap) {
                 if (lineWidth === void 0) { lineWidth = 3; }
                 if (lineCap === void 0) { lineCap = "round"; }
-                this.canvasContext.strokeStyle = color;
-                this.canvasContext.lineWidth = lineWidth;
-                this.canvasContext.lineCap = lineCap;
+                this._canvasContext.strokeStyle = color;
+                this._canvasContext.lineWidth = lineWidth;
+                this._canvasContext.lineCap = lineCap;
             };
             // TODO This can use an enum for the style now, to make code look nicer
             /**
@@ -1471,39 +1472,39 @@ var nurdz;
                 var backDistance;
                 // First, the common drawing operations. Generate a line from the left of the arrow head to the
                 // point of the arrow and then down the other side.
-                this.canvasContext.save();
-                this.canvasContext.beginPath();
-                this.canvasContext.moveTo(x0, y0);
-                this.canvasContext.lineTo(x1, y1);
-                this.canvasContext.lineTo(x2, y2);
+                this._canvasContext.save();
+                this._canvasContext.beginPath();
+                this._canvasContext.moveTo(x0, y0);
+                this._canvasContext.lineTo(x1, y1);
+                this._canvasContext.lineTo(x2, y2);
                 // Now use the style to finish the arrow head.
                 switch (style) {
                     // The arrow head has a curved line that connects the two sides together.
                     case 0:
                         backDistance = Math.sqrt(((x2 - x0) * (x2 - x0)) + ((y2 - y0) * (y2 - y0)));
-                        this.canvasContext.arcTo(x1, y1, x0, y0, .55 * backDistance);
-                        this.canvasContext.fill();
+                        this._canvasContext.arcTo(x1, y1, x0, y0, .55 * backDistance);
+                        this._canvasContext.fill();
                         break;
                     // The arrow head has a straight line that connects the two sides together.
                     case 1:
-                        this.canvasContext.beginPath();
-                        this.canvasContext.moveTo(x0, y0);
-                        this.canvasContext.lineTo(x1, y1);
-                        this.canvasContext.lineTo(x2, y2);
-                        this.canvasContext.lineTo(x0, y0);
-                        this.canvasContext.fill();
+                        this._canvasContext.beginPath();
+                        this._canvasContext.moveTo(x0, y0);
+                        this._canvasContext.lineTo(x1, y1);
+                        this._canvasContext.lineTo(x2, y2);
+                        this._canvasContext.lineTo(x0, y0);
+                        this._canvasContext.fill();
                         break;
                     // The arrow head is unfilled, so we're already done.
                     case 2:
-                        this.canvasContext.stroke();
+                        this._canvasContext.stroke();
                         break;
                     // The arrow head has a curved line, but the arc is a quadratic curve instead of just a
                     // simple arc.
                     case 3:
                         var cpx = (x0 + x1 + x2) / 3;
                         var cpy = (y0 + y1 + y2) / 3;
-                        this.canvasContext.quadraticCurveTo(cpx, cpy, x0, y0);
-                        this.canvasContext.fill();
+                        this._canvasContext.quadraticCurveTo(cpx, cpy, x0, y0);
+                        this._canvasContext.fill();
                         break;
                     // The arrow has a curved line, but the arc is a bezier curve instead of just a simple arc.
                     case 4:
@@ -1531,11 +1532,11 @@ var nurdz;
                             cp2x = xMid + dX;
                             cp2y = yMid + dY;
                         }
-                        this.canvasContext.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x0, y0);
-                        this.canvasContext.fill();
+                        this._canvasContext.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x0, y0);
+                        this._canvasContext.fill();
                         break;
                 }
-                this.canvasContext.restore();
+                this._canvasContext.restore();
             };
             /**
              * Set the style for all subsequent drawArrow() calls to use when drawing arrows. This needs to be
@@ -1548,9 +1549,9 @@ var nurdz;
              */
             Stage.prototype.setArrowStyle = function (color, lineWidth) {
                 if (lineWidth === void 0) { lineWidth = 2; }
-                this.canvasContext.strokeStyle = color;
-                this.canvasContext.fillStyle = color;
-                this.canvasContext.lineWidth = lineWidth;
+                this._canvasContext.strokeStyle = color;
+                this._canvasContext.fillStyle = color;
+                this._canvasContext.lineWidth = lineWidth;
             };
             // TODO this can use Enums for the style and also the which
             /**
@@ -1618,10 +1619,10 @@ var nurdz;
                     fromY = y1;
                 }
                 // Draw the shaft of the arrow
-                this.canvasContext.beginPath();
-                this.canvasContext.moveTo(fromX, fromY);
-                this.canvasContext.lineTo(toX, toY);
-                this.canvasContext.stroke();
+                this._canvasContext.beginPath();
+                this._canvasContext.moveTo(fromX, fromY);
+                this._canvasContext.lineTo(toX, toY);
+                this._canvasContext.stroke();
                 // Calculate the angle that the line is going so that we can align the arrow head properly.
                 var lineAngle = Math.atan2(y2 - y1, x2 - x1);
                 // Calculate the line length of the side of the arrow head. We know the length if the line was
@@ -1664,8 +1665,8 @@ var nurdz;
              * @param color the color to draw the text with
              */
             Stage.prototype.drawTxt = function (text, x, y, color) {
-                this.canvasContext.fillStyle = color;
-                this.canvasContext.fillText(text, x, y);
+                this._canvasContext.fillStyle = color;
+                this._canvasContext.fillText(text, x, y);
             };
             /**
              * Displays a bitmap to the stage such that its upper left corner is at the point provided.
@@ -1677,7 +1678,7 @@ var nurdz;
              * @see Stage.drawBmpCenteredRotated
              */
             Stage.prototype.drawBmp = function (bitmap, x, y) {
-                this.canvasContext.drawImage(bitmap, x, y);
+                this._canvasContext.drawImage(bitmap, x, y);
             };
             // TODO this and the methods below should use our internal method for translation and/or rotation
             /**
@@ -1690,10 +1691,10 @@ var nurdz;
              * @see Stage.drawBmpCenteredRotated
              */
             Stage.prototype.drawBmpCentered = function (bitmap, x, y) {
-                this.canvasContext.save();
-                this.canvasContext.translate(x, y);
-                this.canvasContext.drawImage(bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
-                this.canvasContext.restore();
+                this._canvasContext.save();
+                this._canvasContext.translate(x, y);
+                this._canvasContext.drawImage(bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
+                this._canvasContext.restore();
             };
             // TODO this should take the angle in degrees, or have a duplicate that takes them
             /**
@@ -1708,11 +1709,11 @@ var nurdz;
              * @see Stage.drawBmpCentered
              */
             Stage.prototype.drawBmpCenteredRotated = function (bitmap, x, y, angle) {
-                this.canvasContext.save();
-                this.canvasContext.translate(x, y);
-                this.canvasContext.rotate(angle);
-                this.canvasContext.drawImage(bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
-                this.canvasContext.restore();
+                this._canvasContext.save();
+                this._canvasContext.translate(x, y);
+                this._canvasContext.rotate(angle);
+                this._canvasContext.drawImage(bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
+                this._canvasContext.restore();
             };
             /**
              * Do an (optional) translation and (optional) rotation of the stage canvas. You can perform one or
@@ -1735,7 +1736,7 @@ var nurdz;
              *
              * @param x the amount to translate on the X axis or null for no translation
              * @param y the amount to translate on the Y axis or null for no translation
-             * @param angle the angle to rotate the canvas, in degreesm or null for no translation
+             * @param angle the angle to rotate the canvas, in degrees or null for no translation
              * @see Stage.restore
              */
             Stage.prototype.translateAndRotate = function (x, y, angle) {
@@ -1743,13 +1744,13 @@ var nurdz;
                 if (y === void 0) { y = null; }
                 if (angle === void 0) { angle = null; }
                 // First, save the canvas context.
-                this.canvasContext.save();
+                this._canvasContext.save();
                 // If we are translating, translate now.
                 if (x != null && y != null)
-                    this.canvasContext.translate(x, y);
+                    this._canvasContext.translate(x, y);
                 // If we are rotating, rotate now.
                 if (angle != null)
-                    this.canvasContext.rotate(angle * (Math.PI / 180));
+                    this._canvasContext.rotate(angle * (Math.PI / 180));
             };
             /**
              * Restore the canvas state that was in effect the last time that translateAndRotate was invoked. This
@@ -1759,7 +1760,7 @@ var nurdz;
              * @see Stage.translateAndRotate
              */
             Stage.prototype.restore = function () {
-                this.canvasContext.restore();
+                this._canvasContext.restore();
             };
             /**
              * Given an event that represents a mouse event for the stage, calculate the position that the mouse
@@ -1775,7 +1776,7 @@ var nurdz;
                 //
                 // As a result, we need to ensure that we take into account the position of the canvas in the
                 // document AND the scroll position of the document.
-                var rect = this.canvas.getBoundingClientRect();
+                var rect = this._canvas.getBoundingClientRect();
                 var root = document.documentElement;
                 var mouseX = mouseEvent.clientX - rect.left - root.scrollLeft;
                 var mouseY = mouseEvent.clientY - rect.top - root.scrollTop;
@@ -1788,7 +1789,7 @@ var nurdz;
              * @param evt the event object for this event
              */
             Stage.keyDownEvent = function (evt) {
-                if (Stage.currentScene.inputKeyDown(evt))
+                if (Stage._currentScene.inputKeyDown(evt))
                     evt.preventDefault();
             };
             /**
@@ -1798,7 +1799,7 @@ var nurdz;
              * @param evt the event object for this event
              */
             Stage.keyUpEvent = function (evt) {
-                if (Stage.currentScene.inputKeyUp(evt))
+                if (Stage._currentScene.inputKeyUp(evt))
                     evt.preventDefault();
             };
             /**
@@ -1808,7 +1809,7 @@ var nurdz;
              * @param evt the event object for this event
              */
             Stage.mouseMoveEvent = function (evt) {
-                Stage.currentScene.inputMouseMove(evt);
+                Stage._currentScene.inputMouseMove(evt);
             };
             /**
              * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
@@ -1817,7 +1818,7 @@ var nurdz;
              * @param evt the event object for this event
              */
             Stage.mouseClickEvent = function (evt) {
-                Stage.currentScene.inputMouseClick(evt);
+                Stage._currentScene.inputMouseClick(evt);
             };
             /**
              * Turn on input handling for the game. This will capture keyboard events from the document and mouse
@@ -1849,7 +1850,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Stage.prototype.toString = function () {
-                return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", this.width, this.height, game.TILE_SIZE);
+                return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", this._width, this._height, game.TILE_SIZE);
             };
             /**
              * The currently active scene on the stage. This is the scene that gets all of the user input and
@@ -1857,7 +1858,7 @@ var nurdz;
              *
              * @type {Scene}
              */
-            Stage.currentScene = new game.Scene("defaultScene", null);
+            Stage._currentScene = new game.Scene("defaultScene", null);
             /**
              * The scene that should become active next (if any). When a scene change request happens, the
              * scene to be switched to is stored in this value to ensure that the switch happens at the end of
@@ -1867,35 +1868,35 @@ var nurdz;
              *
              * @type {Scene|null}
              */
-            Stage.nextScene = null;
+            Stage._nextScene = null;
             /**
              * A list of all of the registered scenes in the stage. The keys are a symbolic string name and
              * the values are the actual Scene instance objects that the names represent.
              *
              * @type {{}}
              */
-            Stage.sceneList = {};
+            Stage._sceneList = {};
             /**
              * When the engine is running, this is the timer ID of the system timer that keeps the game loop
              * running. Otherwise, this is null.
              *
              * @type {number|null}
              */
-            Stage.gameTimerID = null;
+            Stage._gameTimerID = null;
             /**
              * The FPS that the engine is currently running at. This is recalculated once per second so that
              * slow update times don't get averaged out over a longer run, which makes the number less useful.
              *
              * @type {number}
              */
-            Stage.fps = 0;
+            Stage._fps = 0;
             /**
              * When calculating FPS, this is the time that the most recent frame count started. Once we have
              * counted frames for an entire second, this is reset and the count starts again.
              *
              * @type {number}
              */
-            Stage.startTime = 0;
+            Stage._startTime = 0;
             /**
              * When calculating FPS, this is the number of frames that we have seen over the last second. When
              * the startTime gets reset, so does this. This makes sure that spontaneous frame speed changes
@@ -1903,7 +1904,7 @@ var nurdz;
              *
              * @type {number}
              */
-            Stage.frameNumber = 0;
+            Stage._frameNumber = 0;
             return Stage;
         })();
         game.Stage = Stage;

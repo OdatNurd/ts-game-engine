@@ -310,8 +310,8 @@ module nurdz.game
          */
         clampToStage (stage : Stage)
         {
-            this.clampX (0, stage.pixelWidth - 1);
-            this.clampY (0, stage.pixelHeight - 1);
+            this.clampX (0, stage.width - 1);
+            this.clampY (0, stage.height - 1);
             return this;
         }
 
