@@ -1930,27 +1930,27 @@ var nurdz;
             function Tile(name, internalID, debugColor) {
                 if (debugColor === void 0) { debugColor = 'yellow'; }
                 // Save the passed in values.
-                this.name = name;
-                this.tileID = internalID;
-                this.debugColor = debugColor;
+                this._name = name;
+                this._tileID = internalID;
+                this._debugColor = debugColor;
             }
-            Object.defineProperty(Tile.prototype, "tileName", {
+            Object.defineProperty(Tile.prototype, "name", {
                 /**
                  * Get the textual name of this tile.
                  *
                  * @returns {string}
                  */
-                get: function () { return this.name; },
+                get: function () { return this._name; },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Tile.prototype, "id", {
+            Object.defineProperty(Tile.prototype, "value", {
                 /**
                  * Get the numeric id of this tile.
                  *
                  * @returns {number}
                  */
-                get: function () { return this.tileID; },
+                get: function () { return this._tileID; },
                 enumerable: true,
                 configurable: true
             });
@@ -1978,7 +1978,7 @@ var nurdz;
              * @param y the Y coordinate to draw the tile at
              */
             Tile.prototype.render = function (stage, x, y) {
-                stage.fillRect(x, y, game.TILE_SIZE, game.TILE_SIZE, this.debugColor);
+                stage.fillRect(x, y, game.TILE_SIZE, game.TILE_SIZE, this._debugColor);
             };
             /**
              * Return a string representation of the object, for debugging purposes.
@@ -1986,7 +1986,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Tile.prototype.toString = function () {
-                return String.format("[Tile name={0} id={1}]", this.name, this.tileID);
+                return String.format("[Tile name={0} id={1}]", this._name, this._tileID);
             };
             return Tile;
         })();
@@ -2023,12 +2023,12 @@ var nurdz;
                     var thisTile = tiles[i];
                     // If this tile has a name or numeric ID of an existing tile, generate a warning to the
                     // console so that the developer knows that he's boned something up.
-                    if (this.tilesByName[thisTile.tileName] != null)
-                        console.log("Duplicate tile with textual name '" + thisTile.tileName + "' found");
-                    if (this.tilesByValue[thisTile.id] != null)
-                        console.log("Duplicate tile with numeric id '" + thisTile.id + "' found");
-                    this.tilesByName[thisTile.tileName] = thisTile;
-                    this.tilesByValue[thisTile.id] = thisTile;
+                    if (this.tilesByName[thisTile.name] != null)
+                        console.log("Duplicate tile with textual name '" + thisTile.name + "' found");
+                    if (this.tilesByValue[thisTile.value] != null)
+                        console.log("Duplicate tile with numeric id '" + thisTile.value + "' found");
+                    this.tilesByName[thisTile.name] = thisTile;
+                    this.tilesByValue[thisTile.value] = thisTile;
                 }
             }
             /**

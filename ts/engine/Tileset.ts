@@ -60,14 +60,14 @@ module nurdz.game
 
                 // If this tile has a name or numeric ID of an existing tile, generate a warning to the
                 // console so that the developer knows that he's boned something up.
-                if (this.tilesByName[thisTile.tileName] != null)
-                    console.log (`Duplicate tile with textual name '${thisTile.tileName}' found`);
+                if (this.tilesByName[thisTile.name] != null)
+                    console.log (`Duplicate tile with textual name '${thisTile.name}' found`);
 
-                if (this.tilesByValue[thisTile.id] != null)
-                    console.log (`Duplicate tile with numeric id '${thisTile.id}' found`);
+                if (this.tilesByValue[thisTile.value] != null)
+                    console.log (`Duplicate tile with numeric id '${thisTile.value}' found`);
 
-                this.tilesByName[thisTile.tileName] = thisTile;
-                this.tilesByValue[thisTile.id] = thisTile;
+                this.tilesByName[thisTile.name] = thisTile;
+                this.tilesByValue[thisTile.value] = thisTile;
             }
         }
 

@@ -12,37 +12,37 @@ module nurdz.game
          *
          * @type {string}
          */
-        private name : string;
+        protected _name : string;
 
         /**
          * The numeric tile ID of this tile.
          *
          * @type {number}
          */
-        private tileID : number;
+        protected _tileID : number;
 
         /**
          * The color that the base class will use to render this tile if the method is not overridden.
          *
          * @type {string}
          */
-        private debugColor : string;
+        protected _debugColor : string;
 
         /**
          * Get the textual name of this tile.
          *
          * @returns {string}
          */
-        get tileName () : string
-        { return this.name; }
+        get name () : string
+        { return this._name; }
 
         /**
          * Get the numeric id of this tile.
          *
          * @returns {number}
          */
-        get id () : number
-        { return this.tileID; }
+        get value () : number
+        { return this._tileID; }
 
         /**
          * Construct a new tile instance with the given name and ID values. This instance will render
@@ -55,9 +55,9 @@ module nurdz.game
         constructor (name : string, internalID : number, debugColor : string = 'yellow')
         {
             // Save the passed in values.
-            this.name = name;
-            this.tileID = internalID;
-            this.debugColor = debugColor;
+            this._name = name;
+            this._tileID = internalID;
+            this._debugColor = debugColor;
         }
 
         /**
@@ -87,7 +87,7 @@ module nurdz.game
          */
         render (stage : Stage, x : number, y : number)
         {
-            stage.fillRect (x, y, TILE_SIZE, TILE_SIZE, this.debugColor);
+            stage.fillRect (x, y, TILE_SIZE, TILE_SIZE, this._debugColor);
         }
 
         /**
@@ -97,7 +97,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return String.format ("[Tile name={0} id={1}]", this.name, this.tileID);
+            return String.format ("[Tile name={0} id={1}]", this._name, this._tileID);
         }
     }
 }
