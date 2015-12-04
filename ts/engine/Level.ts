@@ -12,34 +12,34 @@ module nurdz.game
          *
          * @type {Stage}
          */
-        private stage : Stage;
+        protected _stage : Stage;
 
         /**
          * The width of the level that we represent, in tiles.
          *
          * @type {number}
          */
-        private width : number;
+        protected _width : number;
 
         /**
          * The height of the level that we represent, in tiles.
          *
          * @type {number}
          */
-        private height : number;
+        protected _height : number;
 
         /**
          * The raw level data that we are rendering. This is a series of numbers of length width * height
          * that contains tile ID's that indicate what tile to render.
          */
-        private levelData : Array<number>;
+        protected _mapData : Array<number>;
 
         /**
          * The unordered list of entities contained on this level.
          *
          * @type {Array<Entity>}
          */
-        private entities : Array<Entity>;
+        protected _entities : Array<Entity>;
 
         /**
          * The list of entities keyed so that the key is the id property of the entity and the value is
@@ -47,7 +47,7 @@ module nurdz.game
          *
          * @type {Object<String,Entity>}
          */
-        private entitiesByID : Object;
+        protected _entitiesByID : Object;
 
         /**
          * The tileset that represents the level data. This controls how the tiles are rendered onto the
@@ -55,7 +55,7 @@ module nurdz.game
          *
          * @type {Tileset}
          */
-        private tileset : Tileset;
+        protected _tileset : Tileset;
 
         /**
          * Construct a new level object that will display on the provided stage and which represents the
@@ -67,13 +67,13 @@ module nurdz.game
         constructor (stage : Stage, levelData : LevelData)
         {
             // Save the provided values and alias into the LevelData itself.
-            this.stage = stage;
-            this.width = levelData.width;
-            this.height = levelData.height;
-            this.levelData = levelData.mapData;
-            this.entities = levelData.entities;
-            this.entitiesByID = levelData.entitiesByID;
-            this.tileset = levelData.tileset;
+            this._stage = stage;
+            this._width = levelData.width;
+            this._height = levelData.height;
+            this._mapData = levelData.mapData;
+            this._entities = levelData.entities;
+            this._entitiesByID = levelData.entitiesByID;
+            this._tileset = levelData.tileset;
         }
 
         /**
@@ -87,9 +87,9 @@ module nurdz.game
         {
             // The return value.
             var retVal = [];
-            for (var i = 0 ; i < this.entities.length ; i++)
+            for (var i = 0 ; i < this._entities.length ; i++)
             {
-                var entity = this.entities[i];
+                var entity = this._entities[i];
                 if (entity instanceof type)
                     retVal.push (entity);
             }
@@ -110,15 +110,15 @@ module nurdz.game
         entitiesAtMapXY (x : number, y : number) : Array<Entity>
         {
             // Return null if the coordinate is out of bounds.
-            if (x < 0 || y < 0 || x >= this.width || y >= this.width)
+            if (x < 0 || y < 0 || x >= this._width || y >= this._width)
                 return null;
 
             // Iterate over all entities to see if they are at the map location provided.
             var retVal = [];
-            for (var i = 0 ; i < this.entities.length ; i++)
+            for (var i = 0 ; i < this._entities.length ; i++)
             {
                 // Get the entity.
-                var entity = this.entities[i];
+                var entity = this._entities[i];
 
                 // If the location matches, add it to the array.
                 if (entity.mapPosition.equalsXY (x, y))
@@ -145,9 +145,8 @@ module nurdz.game
         /**
          * Given coordinates in the map (e.g. tile based) domain and a facing, this calculates which map tile
          * is in the facing direction given and then returns back a list of all entities that exist at the
-         * map
-         * tile that is adjacent in that direction, which might be 0. This also detects when either the input
-         * or facing adjusted coordinates are outside of the world.
+         * map tile that is adjacent in that direction, which might be 0. This also detects when either the
+         * input or facing adjusted coordinates are outside of the world.
          *
          * @param x the X coordinate to search
          * @param y the Y coordinate to search
@@ -215,7 +214,7 @@ module nurdz.game
 
             for (var i = 0 ; i < idSpec.length ; i++)
             {
-                var entity = this.entitiesByID[<string>idSpec[i]];
+                var entity = this._entitiesByID[<string>idSpec[i]];
                 if (entity)
                     retVal.push (entity);
             }
@@ -262,19 +261,19 @@ module nurdz.game
         tileAtXY (x : number, y : number) : Tile
         {
             // Bounds check the location.
-            if (x < 0 || y < 0 || x >= this.width || y >= this.width)
+            if (x < 0 || y < 0 || x >= this._width || y >= this._width)
                 return null;
 
             // This is safe because the level data validates that all of the tiles in its data are also
             // represented in its tileset.
-            return this.tileset.tileForID (this.levelData[y * this.width + x]);
+            return this._tileset.tileForID (this._mapData[y * this._width + x]);
         }
 
         /**
          * Given coordinates in the map (e.g. tile based) domain, return back the tile at that location. If
          * the coordinates are outside of the world, this is detected and null is returned back.
          *
-         * @param location the location to check, in map coordinatges
+         * @param location the location to check, in map coordinates
          * @returns {Tile} the tile at the provided location or null if the location is invalid
          */
         tileAt (location : Point) : Tile
@@ -353,9 +352,9 @@ module nurdz.game
         render (stage : Stage)
         {
             // Iterate over the tiles.
-            for (var y = 0 ; y < this.height ; y++)
+            for (var y = 0 ; y < this._height ; y++)
             {
-                for (var x = 0 ; x < this.width ; x++)
+                for (var x = 0 ; x < this._width ; x++)
                 {
                     var tile = this.tileAtXY (x, y);
 
@@ -373,7 +372,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return String.format ("[LevelData size={0}x{1}]", this.width, this.height);
+            return String.format ("[LevelData size={0}x{1}]", this._width, this._height);
         }
     }
 }

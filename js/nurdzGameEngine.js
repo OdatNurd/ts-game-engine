@@ -2259,13 +2259,13 @@ var nurdz;
              */
             function Level(stage, levelData) {
                 // Save the provided values and alias into the LevelData itself.
-                this.stage = stage;
-                this.width = levelData.width;
-                this.height = levelData.height;
-                this.levelData = levelData.mapData;
-                this.entities = levelData.entities;
-                this.entitiesByID = levelData.entitiesByID;
-                this.tileset = levelData.tileset;
+                this._stage = stage;
+                this._width = levelData.width;
+                this._height = levelData.height;
+                this._mapData = levelData.mapData;
+                this._entities = levelData.entities;
+                this._entitiesByID = levelData.entitiesByID;
+                this._tileset = levelData.tileset;
             }
             /**
              * Given an entity type, return back a list of all entities of that type that the level data contains.
@@ -2277,8 +2277,8 @@ var nurdz;
             Level.prototype.entitiesWithType = function (type) {
                 // The return value.
                 var retVal = [];
-                for (var i = 0; i < this.entities.length; i++) {
-                    var entity = this.entities[i];
+                for (var i = 0; i < this._entities.length; i++) {
+                    var entity = this._entities[i];
                     if (entity instanceof type)
                         retVal.push(entity);
                 }
@@ -2296,13 +2296,13 @@ var nurdz;
              */
             Level.prototype.entitiesAtMapXY = function (x, y) {
                 // Return null if the coordinate is out of bounds.
-                if (x < 0 || y < 0 || x >= this.width || y >= this.width)
+                if (x < 0 || y < 0 || x >= this._width || y >= this._width)
                     return null;
                 // Iterate over all entities to see if they are at the map location provided.
                 var retVal = [];
-                for (var i = 0; i < this.entities.length; i++) {
+                for (var i = 0; i < this._entities.length; i++) {
                     // Get the entity.
-                    var entity = this.entities[i];
+                    var entity = this._entities[i];
                     // If the location matches, add it to the array.
                     if (entity.mapPosition.equalsXY(x, y))
                         retVal.push(entity);
@@ -2324,9 +2324,8 @@ var nurdz;
             /**
              * Given coordinates in the map (e.g. tile based) domain and a facing, this calculates which map tile
              * is in the facing direction given and then returns back a list of all entities that exist at the
-             * map
-             * tile that is adjacent in that direction, which might be 0. This also detects when either the input
-             * or facing adjusted coordinates are outside of the world.
+             * map tile that is adjacent in that direction, which might be 0. This also detects when either the
+             * input or facing adjusted coordinates are outside of the world.
              *
              * @param x the X coordinate to search
              * @param y the Y coordinate to search
@@ -2382,7 +2381,7 @@ var nurdz;
             Level.prototype.entitiesWithIDs = function (idSpec) {
                 var retVal = [];
                 for (var i = 0; i < idSpec.length; i++) {
-                    var entity = this.entitiesByID[idSpec[i]];
+                    var entity = this._entitiesByID[idSpec[i]];
                     if (entity)
                         retVal.push(entity);
                 }
@@ -2422,17 +2421,17 @@ var nurdz;
              */
             Level.prototype.tileAtXY = function (x, y) {
                 // Bounds check the location.
-                if (x < 0 || y < 0 || x >= this.width || y >= this.width)
+                if (x < 0 || y < 0 || x >= this._width || y >= this._width)
                     return null;
                 // This is safe because the level data validates that all of the tiles in its data are also
                 // represented in its tileset.
-                return this.tileset.tileForID(this.levelData[y * this.width + x]);
+                return this._tileset.tileForID(this._mapData[y * this._width + x]);
             };
             /**
              * Given coordinates in the map (e.g. tile based) domain, return back the tile at that location. If
              * the coordinates are outside of the world, this is detected and null is returned back.
              *
-             * @param location the location to check, in map coordinatges
+             * @param location the location to check, in map coordinates
              * @returns {Tile} the tile at the provided location or null if the location is invalid
              */
             Level.prototype.tileAt = function (location) {
@@ -2499,8 +2498,8 @@ var nurdz;
              */
             Level.prototype.render = function (stage) {
                 // Iterate over the tiles.
-                for (var y = 0; y < this.height; y++) {
-                    for (var x = 0; x < this.width; x++) {
+                for (var y = 0; y < this._height; y++) {
+                    for (var x = 0; x < this._width; x++) {
                         var tile = this.tileAtXY(x, y);
                         // Get the tile and render it.
                         if (tile != null)
@@ -2514,7 +2513,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Level.prototype.toString = function () {
-                return String.format("[LevelData size={0}x{1}]", this.width, this.height);
+                return String.format("[LevelData size={0}x{1}]", this._width, this._height);
             };
             return Level;
         })();
