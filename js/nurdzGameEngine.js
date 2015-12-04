@@ -1129,11 +1129,39 @@ var nurdz;
         game.Scene = Scene;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
-// TODO Several things in this class are static when they should just be private since there is only one Stage
 var nurdz;
 (function (nurdz) {
     var game;
     (function (game) {
+        /**
+         * The FPS that the engine is currently running at. This is recalculated once per second so that
+         * slow update times don't get averaged out over a longer run, which makes the number less useful.
+         *
+         * @type {number}
+         */
+        var _fps = 0;
+        /**
+         * When calculating FPS, this is the time that the most recent frame count started. Once we have
+         * counted frames for an entire second, this is reset and the count starts again.
+         *
+         * @type {number}
+         */
+        var _startTime = 0;
+        /**
+         * When calculating FPS, this is the number of frames that we have seen over the last second. When
+         * the startTime gets reset, so does this. This makes sure that spontaneous frame speed changes
+         * (e.g. a scene bogging down) don't get averaged away.
+         *
+         * @type {number}
+         */
+        var _frameNumber = 0;
+        /**
+         * When the engine is running, this is the timer ID of the system timer that keeps the game loop
+         * running. Otherwise, this is null.
+         *
+         * @type {number|null}
+         */
+        var _gameTimerID = null;
         /**
          * This class represents the stage area in the page, which is where the game renders itself.
          *
@@ -1167,16 +1195,17 @@ var nurdz;
                 this.sceneLoop = function () {
                     // Get the current time for this frame and the elapsed time since we started.
                     var currentTime = new Date().getTime();
-                    var elapsedTime = (currentTime - Stage._startTime) / 1000;
+                    var elapsedTime = (currentTime - _startTime) / 1000;
                     // This counts as a frame.
-                    Stage._frameNumber++;
-                    // Calculate the FPS now
-                    Stage._fps = Stage._frameNumber / elapsedTime;
+                    _frameNumber++;
+                    // Calculate the FPS now. We floor this here because if FPS is for displaying on the screen
+                    // you probably don't need a billion digits of precision.
+                    _fps = Math.floor(_frameNumber / elapsedTime);
                     // If a second or more has elapsed, reset the count. We don't want an average over time, we want
                     // the most recent numbers so that we can see momentary drops.
                     if (elapsedTime > 1) {
-                        Stage._startTime = new Date().getTime();
-                        Stage._frameNumber = 0;
+                        _startTime = new Date().getTime();
+                        _frameNumber = 0;
                     }
                     try {
                         // Before we start the frame update, make sure that the current scene is correct, in case
@@ -1188,8 +1217,8 @@ var nurdz;
                     }
                     catch (error) {
                         console.log("Caught exception in sceneLoop(), stopping the game");
-                        clearInterval(Stage._gameTimerID);
-                        Stage._gameTimerID = null;
+                        clearInterval(_gameTimerID);
+                        _gameTimerID = null;
                         throw error;
                     }
                 };
@@ -1325,7 +1354,7 @@ var nurdz;
                  *
                  * @returns {Number} the current fps, which is o when the game is stopped orr just started
                  */
-                get: function () { return Stage._fps; },
+                get: function () { return _fps; },
                 enumerable: true,
                 configurable: true
             });
@@ -1351,13 +1380,13 @@ var nurdz;
              */
             Stage.prototype.run = function (fps) {
                 if (fps === void 0) { fps = 30; }
-                if (Stage._gameTimerID != null)
+                if (_gameTimerID != null)
                     throw new Error("Attempt to start the game running when it is already running");
                 // Reset the variables we use for frame counts.
-                Stage._startTime = 0;
-                Stage._frameNumber = 0;
+                _startTime = 0;
+                _frameNumber = 0;
                 // Fire off a timer to invoke our scene loop using an appropriate interval.
-                Stage._gameTimerID = setInterval(this.sceneLoop, 1000 / fps);
+                _gameTimerID = setInterval(this.sceneLoop, 1000 / fps);
                 // Turn on input events.
                 this.enableInputEvents(this._canvas);
             };
@@ -1372,11 +1401,11 @@ var nurdz;
              */
             Stage.prototype.stop = function () {
                 // Make sure the game is running.
-                if (Stage._gameTimerID == null)
+                if (_gameTimerID == null)
                     throw new Error("Attempt to stop the game when it is not running");
                 // Stop it.
-                clearInterval(Stage._gameTimerID);
-                Stage._gameTimerID = null;
+                clearInterval(_gameTimerID);
+                _gameTimerID = null;
                 // Turn off input events.
                 this.disableInputEvents(this._canvas);
             };
@@ -1816,35 +1845,6 @@ var nurdz;
             Stage.prototype.toString = function () {
                 return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", game.STAGE_WIDTH, game.STAGE_HEIGHT, game.TILE_SIZE);
             };
-            /**
-             * When the engine is running, this is the timer ID of the system timer that keeps the game loop
-             * running. Otherwise, this is null.
-             *
-             * @type {number|null}
-             */
-            Stage._gameTimerID = null;
-            /**
-             * The FPS that the engine is currently running at. This is recalculated once per second so that
-             * slow update times don't get averaged out over a longer run, which makes the number less useful.
-             *
-             * @type {number}
-             */
-            Stage._fps = 0;
-            /**
-             * When calculating FPS, this is the time that the most recent frame count started. Once we have
-             * counted frames for an entire second, this is reset and the count starts again.
-             *
-             * @type {number}
-             */
-            Stage._startTime = 0;
-            /**
-             * When calculating FPS, this is the number of frames that we have seen over the last second. When
-             * the startTime gets reset, so does this. This makes sure that spontaneous frame speed changes
-             * (e.g. a scene bogging down) don't get averaged away.
-             *
-             * @type {number}
-             */
-            Stage._frameNumber = 0;
             return Stage;
         })();
         game.Stage = Stage;
