@@ -9,23 +9,6 @@ module nurdz.game
      */
     export class Stage
     {
-        // TODO The width and height don't need to be members if they're always the same value, doorknob.
-        /**
-         * The width of the stage, in pixels. This is set at creation time and cannot change.
-         *
-         * @const
-         * @type {number}
-         */
-        private _width : number = STAGE_WIDTH;
-
-        /**
-         * The height of the stage, in pixels. This is set at creation time and cannot change.
-         *
-         * @const
-         * @type {number}
-         */
-        private _height : number = STAGE_HEIGHT;
-
         /**
          * The canvas that the stage renders itself to.
          *
@@ -46,7 +29,7 @@ module nurdz.game
          * @type {number} the width of the stage area in pixels
          */
         get width () : number
-        { return this._width; }
+        { return STAGE_WIDTH; }
 
         /**
          * The height of the stage, in pixels. This is set at creation time and cannot change.
@@ -54,7 +37,7 @@ module nurdz.game
          * @type {number} the height of the stage area in pixels
          */
         get height () : number
-        { return this._height; }
+        { return STAGE_HEIGHT; }
 
         /**
          * Get the underlying canvas object for the stage.
@@ -174,12 +157,12 @@ module nurdz.game
 
             // Create the canvas and give it the appropriate dimensions.
             this._canvas = document.createElement ("canvas");
-            this._canvas.width = this._width;
-            this._canvas.height = this._height;
+            this._canvas.width = STAGE_WIDTH;
+            this._canvas.height = STAGE_HEIGHT;
 
             // Modify the style of the container div to make it center horizontally.
-            container.style.width = this._width + "px";
-            container.style.height = this._height + "px";
+            container.style.width = STAGE_WIDTH + "px";
+            container.style.height = STAGE_HEIGHT + "px";
             container.style.marginLeft = "auto";
             container.style.marginRight = "auto";
 
@@ -360,7 +343,7 @@ module nurdz.game
         clear (color : string = 'black')
         {
             this._canvasContext.fillStyle = color;
-            this._canvasContext.fillRect (0, 0, this._width, this._height);
+            this._canvasContext.fillRect (0, 0, STAGE_WIDTH, STAGE_HEIGHT);
         }
 
         /**
@@ -876,7 +859,7 @@ module nurdz.game
         toString () : string
         {
             return String.format ("[Stage dimensions={0}x{1}, tileSize={2}]",
-                                  this._width, this._height, TILE_SIZE);
+                                  STAGE_WIDTH, STAGE_HEIGHT, TILE_SIZE);
         }
 
     }

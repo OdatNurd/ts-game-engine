@@ -1157,32 +1157,17 @@ var nurdz;
              */
             function Stage(containerDivID, initialColor) {
                 if (initialColor === void 0) { initialColor = 'black'; }
-                // TODO The width and height don't need to be members if they're always the same value, doorknob.
-                /**
-                 * The width of the stage, in pixels. This is set at creation time and cannot change.
-                 *
-                 * @const
-                 * @type {number}
-                 */
-                this._width = game.STAGE_WIDTH;
-                /**
-                 * The height of the stage, in pixels. This is set at creation time and cannot change.
-                 *
-                 * @const
-                 * @type {number}
-                 */
-                this._height = game.STAGE_HEIGHT;
                 // Obtain the container element that we want to insert the canvas into.
                 var container = document.getElementById(containerDivID);
                 if (container == null)
                     throw new ReferenceError("Unable to create stage: No such element with ID '" + containerDivID + "'");
                 // Create the canvas and give it the appropriate dimensions.
                 this._canvas = document.createElement("canvas");
-                this._canvas.width = this._width;
-                this._canvas.height = this._height;
+                this._canvas.width = game.STAGE_WIDTH;
+                this._canvas.height = game.STAGE_HEIGHT;
                 // Modify the style of the container div to make it center horizontally.
-                container.style.width = this._width + "px";
-                container.style.height = this._height + "px";
+                container.style.width = game.STAGE_WIDTH + "px";
+                container.style.height = game.STAGE_HEIGHT + "px";
                 container.style.marginLeft = "auto";
                 container.style.marginRight = "auto";
                 // Get the context for the canvas and then clear it.
@@ -1197,7 +1182,7 @@ var nurdz;
                  *
                  * @type {number} the width of the stage area in pixels
                  */
-                get: function () { return this._width; },
+                get: function () { return game.STAGE_WIDTH; },
                 enumerable: true,
                 configurable: true
             });
@@ -1207,7 +1192,7 @@ var nurdz;
                  *
                  * @type {number} the height of the stage area in pixels
                  */
-                get: function () { return this._height; },
+                get: function () { return game.STAGE_HEIGHT; },
                 enumerable: true,
                 configurable: true
             });
@@ -1395,7 +1380,7 @@ var nurdz;
             Stage.prototype.clear = function (color) {
                 if (color === void 0) { color = 'black'; }
                 this._canvasContext.fillStyle = color;
-                this._canvasContext.fillRect(0, 0, this._width, this._height);
+                this._canvasContext.fillRect(0, 0, game.STAGE_WIDTH, game.STAGE_HEIGHT);
             };
             /**
              * Render a filled rectangle with its upper left corner at the position provided and with the provided
@@ -1847,7 +1832,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Stage.prototype.toString = function () {
-                return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", this._width, this._height, game.TILE_SIZE);
+                return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", game.STAGE_WIDTH, game.STAGE_HEIGHT, game.TILE_SIZE);
             };
             /**
              * The currently active scene on the stage. This is the scene that gets all of the user input and
