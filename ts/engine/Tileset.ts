@@ -12,28 +12,28 @@ module nurdz.game
          *
          * @type {string}
          */
-        private name : string;
+        private _name : string;
 
         /**
          * The number of tiles that this tileset contains.
          *
          * @type {number}
          */
-        private length : number;
+        private _length : number;
 
         /**
          * The tiles in this tileset keyed according to their textual names.
          *
          * @type {Object.<String, Tile>}
          */
-        private tilesByName : Object;
+        private _tilesByName : Object;
 
         /**
          * The tiles in this tileset, ordered according to their internal numeric tile ID's.
          *
          * @type {Array<Tile>}
          */
-        private tilesByValue : Array<Tile>;
+        private _tilesByValue : Array<Tile>;
 
         /**
          * Construct a new tile instance with the given name and ID values. This instance will render
@@ -45,12 +45,12 @@ module nurdz.game
         constructor (name : string, tiles : Array<Tile>)
         {
             // Save the name and the list of the tile length.
-            this.name = name;
-            this.length = tiles.length;
+            this._name = name;
+            this._length = tiles.length;
 
             // Set up our two cross reference object.
-            this.tilesByName = {};
-            this.tilesByValue = [];
+            this._tilesByName = {};
+            this._tilesByValue = [];
 
             // Iterate and store all values. We don't just copy the tile array given as our tilesByValue
             // because we want to ensure that their indexes are their actual values.
@@ -60,14 +60,14 @@ module nurdz.game
 
                 // If this tile has a name or numeric ID of an existing tile, generate a warning to the
                 // console so that the developer knows that he's boned something up.
-                if (this.tilesByName[thisTile.name] != null)
+                if (this._tilesByName[thisTile.name] != null)
                     console.log (`Duplicate tile with textual name '${thisTile.name}' found`);
 
-                if (this.tilesByValue[thisTile.value] != null)
+                if (this._tilesByValue[thisTile.value] != null)
                     console.log (`Duplicate tile with numeric id '${thisTile.value}' found`);
 
-                this.tilesByName[thisTile.name] = thisTile;
-                this.tilesByValue[thisTile.value] = thisTile;
+                this._tilesByName[thisTile.name] = thisTile;
+                this._tilesByValue[thisTile.value] = thisTile;
             }
         }
 
@@ -79,7 +79,7 @@ module nurdz.game
          */
         isValidTileID (tileID : number) : boolean
         {
-            return this.tilesByValue[tileID] != null;
+            return this._tilesByValue[tileID] != null;
         }
 
         /**
@@ -91,7 +91,7 @@ module nurdz.game
          */
         tileForName (name : string) : Tile
         {
-            return this.tilesByName[name];
+            return this._tilesByName[name];
         }
 
         /**
@@ -103,7 +103,7 @@ module nurdz.game
          */
         tileForID (id : number) : Tile
         {
-            return this.tilesByValue[id];
+            return this._tilesByValue[id];
         }
 
         /**
@@ -113,7 +113,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return String.format ("[Tileset name={0} tileCount={1}]", this.name, this.length);
+            return String.format ("[Tileset name={0} tileCount={1}]", this._name, this._length);
         }
     }
 }

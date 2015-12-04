@@ -2012,23 +2012,23 @@ var nurdz;
              */
             function Tileset(name, tiles) {
                 // Save the name and the list of the tile length.
-                this.name = name;
-                this.length = tiles.length;
+                this._name = name;
+                this._length = tiles.length;
                 // Set up our two cross reference object.
-                this.tilesByName = {};
-                this.tilesByValue = [];
+                this._tilesByName = {};
+                this._tilesByValue = [];
                 // Iterate and store all values. We don't just copy the tile array given as our tilesByValue
                 // because we want to ensure that their indexes are their actual values.
                 for (var i = 0; i < tiles.length; i++) {
                     var thisTile = tiles[i];
                     // If this tile has a name or numeric ID of an existing tile, generate a warning to the
                     // console so that the developer knows that he's boned something up.
-                    if (this.tilesByName[thisTile.name] != null)
+                    if (this._tilesByName[thisTile.name] != null)
                         console.log("Duplicate tile with textual name '" + thisTile.name + "' found");
-                    if (this.tilesByValue[thisTile.value] != null)
+                    if (this._tilesByValue[thisTile.value] != null)
                         console.log("Duplicate tile with numeric id '" + thisTile.value + "' found");
-                    this.tilesByName[thisTile.name] = thisTile;
-                    this.tilesByValue[thisTile.value] = thisTile;
+                    this._tilesByName[thisTile.name] = thisTile;
+                    this._tilesByValue[thisTile.value] = thisTile;
                 }
             }
             /**
@@ -2038,7 +2038,7 @@ var nurdz;
              * @returns {boolean} true if the tileID given corresponds to a valid tile, false otherwise
              */
             Tileset.prototype.isValidTileID = function (tileID) {
-                return this.tilesByValue[tileID] != null;
+                return this._tilesByValue[tileID] != null;
             };
             /**
              * Given a tile name, return back the tile object that represents this tile. The value will be null if
@@ -2048,7 +2048,7 @@ var nurdz;
              * @returns {Tile} the tile with the provided name, or null if the name is invalid.
              */
             Tileset.prototype.tileForName = function (name) {
-                return this.tilesByName[name];
+                return this._tilesByName[name];
             };
             /**
              * Given a tile id, return back the tile object that represents this tile. The value will be null
@@ -2058,7 +2058,7 @@ var nurdz;
              * @returns {Tile} the tile with the provided value, ornull if the name is invalid.
              */
             Tileset.prototype.tileForID = function (id) {
-                return this.tilesByValue[id];
+                return this._tilesByValue[id];
             };
             /**
              * Return a string representation of the object, for debugging purposes.
@@ -2066,7 +2066,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Tileset.prototype.toString = function () {
-                return String.format("[Tileset name={0} tileCount={1}]", this.name, this.length);
+                return String.format("[Tileset name={0} tileCount={1}]", this._name, this._length);
             };
             return Tileset;
         })();
