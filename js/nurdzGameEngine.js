@@ -489,18 +489,38 @@ var nurdz;
                 if (zOrder === void 0) { zOrder = 1; }
                 if (debugColor === void 0) { debugColor = 'white'; }
                 // Save the passed in values.
-                this.name = name;
-                this.stage = stage;
-                this.width = width;
-                this.height = height;
-                this.zOrder = zOrder;
-                this.debugColor = debugColor;
+                this._name = name;
+                this._stage = stage;
+                this._width = width;
+                this._height = height;
+                this._zOrder = zOrder;
+                this._debugColor = debugColor;
                 // For position we save the passed in position and then make a reduced copy to turn it into
                 // tile coordinates for the map position.
-                this.position = new game.Point(x, y);
-                this.mapPosition = this.position.copyReduced(game.TILE_SIZE);
+                this._position = new game.Point(x, y);
+                this._mapPosition = this._position.copyReduced(game.TILE_SIZE);
             }
-            Object.defineProperty(Actor.prototype, "layer", {
+            Object.defineProperty(Actor.prototype, "mapPosition", {
+                /**
+                 * The position of this actor in the tile map. These coordinates are in tiles.
+                 *
+                 * @returns {Point}
+                 */
+                get: function () { return this._mapPosition; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Actor.prototype, "position", {
+                /**
+                 * The position of this actor in the world. These coordinates are in pixel coordinates.
+                 *
+                 * @returns {Point}
+                 */
+                get: function () { return this._position; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Actor.prototype, "zOrder", {
                 /**
                  * Get the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered
                  * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
@@ -508,23 +528,31 @@ var nurdz;
                  *
                  * @returns {number}
                  */
-                get: function () { return this.zOrder; },
+                get: function () { return this._zOrder; },
+                /**
+                 * Set the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered
+                 * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
+                 * by type.
+                 *
+                 * @returns {number}
+                 */
+                set: function (newZOrder) { this._zOrder = newZOrder; },
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Actor.prototype, "owningStage", {
+            Object.defineProperty(Actor.prototype, "stage", {
                 /**
                  * Get the stage that owns this actor.
                  *
                  * @returns {Stage}
                  */
-                get: function () { return this.stage; },
+                get: function () { return this._stage; },
                 /**
                  * Set the stage that owns this actor.
                  *
-                 * @param newStage
+                 * @param newStage the new stage to set
                  */
-                set: function (newStage) { this.stage = newStage; },
+                set: function (newStage) { this._stage = newStage; },
                 enumerable: true,
                 configurable: true
             });
@@ -543,7 +571,7 @@ var nurdz;
              */
             Actor.prototype.render = function (stage) {
                 // Draw a filled rectangle for actor using the debug color.
-                stage.fillRect(this.position.x, this.position.y, this.width, this.height, this.debugColor);
+                stage.fillRect(this._position.x, this._position.y, this._width, this._height, this._debugColor);
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The
@@ -563,8 +591,8 @@ var nurdz;
              * @param y the new Y coordinate for the actor
              */
             Actor.prototype.setStagePositionXY = function (x, y) {
-                this.position.setToXY(x, y);
-                this.mapPosition = this.position.copyReduced(game.TILE_SIZE);
+                this._position.setToXY(x, y);
+                this._mapPosition = this._position.copyReduced(game.TILE_SIZE);
             };
             /**
              * Set the position of this actor by setting its position on the map in ile coordinates. The
@@ -583,8 +611,8 @@ var nurdz;
              * @param y the new Y coordinate for this actor
              */
             Actor.prototype.setMapPositionXY = function (x, y) {
-                this.mapPosition.setToXY(x, y);
-                this.position = this.mapPosition.copyScaled(game.TILE_SIZE);
+                this._mapPosition.setToXY(x, y);
+                this._position = this._mapPosition.copyScaled(game.TILE_SIZE);
             };
             /**
              * Return a string representation of the object, for debugging purposes.
@@ -592,7 +620,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Actor.prototype.toString = function () {
-                return String.format("[Actor name={0}]", this.name);
+                return String.format("[Actor name={0}]", this._name);
             };
             return Actor;
         })();
@@ -646,17 +674,16 @@ var nurdz;
                 // Invoke the super class constructor.
                 _super.call(this, name, stage, x, y, width, height, zOrder, debugColor);
                 // Save the properties we were given, then validate them.
-                this.properties = properties;
+                this._properties = properties;
                 this.validateProperties();
             }
-            Object.defineProperty(Entity.prototype, "props", {
-                // TODO This has a horrific name
+            Object.defineProperty(Entity.prototype, "properties", {
                 /**
                  * The list of properties that is assigned to this entity.
                  *
                  * @returns {EntityProperties}
                  */
-                get: function () { return this.properties; },
+                get: function () { return this._properties; },
                 enumerable: true,
                 configurable: true
             });
@@ -688,12 +715,12 @@ var nurdz;
             Entity.prototype.isPropertyValid = function (name, expectedType, required, values) {
                 if (values === void 0) { values = null; }
                 // Get the value of the property (if any).
-                var propertyValue = this.properties[name];
+                var propertyValue = this._properties[name];
                 // Does the property exist?
                 if (propertyValue == null) {
                     // It does not. If it's not required, then return. Otherwise, complain that it's missing.
                     if (required)
-                        throw new ReferenceError("Entity " + this.name + ": missing property '" + name + "'");
+                        throw new ReferenceError("Entity " + this._name + ": missing property '" + name + "'");
                     else
                         return;
                 }
@@ -702,7 +729,7 @@ var nurdz;
                     // Get the actual type of the value and see if it matched.
                     var actualType = (Array.isArray(propertyValue) ? "array" : typeof (propertyValue));
                     if (actualType != expectedType)
-                        throw new TypeError("Entity " + this.name + ": invalid property '" + name + "': expected " + expectedType);
+                        throw new TypeError("Entity " + this._name + ": invalid property '" + name + "': expected " + expectedType);
                 }
                 // If we got a list of possible values and this property actually exists, make sure that the
                 // value is one of them.
@@ -712,7 +739,7 @@ var nurdz;
                             return;
                     }
                     // If we get here, we did not find the value in the list of valid values.
-                    throw new RangeError("Entity " + this.name + ": invalid value for property '" + name + "': not in allowable list");
+                    throw new RangeError("Entity " + this._name + ": invalid value for property '" + name + "': not in allowable list");
                 }
             };
             /**
@@ -729,8 +756,8 @@ var nurdz;
              */
             Entity.prototype.validateProperties = function () {
                 // If there is not an id property, install it first.
-                if (this.properties.id == null)
-                    this.properties.id = Entity.createDefaultID();
+                if (this._properties.id == null)
+                    this._properties.id = Entity.createDefaultID();
                 // Validate that the id property is a string (in case it was already there) and exists.
                 this.isPropertyValid("id", "string", true);
             };
@@ -779,7 +806,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Entity.prototype.toString = function () {
-                return String.format("[Entity name={0}]", this.name);
+                return String.format("[Entity name={0}]", this._name);
             };
             /**
              * Every time an entity ID is automatically generated, this value is appended to it to give it a
@@ -987,7 +1014,7 @@ var nurdz;
              * Note that the sort used is not stable.
              */
             Scene.prototype.sortActors = function () {
-                this.actorList.sort(function (left, right) { return left.layer - right.layer; });
+                this.actorList.sort(function (left, right) { return left.zOrder - right.zOrder; });
             };
             /**
              * This gets triggered while the game is running, this scene is the current scene, and a key has been
@@ -2086,11 +2113,11 @@ var nurdz;
                 for (var i = 0; i < this.entities.length; i++) {
                     // Get the entity and it's ID property. If there is no ID property, generate an error.
                     var entity = this.entities[i];
-                    var entityID = entity.props.id;
+                    var entityID = entity.properties.id;
                     if (entityID == null)
                         throw new Error("LevelData passed an entity with no 'id' property");
                     // The entity needs to have a stage associated with it.
-                    if (entity.owningStage == null)
+                    if (entity.stage == null)
                         throw new Error("LevelData passed an entity that has no stage, id=" + entityID);
                     // Now store this entity in the lookup table; generate a warning if such an ID already
                     // exists, as it will clobber.

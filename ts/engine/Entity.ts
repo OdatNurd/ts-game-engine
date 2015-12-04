@@ -36,16 +36,15 @@ module nurdz.game
          *
          * @type {EntityProperties}
          */
-        protected properties : EntityProperties;
+        protected _properties : EntityProperties;
 
-        // TODO This has a horrific name
         /**
          * The list of properties that is assigned to this entity.
          *
          * @returns {EntityProperties}
          */
-        get props () : EntityProperties
-        { return this.properties; }
+        get properties () : EntityProperties
+        { return this._properties; }
 
         // TODO This does not have the notion of default properties to apply yet
 
@@ -70,7 +69,7 @@ module nurdz.game
             super (name, stage, x, y, width, height, zOrder, debugColor);
 
             // Save the properties we were given, then validate them.
-            this.properties = properties;
+            this._properties = properties;
             this.validateProperties ();
         }
 
@@ -113,14 +112,14 @@ module nurdz.game
                                    values : string[] = null)
         {
             // Get the value of the property (if any).
-            var propertyValue : any = this.properties[name];
+            var propertyValue : any = this._properties[name];
 
             // Does the property exist?
             if (propertyValue == null)
             {
                 // It does not. If it's not required, then return. Otherwise, complain that it's missing.
                 if (required)
-                    throw new ReferenceError (`Entity ${this.name}: missing property '${name}'`);
+                    throw new ReferenceError (`Entity ${this._name}: missing property '${name}'`);
                 else
                     return;
             }
@@ -131,7 +130,7 @@ module nurdz.game
                 // Get the actual type of the value and see if it matched.
                 var actualType = (Array.isArray (propertyValue) ? "array" : typeof (propertyValue));
                 if (actualType != expectedType)
-                    throw new TypeError (`Entity ${this.name}: invalid property '${name}': expected ${expectedType}`);
+                    throw new TypeError (`Entity ${this._name}: invalid property '${name}': expected ${expectedType}`);
             }
 
             // If we got a list of possible values and this property actually exists, make sure that the
@@ -145,7 +144,7 @@ module nurdz.game
                 }
 
                 // If we get here, we did not find the value in the list of valid values.
-                throw new RangeError (`Entity ${this.name}: invalid value for property '${name}': not in allowable list`);
+                throw new RangeError (`Entity ${this._name}: invalid value for property '${name}': not in allowable list`);
             }
         }
 
@@ -164,8 +163,8 @@ module nurdz.game
         protected validateProperties ()
         {
             // If there is not an id property, install it first.
-            if (this.properties.id == null)
-                this.properties.id = Entity.createDefaultID ();
+            if (this._properties.id == null)
+                this._properties.id = Entity.createDefaultID ();
 
             // Validate that the id property is a string (in case it was already there) and exists.
             this.isPropertyValid("id", "string", true);
@@ -225,7 +224,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return String.format ("[Entity name={0}]", this.name);
+            return String.format ("[Entity name={0}]", this._name);
         }
     }
 }

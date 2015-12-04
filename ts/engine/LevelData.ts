@@ -94,13 +94,13 @@ module nurdz.game
             {
                 // Get the entity and it's ID property. If there is no ID property, generate an error.
                 var entity = this.entities[i];
-                var entityID = entity.props.id;
+                var entityID = entity.properties.id;
 
                 if (entityID == null)
                     throw new Error ("LevelData passed an entity with no 'id' property");
 
                 // The entity needs to have a stage associated with it.
-                if (entity.owningStage == null)
+                if (entity.stage == null)
                     throw new Error ("LevelData passed an entity that has no stage, id=" + entityID);
 
                 // Now store this entity in the lookup table; generate a warning if such an ID already

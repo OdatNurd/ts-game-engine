@@ -12,42 +12,42 @@ module nurdz.game
          *
          * @type {string}
          */
-        protected name : string;
+        protected _name : string;
 
         /**
          * The stage that this actor is displayed on. This is used for rendering.
          *
          * @type {Stage}
          */
-        protected stage : Stage;
+        protected _stage : Stage;
 
         /**
          * The position of this actor in the world. These coordinates are in pixel coordinates.
          *
          * @type {Point}
          */
-        public position : Point;
+        protected _position : Point;
 
         /**
          * The position of this actor in the tile map. These coordinates are in tiles.
          *
          * @type {Point}
          */
-        public mapPosition : Point;
+        protected _mapPosition : Point;
 
         /**
          * The width of this actor, in pixels.
          *
          * @type {number}
          */
-        protected width : number;
+        protected _width : number;
 
         /**
-         * THe height of this actor, in pixels.
+         * The height of this actor, in pixels.
          *
          * @type {number}
          */
-        protected height : number;
+        protected _height : number;
 
         /**
          * The Z-ordering (layer) for this entity. When rendered, actors with a lower Z-Order are rendered
@@ -55,14 +55,30 @@ module nurdz.game
          *
          * @type {number}
          */
-        protected zOrder : number;
+        protected _zOrder : number;
 
         /**
          * The color to render debug markings for this actor with.
          *
          * @type {string}
          */
-        protected debugColor : string;
+        protected _debugColor : string;
+
+        /**
+         * The position of this actor in the tile map. These coordinates are in tiles.
+         *
+         * @returns {Point}
+         */
+        get mapPosition () : Point
+        { return this._mapPosition; }
+
+        /**
+         * The position of this actor in the world. These coordinates are in pixel coordinates.
+         *
+         * @returns {Point}
+         */
+        get position () : Point
+        { return this._position; }
 
         /**
          * Get the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered
@@ -71,24 +87,34 @@ module nurdz.game
          *
          * @returns {number}
          */
-        get layer () : number
-        { return this.zOrder; }
+        get zOrder () : number
+        { return this._zOrder; }
+
+        /**
+         * Set the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered
+         * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
+         * by type.
+         *
+         * @returns {number}
+         */
+        set zOrder (newZOrder : number )
+        { this._zOrder = newZOrder; }
 
         /**
          * Get the stage that owns this actor.
          *
          * @returns {Stage}
          */
-        get owningStage () : Stage
-        { return this.stage; }
+        get stage () : Stage
+        { return this._stage; }
 
         /**
          * Set the stage that owns this actor.
          *
-         * @param newStage
+         * @param newStage the new stage to set
          */
-        set owningStage (newStage : Stage)
-        { this.stage = newStage; }
+        set stage (newStage : Stage)
+        { this._stage = newStage; }
 
         /**
          *
@@ -106,17 +132,17 @@ module nurdz.game
                      zOrder : number = 1, debugColor : string = 'white')
         {
             // Save the passed in values.
-            this.name = name;
-            this.stage = stage;
-            this.width = width;
-            this.height = height;
-            this.zOrder = zOrder;
-            this.debugColor = debugColor;
+            this._name = name;
+            this._stage = stage;
+            this._width = width;
+            this._height = height;
+            this._zOrder = zOrder;
+            this._debugColor = debugColor;
 
             // For position we save the passed in position and then make a reduced copy to turn it into
             // tile coordinates for the map position.
-            this.position = new Point (x, y);
-            this.mapPosition = this.position.copyReduced (TILE_SIZE);
+            this._position = new Point (x, y);
+            this._mapPosition = this._position.copyReduced (TILE_SIZE);
         }
 
         /**
@@ -138,7 +164,7 @@ module nurdz.game
         render (stage : Stage)
         {
             // Draw a filled rectangle for actor using the debug color.
-            stage.fillRect (this.position.x, this.position.y, this.width, this.height, this.debugColor);
+            stage.fillRect (this._position.x, this._position.y, this._width, this._height, this._debugColor);
         }
 
         /**
@@ -162,8 +188,8 @@ module nurdz.game
          */
         setStagePositionXY (x : number, y : number)
         {
-            this.position.setToXY (x, y);
-            this.mapPosition = this.position.copyReduced (TILE_SIZE);
+            this._position.setToXY (x, y);
+            this._mapPosition = this._position.copyReduced (TILE_SIZE);
         }
 
         /**
@@ -186,8 +212,8 @@ module nurdz.game
          */
         setMapPositionXY (x : number, y : number)
         {
-            this.mapPosition.setToXY (x, y);
-            this.position = this.mapPosition.copyScaled (TILE_SIZE);
+            this._mapPosition.setToXY (x, y);
+            this._position = this._mapPosition.copyScaled (TILE_SIZE);
         }
 
         /**
@@ -197,7 +223,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return String.format ("[Actor name={0}]", this.name);
+            return String.format ("[Actor name={0}]", this._name);
         }
     }
 }

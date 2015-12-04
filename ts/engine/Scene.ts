@@ -256,7 +256,7 @@ module nurdz.game
          */
         sortActors ()
         {
-            this.actorList.sort (function (left, right) { return left.layer - right.layer; });
+            this.actorList.sort (function (left, right) { return left.zOrder - right.zOrder; });
         }
 
         /**
