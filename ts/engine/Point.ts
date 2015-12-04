@@ -15,14 +15,30 @@ module nurdz.game
          *
          * @type {Number}
          */
-        x : number;
+        private _x : number;
 
         /**
          * Y-coordinate of this point.
          *
          * @type {Number}
          */
-        y : number;
+        private _y : number;
+
+        /**
+         * X-coordinate of this point.
+         *
+         * @returns {number}
+         */
+        get x () : number
+        { return this._x; }
+
+        /**
+         * Y-coordinate of this point.
+         *
+         * @returns {number}
+         */
+        get y () : number
+        { return this._y; }
 
         /**
          * Construct a new point that uses the provided X and Y values as its initial coordinate.
@@ -33,8 +49,8 @@ module nurdz.game
          */
         constructor (x : number, y : number)
         {
-            this.x = x;
-            this.y = y;
+            this._x = x;
+            this._y = y;
         }
 
         /**
@@ -45,7 +61,7 @@ module nurdz.game
          */
         copy () : Point
         {
-            return new Point (this.x, this.y);
+            return new Point (this._x, this._y);
         }
 
         /**
@@ -59,7 +75,7 @@ module nurdz.game
          */
         copyTranslated (translation : Point) : Point
         {
-            return this.copyTranslatedXY (translation.x, translation.y);
+            return this.copyTranslatedXY (translation._x, translation._y);
         }
 
         /**
@@ -118,7 +134,7 @@ module nurdz.game
          */
         setTo (point : Point) : Point
         {
-            return this.setToXY (point.x, point.y)
+            return this.setToXY (point._x, point._y)
         }
 
         /**
@@ -130,8 +146,8 @@ module nurdz.game
          */
         setToXY (x : number, y : number) : Point
         {
-            this.x = x;
-            this.y = y;
+            this._x = x;
+            this._y = y;
             return this;
         }
 
@@ -143,7 +159,7 @@ module nurdz.game
          */
         equals (other : Point) : boolean
         {
-            return this.x == other.x && this.y == other.y;
+            return this._x == other._x && this._y == other._y;
         }
 
         /**
@@ -155,7 +171,7 @@ module nurdz.game
          */
         equalsXY (x : number, y : number) : boolean
         {
-            return this.x == x && this.y == y;
+            return this._x == x && this._y == y;
         }
 
         /**
@@ -167,7 +183,7 @@ module nurdz.game
          */
         translate (delta : Point) : Point
         {
-            return this.translateXY (delta.x, delta.y);
+            return this.translateXY (delta._x, delta._y);
         }
 
         /**
@@ -179,8 +195,8 @@ module nurdz.game
          */
         translateXY (deltaX : number, deltaY : number) : Point
         {
-            this.x += deltaX;
-            this.y += deltaY;
+            this._x += deltaX;
+            this._y += deltaY;
             return this;
         }
 
@@ -228,8 +244,8 @@ module nurdz.game
          */
         reduce (factor : number) : Point
         {
-            this.x = Math.floor (this.x / factor);
-            this.y = Math.floor (this.y / factor);
+            this._x = Math.floor (this._x / factor);
+            this._y = Math.floor (this._y / factor);
             return this;
         }
 
@@ -245,8 +261,8 @@ module nurdz.game
          */
         scale (scale : number) : Point
         {
-            this.x = Math.floor (this.x * scale);
-            this.y = Math.floor (this.y * scale);
+            this._x = Math.floor (this._x * scale);
+            this._y = Math.floor (this._y * scale);
             return this;
         }
 
@@ -260,10 +276,10 @@ module nurdz.game
          */
         clampX (minX : number, maxX : number) : Point
         {
-            if (this.x < minX)
-                this.x = minX;
-            else if (this.x > maxX)
-                this.x = maxX;
+            if (this._x < minX)
+                this._x = minX;
+            else if (this._x > maxX)
+                this._x = maxX;
             return this;
 
         }
@@ -278,10 +294,10 @@ module nurdz.game
          */
         clampY (minY : number, maxY : number) : Point
         {
-            if (this.y < minY)
-                this.y = minY;
-            else if (this.y > maxY)
-                this.y = maxY;
+            if (this._y < minY)
+                this._y = minY;
+            else if (this._y > maxY)
+                this._y = maxY;
             return this;
         }
 
@@ -306,7 +322,7 @@ module nurdz.game
          */
         toString () : string
         {
-            return String.format ("[{0}, {1}]", this.x, this.y);
+            return String.format ("[{0}, {1}]", this._x, this._y);
         }
     }
 }

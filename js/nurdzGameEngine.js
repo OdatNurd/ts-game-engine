@@ -201,9 +201,29 @@ var nurdz;
              * @constructor
              */
             function Point(x, y) {
-                this.x = x;
-                this.y = y;
+                this._x = x;
+                this._y = y;
             }
+            Object.defineProperty(Point.prototype, "x", {
+                /**
+                 * X-coordinate of this point.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._x; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Point.prototype, "y", {
+                /**
+                 * Y-coordinate of this point.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._y; },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * Return a new point instance that is a copy of this point.
              *
@@ -211,7 +231,7 @@ var nurdz;
              * @see Point.copyTranslatedXY
              */
             Point.prototype.copy = function () {
-                return new Point(this.x, this.y);
+                return new Point(this._x, this._y);
             };
             /**
              * Return a new point instance that is a copy of this point, with its values translated by the values
@@ -223,7 +243,7 @@ var nurdz;
              * @see Point.copyTranslatedXY
              */
             Point.prototype.copyTranslated = function (translation) {
-                return this.copyTranslatedXY(translation.x, translation.y);
+                return this.copyTranslatedXY(translation._x, translation._y);
             };
             /**
              * Return a new point instance that is a copy of this point, with its values translated by the values
@@ -274,7 +294,7 @@ var nurdz;
              * @returns {Point} this point after the operation completes, for chaining calls.
              */
             Point.prototype.setTo = function (point) {
-                return this.setToXY(point.x, point.y);
+                return this.setToXY(point._x, point._y);
             };
             /**
              * Set the position of this point to the same as the values passed in
@@ -284,8 +304,8 @@ var nurdz;
              * @returns {Point} this point after the operation completes, for chaining calls.
              */
             Point.prototype.setToXY = function (x, y) {
-                this.x = x;
-                this.y = y;
+                this._x = x;
+                this._y = y;
                 return this;
             };
             /**
@@ -295,7 +315,7 @@ var nurdz;
              * @returns {boolean} true or false depending on equality
              */
             Point.prototype.equals = function (other) {
-                return this.x == other.x && this.y == other.y;
+                return this._x == other._x && this._y == other._y;
             };
             /**
              * Compares this point to the values passed in to determine if they represent the same point.
@@ -305,7 +325,7 @@ var nurdz;
              * @returns {boolean} true or false depending on equality
              */
             Point.prototype.equalsXY = function (x, y) {
-                return this.x == x && this.y == y;
+                return this._x == x && this._y == y;
             };
             /**
              * Translate the location of this point using the values of the point passed in. No range checking is
@@ -315,7 +335,7 @@ var nurdz;
              * @returns {Point} this point after the translation, for chaining calls.
              */
             Point.prototype.translate = function (delta) {
-                return this.translateXY(delta.x, delta.y);
+                return this.translateXY(delta._x, delta._y);
             };
             /**
              * Translate the location of this point using the values passed in. No range checking is done.
@@ -325,8 +345,8 @@ var nurdz;
              * @returns {Point} this point after the translation, for chaining calls.
              */
             Point.prototype.translateXY = function (deltaX, deltaY) {
-                this.x += deltaX;
-                this.y += deltaY;
+                this._x += deltaX;
+                this._y += deltaY;
                 return this;
             };
             /**
@@ -369,8 +389,8 @@ var nurdz;
              * @see Point.copyScaled
              */
             Point.prototype.reduce = function (factor) {
-                this.x = Math.floor(this.x / factor);
-                this.y = Math.floor(this.y / factor);
+                this._x = Math.floor(this._x / factor);
+                this._y = Math.floor(this._y / factor);
                 return this;
             };
             /**
@@ -384,8 +404,8 @@ var nurdz;
              * @see Point.copyReduced
              */
             Point.prototype.scale = function (scale) {
-                this.x = Math.floor(this.x * scale);
-                this.y = Math.floor(this.y * scale);
+                this._x = Math.floor(this._x * scale);
+                this._y = Math.floor(this._y * scale);
                 return this;
             };
             /**
@@ -397,10 +417,10 @@ var nurdz;
              * @returns {Point} this point after the clamp is completed, for chaining calls.
              */
             Point.prototype.clampX = function (minX, maxX) {
-                if (this.x < minX)
-                    this.x = minX;
-                else if (this.x > maxX)
-                    this.x = maxX;
+                if (this._x < minX)
+                    this._x = minX;
+                else if (this._x > maxX)
+                    this._x = maxX;
                 return this;
             };
             /**
@@ -412,10 +432,10 @@ var nurdz;
              * @returns {Point} this point after the clamp is completed, for chaining calls.
              */
             Point.prototype.clampY = function (minY, maxY) {
-                if (this.y < minY)
-                    this.y = minY;
-                else if (this.y > maxY)
-                    this.y = maxY;
+                if (this._y < minY)
+                    this._y = minY;
+                else if (this._y > maxY)
+                    this._y = maxY;
                 return this;
             };
             /**
@@ -436,7 +456,7 @@ var nurdz;
              * @returns {String} a debug string representation
              */
             Point.prototype.toString = function () {
-                return String.format("[{0}, {1}]", this.x, this.y);
+                return String.format("[{0}, {1}]", this._x, this._y);
             };
             return Point;
         })();
