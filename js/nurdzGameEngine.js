@@ -211,6 +211,12 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._x; },
+                /**
+                 * Set the x-coordinate of this point
+                 *
+                 * @param newX the new X to set.
+                 */
+                set: function (newX) { this._x = newX; },
                 enumerable: true,
                 configurable: true
             });
@@ -221,6 +227,12 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._y; },
+                /**
+                 * Set the y-coordinate of this point
+                 *
+                 * @param newY the new y to set.
+                 */
+                set: function (newY) { this._y = newY; },
                 enumerable: true,
                 configurable: true
             });

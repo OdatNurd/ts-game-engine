@@ -33,12 +33,29 @@ module nurdz.game
         { return this._x; }
 
         /**
+         * Set the x-coordinate of this point
+         *
+         * @param newX the new X to set.
+         */
+        set x (newX : number)
+        { this._x = newX; }
+
+        /**
          * Y-coordinate of this point.
          *
          * @returns {number}
          */
         get y () : number
         { return this._y; }
+
+        /**
+         * Set the y-coordinate of this point
+         *
+         * @param newY the new y to set.
+         */
+        set y (newY : number)
+        { this._y = newY; }
+
 
         /**
          * Construct a new point that uses the provided X and Y values as its initial coordinate.
