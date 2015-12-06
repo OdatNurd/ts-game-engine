@@ -120,7 +120,7 @@ module nurdz.main
          */
         render (stage : nurdz.game.Stage)
         {
-            stage.fillCircle(this._position.x, this._position.y, this._radius, this._debugColor);
+            stage.renderer.fillCircle(this._position.x, this._position.y, this._radius, this._debugColor);
         }
     }
 
@@ -140,9 +140,9 @@ module nurdz.main
         {
             // Clear the screen, render any actors, and then display the FPS we're running at in the top
             // left corner.
-            this._stage.clear ("black");
+            this._stage.renderer.clear ("black");
             super.render ();
-            this._stage.drawTxt(`FPS: ${this._stage.fps}`, 16, 16, 'white');
+            this._stage.renderer.drawTxt(`FPS: ${this._stage.fps}`, 16, 16, 'white');
         }
     }
 

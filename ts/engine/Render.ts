@@ -1,6 +1,69 @@
 module nurdz.game
 {
     /**
+     * This enum is used in the drawArrow method to determine what end of the line that makes up the arrow
+     * a head should be drawn at.
+     */
+    export enum ArrowType
+    {
+        /**
+         * Neither end of the line should have an arrow head. This is just basically a slightly more
+         * expensive call to draw a simple line.
+         */
+        NONE = 0,
+
+        /**
+         * The start of the line should have an arrowhead.
+         */
+        START,
+
+        /**
+         * The end of the line should have an arrowhead.
+         */
+        END,
+
+        /**
+         * Both ends of the line should have an arrowhead.
+         */
+        BOTH
+    }
+
+    /**
+     * This enum is used in the drawArrow method to determine what kind of arrow head to render onto the
+     * arrow.
+     *
+     * Most of these provide an arrow with a curved head and just vary the method used to draw the curve,
+     * which has subtle effects on how the curve appears.
+     */
+    export enum ArrowStyle
+    {
+        /**
+         * The arrowhead is curved using a simple arc.
+         */
+        ARC = 0,
+
+        /**
+         * The arrowhead has a straight line end
+         */
+        STRAIGHT,
+
+        /**
+         * The arrowhead is unfilled with no end (it looks like a V)
+         */
+        UNFILLED,
+
+        /**
+         * The arrowhead is curved using a quadratic curve.
+         */
+        QUADRATIC,
+
+        /**
+         * The arrowhead is curbed using a bezier curve
+         */
+        BEZIER
+    }
+
+    /**
      * This interface determines the rendering capabilities of the engine. Some class needs to be plugged
      * into the Stage that implements this interface.
      */
@@ -21,6 +84,13 @@ module nurdz.game
          * @returns {number} the height of the render area in pixels.
          */
         height : number;
+
+        /**
+         * Clear the entire rendering area with the provided color.
+         *
+         * @param color the color to clear the stage with.
+         */
+        clear (color : string);
 
         /**
          * Render a filled rectangle with its upper left corner at the position provided and with the provided
@@ -69,7 +139,6 @@ module nurdz.game
          */
         setArrowStyle (color : string, lineWidth : number);
 
-        // TODO this can use Enums for the style and also the which
         /**
          * The basis of this code comes from:
          *     http://www.dbp-consulting.com/tutorials/canvas/CanvasArrow.html
@@ -80,15 +149,8 @@ module nurdz.game
          * This will render a line from x1,y1 to x2,y2 and then draw an arrow head on one or both ends of the
          * line in a few different styles.
          *
-         * The style parameter can be one of the following values:
-         *   0: Arrowhead with an arc end
-         *   1: Arrowhead with a straight line end
-         *   2: Arrowhead that is unfilled with no end (looks like a V)
-         *   3: Arrowhead with a quadratic curve end
-         *   4: Arrowhead with a bezier curve end
-         *
-         * The which parameter indicates which end of the line gets an arrow head. This is a bit field where
-         * the first bit indicates the end of the line and the second bit indicates the start of the line.
+         * The which parameter determine which ends of the line get arrow heads drawn and the style
+         * parameter controls what the drawn arrow head looks like.
          *
          * It is also possible to specify the angle that the arrow head makes from the end of the line and the
          * length of the sides of the arrow head.
@@ -107,7 +169,7 @@ module nurdz.game
          * @see Render.setArrowStyle
          */
         drawArrow (x1 : number, y1 : number, x2 : number, y2 : number,
-                   style : number, which : number, angle : number, d : number);
+                   style : ArrowStyle, which : ArrowType, angle : number, d : number);
 
         /**
          * Display text at the position provided. How the the text anchors to the point provided needs to be
@@ -145,7 +207,6 @@ module nurdz.game
          */
         drawBmpCentered (bitmap : HTMLImageElement, x : number, y : number);
 
-        // TODO this should take the angle in degrees, or have a duplicate that takes them
         /**
          * Display a bitmap to the rendering area such that its center is at the point provided. The bitmap is
          * also rotated according to the rotation value, which is an angle in radians.
@@ -191,7 +252,7 @@ module nurdz.game
          * needs to be invoked the same number of times as that function was invoked because the canvas state
          * is stored on a stack.
          *
-         * @see Stage.translateAndRotate
+         * @see Render.translateAndRotate
          */
         restore ();
     }

@@ -87,7 +87,7 @@ module nurdz.game
          */
         render (stage : Stage, x : number, y : number)
         {
-            stage.fillRect (x, y, TILE_SIZE, TILE_SIZE, this._debugColor);
+            stage.renderer.fillRect (x, y, TILE_SIZE, TILE_SIZE, this._debugColor);
         }
 
         /**

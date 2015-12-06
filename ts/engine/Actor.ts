@@ -156,7 +156,7 @@ module nurdz.game
         render (stage : Stage)
         {
             // Draw a filled rectangle for actor using the debug color.
-            stage.fillRect (this._position.x, this._position.y, this._width, this._height, this._debugColor);
+            stage.renderer.fillRect (this._position.x, this._position.y, this._width, this._height, this._debugColor);
         }
 
         /**
