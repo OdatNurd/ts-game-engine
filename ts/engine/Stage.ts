@@ -39,7 +39,7 @@ module nurdz.game
      * The class knows how to create the stage and do some rendering. This is also where the core
      * rendering loop is contained.
      */
-    export class Stage
+    export class Stage implements Render
     {
         /**
          * The canvas that the stage renders itself to.
