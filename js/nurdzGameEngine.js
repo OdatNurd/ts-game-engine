@@ -559,12 +559,6 @@ var nurdz;
                  * @returns {Stage}
                  */
                 get: function () { return this._stage; },
-                /**
-                 * Set the stage that owns this actor.
-                 *
-                 * @param newStage the new stage to set
-                 */
-                set: function (newStage) { this._stage = newStage; },
                 enumerable: true,
                 configurable: true
             });

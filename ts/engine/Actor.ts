@@ -109,14 +109,6 @@ module nurdz.game
         { return this._stage; }
 
         /**
-         * Set the stage that owns this actor.
-         *
-         * @param newStage the new stage to set
-         */
-        set stage (newStage : Stage)
-        { this._stage = newStage; }
-
-        /**
          *
          * @param name the internal name for this actor instance, for debugging
          * @param stage the stage that will be used to display this actor
