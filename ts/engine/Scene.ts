@@ -27,6 +27,14 @@ module nurdz.game
         protected _stage : Stage;
 
         /**
+         * The renderer that should be used to render this scene. This comes from the stage that we're
+         * given, but we use it so often that we cache its value.
+         *
+         * @type {Renderer}
+         */
+        protected _renderer : Renderer;
+
+        /**
          * The list of all actors that are currently associated with this scene. These actors will get
          * their update and render methods called by the base implementation of the scene class.
          *
@@ -50,14 +58,6 @@ module nurdz.game
          */
         private static _ss_format : string = "0000";
 
-        ///**
-        // * Get the complete list of actors that are currently registered with this scene.
-        // *
-        // * @returns {Array<Actor>}
-        // */
-        //get actors ()
-        //{ return this.actorList; }
-
         /**
          * Construct a new scene instances that has the given name and is managed by the provided stage.
          *
@@ -72,6 +72,7 @@ module nurdz.game
             // Store the name and stage provided.
             this._name = name;
             this._stage = stage;
+            this._renderer = stage.renderer;
 
             // Start with an empty actor list
             this._actorList = [];
@@ -100,7 +101,10 @@ module nurdz.game
         render ()
         {
             for (var i = 0 ; i < this._actorList.length ; i++)
-                this._actorList[i].render (this._stage);
+            {
+                var actor : Actor = this._actorList[i];
+                actor.render (actor.position.x, actor.position.y, this._renderer);
+            }
         }
 
         /**

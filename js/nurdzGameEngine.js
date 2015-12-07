@@ -646,11 +646,13 @@ var nurdz;
              * Render this actor to the stage provided. The default implementation renders a positioning box
              * for this actor using its position and size using the debug color set at construction time.
              *
-             * @param stage the stage to render this actor to
+             * @param x the x location to render the actor at, in stage coordinates (NOT world)
+             * @param y the y location to render the actor at, in stage coordinates (NOT world)
+             * @param renderer the class to use to render the actor
              */
-            Actor.prototype.render = function (stage) {
+            Actor.prototype.render = function (x, y, renderer) {
                 // Draw a filled rectangle for actor using the debug color.
-                stage.renderer.fillRect(this._position.x, this._position.y, this._width, this._height, this._debugColor);
+                renderer.fillRect(x, y, this._width, this._height, this._debugColor);
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The
@@ -950,13 +952,6 @@ var nurdz;
          * implement your own specific handling as needed.
          */
         var Scene = (function () {
-            ///**
-            // * Get the complete list of actors that are currently registered with this scene.
-            // *
-            // * @returns {Array<Actor>}
-            // */
-            //get actors ()
-            //{ return this.actorList; }
             /**
              * Construct a new scene instances that has the given name and is managed by the provided stage.
              *
@@ -970,6 +965,7 @@ var nurdz;
                 // Store the name and stage provided.
                 this._name = name;
                 this._stage = stage;
+                this._renderer = stage.renderer;
                 // Start with an empty actor list
                 this._actorList = [];
             }
@@ -992,8 +988,10 @@ var nurdz;
              * stage.
              */
             Scene.prototype.render = function () {
-                for (var i = 0; i < this._actorList.length; i++)
-                    this._actorList[i].render(this._stage);
+                for (var i = 0; i < this._actorList.length; i++) {
+                    var actor = this._actorList[i];
+                    actor.render(actor.position.x, actor.position.y, this._renderer);
+                }
             };
             /**
              * This method is invoked when this scene is becoming the active scene in the game. This can be used
@@ -2290,12 +2288,12 @@ var nurdz;
              * This default version of the method renders the tile as a solid rectangle of the appropriate
              * dimensions using the debug color given at construction time.
              *
-             * @param stage the stage to render onto
-             * @param x the X coordinate to draw the tile at
-             * @param y the Y coordinate to draw the tile at
+             * @param x the x location to render the tile at, in stage coordinates (NOT world)
+             * @param y the y location to render the tile at, in stage coordinates (NOT world)
+             * @param renderer the renderer to use to render ourselves.
              */
-            Tile.prototype.render = function (stage, x, y) {
-                stage.renderer.fillRect(x, y, game.TILE_SIZE, game.TILE_SIZE, this._debugColor);
+            Tile.prototype.render = function (x, y, renderer) {
+                renderer.fillRect(x, y, game.TILE_SIZE, game.TILE_SIZE, this._debugColor);
             };
             /**
              * Return a string representation of the object, for debugging purposes.
@@ -2807,22 +2805,22 @@ var nurdz;
                 return this.isBlockedAtXY(location.x, location.y, actor);
             };
             /**
-             * Render this level to the stage provided. This is done by delegating the rendering of each
+             * Render this level using the renderer provided. This is done by delegating the rendering of each
              * individual tile to the tile instance.
              *
              * Note that this only renders the level geometry and not the entities; it's up to the caller to
              * render those as needed and at the appropriate time.
              *
-             * @param stage the stage to render to
+             * @param renderer the renderer to render with
              */
-            Level.prototype.render = function (stage) {
+            Level.prototype.render = function (renderer) {
                 // Iterate over the tiles.
                 for (var y = 0; y < this._height; y++) {
                     for (var x = 0; x < this._width; x++) {
                         var tile = this.tileAtXY(x, y);
                         // Get the tile and render it.
                         if (tile != null)
-                            tile.render(stage, x * game.TILE_SIZE, y * game.TILE_SIZE);
+                            tile.render(x * game.TILE_SIZE, y * game.TILE_SIZE, renderer);
                     }
                 }
             };
@@ -2944,10 +2942,12 @@ var nurdz;
             /**
              * Render ourselves to the stage.
              *
-             * @param stage the stage to render onto
+             * @param x the x location to render the actor at, in stage coordinates (NOT world)
+             * @param y the y location to render the actor at, in stage coordinates (NOT world)
+             * @param renderer the renderer to render with
              */
-            Dot.prototype.render = function (stage) {
-                stage.renderer.fillCircle(this._position.x, this._position.y, this._radius, this._debugColor);
+            Dot.prototype.render = function (x, y, renderer) {
+                renderer.fillCircle(x, y, this._radius, this._debugColor);
             };
             return Dot;
         })(nurdz.game.Entity);

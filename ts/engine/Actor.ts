@@ -151,12 +151,14 @@ module nurdz.game
          * Render this actor to the stage provided. The default implementation renders a positioning box
          * for this actor using its position and size using the debug color set at construction time.
          *
-         * @param stage the stage to render this actor to
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
+         * @param renderer the class to use to render the actor
          */
-        render (stage : Stage)
+        render (x : number, y : number, renderer : Renderer)
         {
             // Draw a filled rectangle for actor using the debug color.
-            stage.renderer.fillRect (this._position.x, this._position.y, this._width, this._height, this._debugColor);
+            renderer.fillRect (x, y, this._width, this._height, this._debugColor);
         }
 
         /**

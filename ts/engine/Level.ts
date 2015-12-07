@@ -341,15 +341,15 @@ module nurdz.game
         }
 
         /**
-         * Render this level to the stage provided. This is done by delegating the rendering of each
+         * Render this level using the renderer provided. This is done by delegating the rendering of each
          * individual tile to the tile instance.
          *
          * Note that this only renders the level geometry and not the entities; it's up to the caller to
          * render those as needed and at the appropriate time.
          *
-         * @param stage the stage to render to
+         * @param renderer the renderer to render with
          */
-        render (stage : Stage)
+        render (renderer : Renderer)
         {
             // Iterate over the tiles.
             for (var y = 0 ; y < this._height ; y++)
@@ -360,7 +360,7 @@ module nurdz.game
 
                     // Get the tile and render it.
                     if (tile != null)
-                        tile.render (stage, x * TILE_SIZE, y * TILE_SIZE);
+                        tile.render (x * TILE_SIZE, y * TILE_SIZE, renderer);
                 }
             }
         }

@@ -81,13 +81,13 @@ module nurdz.game
          * This default version of the method renders the tile as a solid rectangle of the appropriate
          * dimensions using the debug color given at construction time.
          *
-         * @param stage the stage to render onto
-         * @param x the X coordinate to draw the tile at
-         * @param y the Y coordinate to draw the tile at
+         * @param x the x location to render the tile at, in stage coordinates (NOT world)
+         * @param y the y location to render the tile at, in stage coordinates (NOT world)
+         * @param renderer the renderer to use to render ourselves.
          */
-        render (stage : Stage, x : number, y : number)
+        render (x : number, y : number, renderer : Renderer)
         {
-            stage.renderer.fillRect (x, y, TILE_SIZE, TILE_SIZE, this._debugColor);
+            renderer.fillRect (x, y, TILE_SIZE, TILE_SIZE, this._debugColor);
         }
 
         /**

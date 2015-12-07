@@ -159,11 +159,13 @@ module nurdz.main
         /**
          * Render ourselves to the stage.
          *
-         * @param stage the stage to render onto
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
+         * @param renderer the renderer to render with
          */
-        render (stage : nurdz.game.Stage)
+        render (x : number, y : number, renderer : nurdz.game.Renderer)
         {
-            stage.renderer.fillCircle(this._position.x, this._position.y, this._radius, this._debugColor);
+            renderer.fillCircle (x, y, this._radius, this._debugColor);
         }
     }
 
