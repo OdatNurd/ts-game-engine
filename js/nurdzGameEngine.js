@@ -180,6 +180,79 @@ var nurdz;
         var KeyCodes = game.KeyCodes;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
+/**
+ * This module exports various helper routines that might be handy in a game context but which don't
+ * otherwise fit into a class.
+ */
+var nurdz;
+(function (nurdz) {
+    var game;
+    (function (game) {
+        var Utils;
+        (function (Utils) {
+            /**
+             * Return a random floating point number in the range of min to max, inclusive.
+             *
+             * @param min the minimum number to return, inclusive
+             * @param max the maximum number to return, inclusive
+             *
+             * @returns {number} a random number somewhere in the range of min and max, inclusive
+             */
+            function randomFloatInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+            Utils.randomFloatInRange = randomFloatInRange;
+            /**
+             * Return a random integer number in the range of min to max, inclusive.
+             *
+             * @param min the minimum number to return, inclusive
+             * @param max the maximum number to return, inclusive
+             *
+             * @returns {number} a random number somewhere in the range of min and max, inclusive
+             */
+            function randomIntInRange(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+            Utils.randomIntInRange = randomIntInRange;
+            /**
+             * Convert an angle in degrees to an angle in radians. Internally, the JavaScript math API assumes
+             * radians, but in games we may want to use degrees as a simplification.
+             *
+             * @param degrees an angle in degrees to convert
+             * @returns {number} the number of degrees, converted into radians.
+             */
+            function toRadians(degrees) {
+                return degrees * Math.PI / 180;
+            }
+            Utils.toRadians = toRadians;
+            /**
+             * Convert an angle in radians to an angle in degrees. Internally, the JavaScript math API assumes
+             * radians, but in games we may want to use degrees as a simplification.
+             *
+             * @param radians an angle in radians to convert
+             * @returns {number} the number of radians, converted into degrees.
+             */
+            function toDegrees(radians) {
+                return radians * 180 / Math.PI;
+            }
+            Utils.toDegrees = toDegrees;
+            /**
+             * Given some angle in degrees, normalize it so that it falls within the range of 0 <-> 359 degrees,
+             * inclusive (i.e. 360 degrees becomes 0 and -1 degrees becomes 359, etc).
+             *
+             * @param degrees the angle in degrees to normalize
+             * @returns {number} the normalized angle; it is always in the range of 0 to 359 degrees, inclusive
+             */
+            function normalizeDegrees(degrees) {
+                degrees %= 360;
+                if (degrees < 0)
+                    degrees += 360;
+                return degrees % 360;
+            }
+            Utils.normalizeDegrees = normalizeDegrees;
+        })(Utils = game.Utils || (game.Utils = {}));
+    })(game = nurdz.game || (nurdz.game = {}));
+})(nurdz || (nurdz = {}));
 var nurdz;
 (function (nurdz) {
     var game;
@@ -660,8 +733,20 @@ var nurdz;
          */
         var Entity = (function (_super) {
             __extends(Entity, _super);
-            // TODO This does not have the notion of default properties to apply yet
             /**
+             * Construct a new entity instance at a given location with given dimensions.
+             *
+             * All entities have properties that can control their activities at runtime, which are provided
+             * in the constructor. In addition, a list of default properties may also be optionally provided.
+             *
+             * At construction time, any properties that appear in the default properties given that do not
+             * already appear in the specific properties provided will be copied from the defaults provided.
+             * This mechanism is meant to be used from a subclass as a way to have subclasses provide default
+             * properties the way the Entity class itself does.
+             *
+             * Subclasses that require additional properties should create their own extended EntityProperties
+             * interface to include the new properties, passing an instance to this constructor with a
+             * typecast to its own type.
              *
              * @param name the internal name for this entity instance, for debugging
              * @param stage the stage that will be used to display this entity
@@ -669,18 +754,21 @@ var nurdz;
              * @param y Y co-ordinate of the location for this entity, in world coordinates
              * @param width the width of this entity, in pixels
              * @param height the height of this entity, in pixels
-             * @param properties entity specific properties to apply to this entity
              * @param zOrder the Z-order of this entity when rendered (smaller numbers render before larger ones)
+             * @param properties entity specific properties to apply to this entity
+             * @param defaults default properties to apply to the instance for any required properties that do
+             * not appear in the properties given
              * @param debugColor the color specification to use in debug rendering for this entity
              * @constructor
              */
-            function Entity(name, stage, x, y, width, height, properties, zOrder, debugColor) {
-                if (zOrder === void 0) { zOrder = 1; }
+            function Entity(name, stage, x, y, width, height, zOrder, properties, defaults, debugColor) {
+                if (defaults === void 0) { defaults = {}; }
                 if (debugColor === void 0) { debugColor = 'white'; }
                 // Invoke the super class constructor.
                 _super.call(this, name, stage, x, y, width, height, zOrder, debugColor);
-                // Save the properties we were given, then validate them.
+                // Save our properties, apply defaults, and then validate them
                 this._properties = properties;
+                this.applyDefaultProperties(defaults);
                 this.validateProperties();
             }
             Object.defineProperty(Entity.prototype, "properties", {
@@ -693,6 +781,21 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * This method is for use in modifying an entity property object to include defaults for properties
+             * that don't already exist.
+             *
+             * In use, the list of defaults is walked, and for each such default that does not already have a
+             * value in the properties object, the property will be copied over to the properties object.
+             *
+             * @param defaults default properties to apply to this entity
+             */
+            Entity.prototype.applyDefaultProperties = function (defaults) {
+                for (var propertyName in defaults) {
+                    if (defaults.hasOwnProperty(propertyName) && this._properties[propertyName] == null)
+                        this._properties[propertyName] = defaults[propertyName];
+                }
+            };
             /**
              * Every time this method is invoked, it returns a new unique entity id string to apply to the id
              * property of an entity.
@@ -1696,7 +1799,7 @@ var nurdz;
                     _frameNumber++;
                     // Calculate the FPS now. We floor this here because if FPS is for displaying on the screen
                     // you probably don't need a billion digits of precision.
-                    _fps = Math.floor(_frameNumber / elapsedTime);
+                    _fps = Math.round(_frameNumber / elapsedTime);
                     // If a second or more has elapsed, reset the count. We don't want an average over time, we want
                     // the most recent numbers so that we can see momentary drops.
                     if (elapsedTime > 1) {
@@ -2770,7 +2873,7 @@ var nurdz;
             });
         }
         /**
-         * This simple class represents an actor. All it does is start in the center of the screen and bounce
+         * This simple class represents a Dot on the screen. It starts in the center of the screen and bounces
          * around.
          */
         var Dot = (function (_super) {
@@ -2779,27 +2882,20 @@ var nurdz;
              * Construct an instance; it needs to know how it will be rendered.
              *
              * @param stage the stage that owns this actor.
+             * @param properties the properties to apply to this entity
              */
-            function Dot(stage) {
+            function Dot(stage, properties) {
+                if (properties === void 0) { properties = {}; }
                 // Invoke the super to construct us. We position ourselves in the center of the stage.
-                _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, nurdz.game.TILE_SIZE, nurdz.game.TILE_SIZE);
-                /**
-                 * How fast we move on the X axis.
-                 *
-                 * @type {number}
-                 * @private
-                 */
-                this._xSpeed = 5;
-                /**
-                 * How fast we move on the Y axis.
-                 *
-                 * @type {number}
-                 * @private
-                 */
-                this._ySpeed = 5;
+                _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, nurdz.game.TILE_SIZE, nurdz.game.TILE_SIZE, 1, properties, {
+                    xSpeed: nurdz.game.Utils.randomIntInRange(-5, 5),
+                    ySpeed: nurdz.game.Utils.randomIntInRange(-5, 5)
+                });
                 // Our radius is half our width because our position is registered via the center of our own
                 // bounds.
                 this._radius = this._width / 2;
+                console.log("Entity created: ", this.toString());
+                console.log("Properties: ", this._properties);
             }
             /**
              * Update our position on the stage.
@@ -2808,13 +2904,13 @@ var nurdz;
              */
             Dot.prototype.update = function (stage) {
                 // Translate;
-                this._position.translateXY(this._xSpeed, this._ySpeed);
+                this._position.translateXY(this._properties.xSpeed, this._properties.ySpeed);
                 // Bounce left and right
                 if (this._position.x < this._radius || this._position.x >= stage.width - this._radius)
-                    this._xSpeed *= -1;
+                    this._properties.xSpeed *= -1;
                 // Bounce up and down.
                 if (this._position.y < this._radius || this._position.y >= stage.height - this._radius)
-                    this._ySpeed *= -1;
+                    this._properties.ySpeed *= -1;
             };
             /**
              * Render ourselves to the stage.
@@ -2825,7 +2921,7 @@ var nurdz;
                 stage.renderer.fillCircle(this._position.x, this._position.y, this._radius, this._debugColor);
             };
             return Dot;
-        })(nurdz.game.Actor);
+        })(nurdz.game.Entity);
         /**
          * This is a simple extension of the scene class; it displays the FPS on the screen.
          *
@@ -2861,6 +2957,7 @@ var nurdz;
                 stage.addScene("sceneName", new TestScene("A Scene", stage));
                 // Switch to the initial scene, add a dot to display and then run the game.
                 stage.switchToScene("sceneName");
+                stage.currentScene.addActor(new Dot(stage));
                 stage.currentScene.addActor(new Dot(stage));
                 stage.run();
             }

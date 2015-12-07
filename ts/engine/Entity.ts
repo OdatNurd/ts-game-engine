@@ -7,8 +7,8 @@ module nurdz.game
     export interface EntityProperties
     {
         /**
-         * A unique identifying value for entities. This property is not actually optional, but code in
-         * the Entity class will auto generate it if it is missing.
+         * A unique identifying value for this entity. When not given, the Entity class will construct a
+         * new unique value for this property.
          */
         id? : string;
     }
@@ -46,9 +46,20 @@ module nurdz.game
         get properties () : EntityProperties
         { return this._properties; }
 
-        // TODO This does not have the notion of default properties to apply yet
-
         /**
+         * Construct a new entity instance at a given location with given dimensions.
+         *
+         * All entities have properties that can control their activities at runtime, which are provided
+         * in the constructor. In addition, a list of default properties may also be optionally provided.
+         *
+         * At construction time, any properties that appear in the default properties given that do not
+         * already appear in the specific properties provided will be copied from the defaults provided.
+         * This mechanism is meant to be used from a subclass as a way to have subclasses provide default
+         * properties the way the Entity class itself does.
+         *
+         * Subclasses that require additional properties should create their own extended EntityProperties
+         * interface to include the new properties, passing an instance to this constructor with a
+         * typecast to its own type.
          *
          * @param name the internal name for this entity instance, for debugging
          * @param stage the stage that will be used to display this entity
@@ -56,21 +67,43 @@ module nurdz.game
          * @param y Y co-ordinate of the location for this entity, in world coordinates
          * @param width the width of this entity, in pixels
          * @param height the height of this entity, in pixels
-         * @param properties entity specific properties to apply to this entity
          * @param zOrder the Z-order of this entity when rendered (smaller numbers render before larger ones)
+         * @param properties entity specific properties to apply to this entity
+         * @param defaults default properties to apply to the instance for any required properties that do
+         * not appear in the properties given
          * @param debugColor the color specification to use in debug rendering for this entity
          * @constructor
          */
         constructor (name : string, stage : Stage, x : number, y : number, width : number, height : number,
-                     properties : EntityProperties, zOrder : number = 1, debugColor : string = 'white')
+                     zOrder : number,
+                     properties : EntityProperties, defaults : EntityProperties = {},
+                     debugColor : string = 'white')
         {
-
             // Invoke the super class constructor.
             super (name, stage, x, y, width, height, zOrder, debugColor);
 
-            // Save the properties we were given, then validate them.
+            // Save our properties, apply defaults, and then validate them
             this._properties = properties;
+            this.applyDefaultProperties (defaults);
             this.validateProperties ();
+        }
+
+        /**
+         * This method is for use in modifying an entity property object to include defaults for properties
+         * that don't already exist.
+         *
+         * In use, the list of defaults is walked, and for each such default that does not already have a
+         * value in the properties object, the property will be copied over to the properties object.
+         *
+         * @param defaults default properties to apply to this entity
+         */
+        protected applyDefaultProperties (defaults : EntityProperties)
+        {
+            for (var propertyName in defaults)
+            {
+                if (defaults.hasOwnProperty (propertyName) && this._properties[propertyName] == null)
+                    this._properties[propertyName] = defaults[propertyName];
+            }
         }
 
         /**

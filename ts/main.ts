@@ -49,28 +49,27 @@ module nurdz.main
         });
     }
 
-    /**
-     * This simple class represents an actor. All it does is start in the center of the screen and bounce
-     * around.
-     */
-    class Dot extends nurdz.game.Actor
+    // This interface extends the properties of regular entities to provide the properties that a Dot
+    // might need in order to operate.
+    interface DotProperties extends nurdz.game.EntityProperties
     {
         /**
-         * How fast we move on the X axis.
-         *
-         * @type {number}
-         * @private
+         * The X speed of this dot as it moves around. If it's not specified, a random default is provided.
          */
-        private _xSpeed : number = 5;
+        xSpeed? : number;
 
         /**
-         * How fast we move on the Y axis.
-         *
-         * @type {number}
-         * @private
+         * The Y speed of this dot as it moves around. If it's not specified, a random default is provided.
          */
-        private _ySpeed : number = 5;
+        ySpeed? : number;
+    }
 
+    /**
+     * This simple class represents a Dot on the screen. It starts in the center of the screen and bounces
+     * around.
+     */
+    class Dot extends nurdz.game.Entity
+    {
         /**
          * The radius of the circle we use to render ourselves.
          *
@@ -80,18 +79,35 @@ module nurdz.main
         private _radius : number;
 
         /**
+         * Our properties; This is an override to the version in the Entity base class which changes the
+         * type to be our extended properties type.
+         *
+         * @type {DotProperties}
+         * @protected
+         */
+        protected _properties : DotProperties;
+
+        /**
          * Construct an instance; it needs to know how it will be rendered.
          *
          * @param stage the stage that owns this actor.
+         * @param properties the properties to apply to this entity
          */
-        constructor (stage : nurdz.game.Stage)
+        constructor (stage : nurdz.game.Stage, properties : DotProperties = {})
         {
             // Invoke the super to construct us. We position ourselves in the center of the stage.
-            super ("A dot", stage, stage.width / 2, stage.height / 2, game.TILE_SIZE, game.TILE_SIZE);
+            super ("A dot", stage, stage.width / 2, stage.height / 2, game.TILE_SIZE, game.TILE_SIZE, 1,
+                   properties, <DotProperties> {
+                    xSpeed: game.Utils.randomIntInRange (-5, 5),
+                    ySpeed: game.Utils.randomIntInRange (-5, 5)
+                });
 
             // Our radius is half our width because our position is registered via the center of our own
             // bounds.
             this._radius = this._width / 2;
+
+            console.log ("Entity created: ", this.toString ());
+            console.log ("Properties: ", this._properties);
         }
 
         /**
@@ -102,15 +118,15 @@ module nurdz.main
         update (stage : nurdz.game.Stage)
         {
             // Translate;
-            this._position.translateXY (this._xSpeed, this._ySpeed);
+            this._position.translateXY (this._properties.xSpeed, this._properties.ySpeed);
 
             // Bounce left and right
             if (this._position.x < this._radius || this._position.x >= stage.width - this._radius)
-                this._xSpeed *= -1;
+                this._properties.xSpeed *= -1;
 
             // Bounce up and down.
             if (this._position.y < this._radius || this._position.y >= stage.height - this._radius)
-                this._ySpeed *= -1;
+                this._properties.ySpeed *= -1;
         }
 
         /**
@@ -162,6 +178,7 @@ module nurdz.main
 
             // Switch to the initial scene, add a dot to display and then run the game.
             stage.switchToScene ("sceneName");
+            stage.currentScene.addActor (new Dot (stage));
             stage.currentScene.addActor (new Dot (stage));
             stage.run ();
         }
