@@ -176,7 +176,7 @@ module nurdz.game
 
             // Calculate the FPS now. We floor this here because if FPS is for displaying on the screen
             // you probably don't need a billion digits of precision.
-            _fps = Math.floor (_frameNumber / elapsedTime);
+            _fps = Math.round (_frameNumber / elapsedTime);
 
             // If a second or more has elapsed, reset the count. We don't want an average over time, we want
             // the most recent numbers so that we can see momentary drops.
