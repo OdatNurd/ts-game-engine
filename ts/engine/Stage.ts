@@ -55,7 +55,7 @@ module nurdz.game
          *
          * @type {CanvasRenderingContext2D}
          */
-        private _renderer : Render;
+        private _renderer : Renderer;
 
         /**
          * The object that manages our list of scenes for us.
@@ -92,9 +92,9 @@ module nurdz.game
          * Get the underlying rendering object for the stage. This is the object responsible for all
          * rendering on the stage.
          *
-         * @returns {Render} the underlying rendering object for the stage
+         * @returns {Renderer} the underlying rendering object for the stage
          */
-        get renderer () : Render
+        get renderer () : Renderer
         { return this._renderer; }
 
         /**

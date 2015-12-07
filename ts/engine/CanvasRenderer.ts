@@ -6,7 +6,7 @@ module nurdz.game
      * The class knows how to create the stage and do some rendering. This is also where the core
      * rendering loop is contained.
      */
-    export class CanvasRenderer implements Render
+    export class CanvasRenderer implements Renderer
     {
         /**
          * The rendering context for our canvas. This is the gateway to rendering magic.

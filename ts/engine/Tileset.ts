@@ -99,7 +99,7 @@ module nurdz.game
          * if the tile id provided is not recognized.
          *
          * @param id the numeric id value of the tile to search for
-         * @returns {Tile} the tile with the provided value, ornull if the name is invalid.
+         * @returns {Tile} the tile with the provided value, or null if the name is invalid.
          */
         tileForID (id : number) : Tile
         {

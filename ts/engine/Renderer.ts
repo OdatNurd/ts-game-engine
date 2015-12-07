@@ -67,7 +67,7 @@ module nurdz.game
      * This interface determines the rendering capabilities of the engine. Some class needs to be plugged
      * into the Stage that implements this interface.
      */
-    export interface Render
+    export interface Renderer
     {
         /**
          * Obtain the width of the render area, in pixels. This should match the appropriate dimension of

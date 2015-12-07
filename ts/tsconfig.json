@@ -16,7 +16,7 @@
         "engine/Actor.ts",
         "engine/Entity.ts",
         "engine/Scene.ts",
-        "engine/Render.ts",
+        "engine/Renderer.ts",
         "engine/CanvasRenderer.ts",
         "engine/Stage.ts",
         "engine/SceneManager.ts",

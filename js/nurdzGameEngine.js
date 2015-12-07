@@ -1947,7 +1947,7 @@ var nurdz;
                  * Get the underlying rendering object for the stage. This is the object responsible for all
                  * rendering on the stage.
                  *
-                 * @returns {Render} the underlying rendering object for the stage
+                 * @returns {Renderer} the underlying rendering object for the stage
                  */
                 get: function () { return this._renderer; },
                 enumerable: true,
@@ -2372,7 +2372,7 @@ var nurdz;
              * if the tile id provided is not recognized.
              *
              * @param id the numeric id value of the tile to search for
-             * @returns {Tile} the tile with the provided value, ornull if the name is invalid.
+             * @returns {Tile} the tile with the provided value, or null if the name is invalid.
              */
             Tileset.prototype.tileForID = function (id) {
                 return this._tilesByValue[id];
