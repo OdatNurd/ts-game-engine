@@ -191,10 +191,10 @@ module nurdz.game
          * @param bitmap the bitmap to display
          * @param x X location to display the bitmap at
          * @param y Y location to display the bitmap at
-         * @see Stage.drawBmpCentered
-         * @see Stage.drawBmpCenteredRotated
+         * @see Stage.blitCentered
+         * @see Stage.blitCenteredRotated
          */
-        drawBmp (bitmap : HTMLImageElement, x : number, y : number);
+        blit (bitmap : HTMLImageElement, x : number, y : number);
 
         /**
          * Displays a bitmap to the rendering area such that its center is at the point provided.
@@ -202,10 +202,10 @@ module nurdz.game
          * @param bitmap the bitmap to display
          * @param x X location to display the center of the bitmap at
          * @param y Y location to display the center of the bitmap at
-         * @see Stage.drawBmp
-         * @see Stage.drawBmpCenteredRotated
+         * @see Stage.blit
+         * @see Stage.blitCenteredRotated
          */
-        drawBmpCentered (bitmap : HTMLImageElement, x : number, y : number);
+        blitCentered (bitmap : HTMLImageElement, x : number, y : number);
 
         /**
          * Display a bitmap to the rendering area such that its center is at the point provided. The bitmap is
@@ -215,10 +215,10 @@ module nurdz.game
          * @param x X location to display the center of the bitmap at
          * @param y Y location to display the center of the bitmap at
          * @param angle the angle to rotate the bitmap to (in radians)
-         * @see Render.drawBmp
-         * @see Render.drawBmpCentered
+         * @see Render.blit
+         * @see Render.blitCentered
          */
-        drawBmpCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number);
+        blitCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number);
 
         /**
          * Do an (optional) translation and (optional) rotation of the rendering area. You can perform one or

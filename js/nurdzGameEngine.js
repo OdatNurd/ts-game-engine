@@ -1530,10 +1530,10 @@ var nurdz;
              * @param bitmap the bitmap to display
              * @param x X location to display the bitmap at
              * @param y Y location to display the bitmap at
-             * @see Render.drawBmpCentered
-             * @see Render.drawBmpCenteredRotated
+             * @see Render.blitCentered
+             * @see Render.blitCenteredRotated
              */
-            CanvasRenderer.prototype.drawBmp = function (bitmap, x, y) {
+            CanvasRenderer.prototype.blit = function (bitmap, x, y) {
                 this._canvasContext.drawImage(bitmap, x, y);
             };
             /**
@@ -1542,10 +1542,10 @@ var nurdz;
              * @param bitmap the bitmap to display
              * @param x X location to display the center of the bitmap at
              * @param y Y location to display the center of the bitmap at
-             * @see Render.drawBmp
-             * @see Render.drawBmpCenteredRotated
+             * @see Render.blit
+             * @see Render.blitCenteredRotated
              */
-            CanvasRenderer.prototype.drawBmpCentered = function (bitmap, x, y) {
+            CanvasRenderer.prototype.blitCentered = function (bitmap, x, y) {
                 this.translateAndRotate(x, y);
                 this._canvasContext.drawImage(bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
             };
@@ -1557,10 +1557,10 @@ var nurdz;
              * @param x X location to display the center of the bitmap at
              * @param y Y location to display the center of the bitmap at
              * @param angle the angle to rotate the bitmap to (in degrees)
-             * @see Render.drawBmp
-             * @see Render.drawBmpCentered
+             * @see Render.blit
+             * @see Render.blitCentered
              */
-            CanvasRenderer.prototype.drawBmpCenteredRotated = function (bitmap, x, y, angle) {
+            CanvasRenderer.prototype.blitCenteredRotated = function (bitmap, x, y, angle) {
                 this.translateAndRotate(x, y, angle);
                 this._canvasContext.drawImage(bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
                 this._canvasContext.restore();

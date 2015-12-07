@@ -372,10 +372,10 @@ module nurdz.game
          * @param bitmap the bitmap to display
          * @param x X location to display the bitmap at
          * @param y Y location to display the bitmap at
-         * @see Render.drawBmpCentered
-         * @see Render.drawBmpCenteredRotated
+         * @see Render.blitCentered
+         * @see Render.blitCenteredRotated
          */
-        drawBmp (bitmap : HTMLImageElement, x : number, y : number)
+        blit (bitmap : HTMLImageElement, x : number, y : number)
         {
             this._canvasContext.drawImage (bitmap, x, y);
         }
@@ -386,10 +386,10 @@ module nurdz.game
          * @param bitmap the bitmap to display
          * @param x X location to display the center of the bitmap at
          * @param y Y location to display the center of the bitmap at
-         * @see Render.drawBmp
-         * @see Render.drawBmpCenteredRotated
+         * @see Render.blit
+         * @see Render.blitCenteredRotated
          */
-        drawBmpCentered (bitmap : HTMLImageElement, x : number, y : number)
+        blitCentered (bitmap : HTMLImageElement, x : number, y : number)
         {
             this.translateAndRotate (x, y);
             this._canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
@@ -403,10 +403,10 @@ module nurdz.game
          * @param x X location to display the center of the bitmap at
          * @param y Y location to display the center of the bitmap at
          * @param angle the angle to rotate the bitmap to (in degrees)
-         * @see Render.drawBmp
-         * @see Render.drawBmpCentered
+         * @see Render.blit
+         * @see Render.blitCentered
          */
-        drawBmpCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number)
+        blitCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number)
         {
             this.translateAndRotate (x, y, angle);
             this._canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
