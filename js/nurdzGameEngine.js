@@ -807,21 +807,30 @@ var nurdz;
                 return "_ng_entity" + Entity.autoEntityID;
             };
             /**
-             * This helper method is for validating entity properties. The method checks if a property with
-             * the name given exists and is also (optionally) of an expected type. You can also specify if the
-             * property is required or not; a property that is not required only throws an error if it exists
-             * but is not of the type provided.
+             * This helper method is for validating entity properties. The method checks to see if a property
+             * exists or not, if it is supposed to. It can also optionally confirm that the value is in some
+             * range of valid values.
              *
-             * The value for the expected type (when not null) are whatever the typeof operator can return,
-             * plus the extra type 'array' which indicates that the value must be an array.
+             * The type is not checked because the TypeScript compiler already enforces that properties that
+             * are known are of a valid type.
+             *
+             * Also note that some EntityProperty interface subclasses may specify that a property is not in
+             * fact optional; when this is the case, this method is not needed except to validate values,
+             * because the compiler is already validating that it's there.
+             *
+             * The "is required" checking here is intended for situations where properties are actually deemed
+             * "always required" but which always have a default value that is forced in the Entity default
+             * properties. In this case the interface would say that they're optional, but they're really not
+             * and we just want to catch the developer forgetting to specify them.
              *
              * @param name the name of the property to validate.
-             * @param expectedType the expected type of the value of the property, or null if we don't care.
              * @param required true when this property is required and false when it is optional
-             * @param values either null or an array of contains all of the possible valid values for the property
+             * @param values either null or an array of contains all of the possible valid values for the
+             * property. It's up to you to ensure that the type of the elements in the array matches the type
+             * of the property being validated
              * @throws {Error} if the property is not valid for any reason
              */
-            Entity.prototype.isPropertyValid = function (name, expectedType, required, values) {
+            Entity.prototype.isPropertyValid = function (name, required, values) {
                 if (values === void 0) { values = null; }
                 // Get the value of the property (if any).
                 var propertyValue = this._properties[name];
@@ -832,13 +841,6 @@ var nurdz;
                         throw new ReferenceError("Entity " + this._name + ": missing property '" + name + "'");
                     else
                         return;
-                }
-                // If we got an expected type and it's not right, throw an error.
-                if (expectedType != null) {
-                    // Get the actual type of the value and see if it matched.
-                    var actualType = (Array.isArray(propertyValue) ? "array" : typeof (propertyValue));
-                    if (actualType != expectedType)
-                        throw new TypeError("Entity " + this._name + ": invalid property '" + name + "': expected " + expectedType);
                 }
                 // If we got a list of possible values and this property actually exists, make sure that the
                 // value is one of them.
@@ -855,20 +857,26 @@ var nurdz;
              * This method is automatically invoked at construction time to validate that the properties object
              * provided is valid as far as we can tell (i.e. needed properties exist and have a sensible value).
              *
+             * Do note that the TypeScript compiler will ensure that the types of any properties are correct,
+             * so this is really only needed to vet values and also to ensure that optional properties that
+             * are not really optional but only marked that way so that they can have defaults were actually
+             * installed, as a protection to the developer.
+             *
              * This does not need to check if the values are valid as far as the other entities are concerned
              * (i.e. does a property that expects an entity id actually represent a valid entity) as that
              * happens elsewhere; further, that entity might not be created yet.
              *
-             * This should throw an error if any properties are invalid.
+             * This should throw an error if any properties are invalid. Make sure you call the super method
+             * in your subclass!
              *
              * @throw {Error} if any properties in this entity are invalid
              */
             Entity.prototype.validateProperties = function () {
-                // If there is not an id property, install it first.
+                // If there is not an id property, install it. We don't have to otherwise validate anything,
+                // as this is the only property that we care about and the compiler ensures that its type is
+                // correct so we don't have to do anything else.
                 if (this._properties.id == null)
                     this._properties.id = Entity.createDefaultID();
-                // Validate that the id property is a string (in case it was already there) and exists.
-                this.isPropertyValid("id", "string", true);
             };
             /**
              * Query whether this entity should block movement of the actor provided or not.
@@ -2894,9 +2902,30 @@ var nurdz;
                 // Our radius is half our width because our position is registered via the center of our own
                 // bounds.
                 this._radius = this._width / 2;
-                console.log("Entity created: ", this.toString());
-                console.log("Properties: ", this._properties);
+                // Show what we did in the console.
+                console.log("Dot entity created with properties: ", this._properties);
             }
+            /**
+             * This gets invoked by the Entity class constructor when it runs to allow us to validate that our
+             * properties are OK.
+             *
+             * Here we make sure to fix up an X or Y speed that is 0 to be non-zero so that we always bounce
+             * in a pleasing fashion.
+             */
+            Dot.prototype.validateProperties = function () {
+                // Let the super class do its job.
+                _super.prototype.validateProperties.call(this);
+                // Make sure our xSpeed is valid.
+                if (this._properties.xSpeed == 0) {
+                    console.log("Fixing a 0 xSpeed");
+                    this._properties.xSpeed = nurdz.game.Utils.randomFloatInRange(-1, 1) > 0 ? 1 : -1;
+                }
+                // Make sure our ySpeed is valid.
+                if (this._properties.ySpeed == 0) {
+                    console.log("Fixing a 0 ySpeed");
+                    this._properties.ySpeed = nurdz.game.Utils.randomFloatInRange(-1, 1) > 0 ? 1 : -1;
+                }
+            };
             /**
              * Update our position on the stage.
              *

@@ -106,8 +106,35 @@ module nurdz.main
             // bounds.
             this._radius = this._width / 2;
 
-            console.log ("Entity created: ", this.toString ());
-            console.log ("Properties: ", this._properties);
+            // Show what we did in the console.
+            console.log ("Dot entity created with properties: ", this._properties);
+        }
+
+        /**
+         * This gets invoked by the Entity class constructor when it runs to allow us to validate that our
+         * properties are OK.
+         *
+         * Here we make sure to fix up an X or Y speed that is 0 to be non-zero so that we always bounce
+         * in a pleasing fashion.
+         */
+        protected validateProperties ()
+        {
+            // Let the super class do its job.
+            super.validateProperties();
+
+            // Make sure our xSpeed is valid.
+            if (this._properties.xSpeed == 0)
+            {
+                console.log ("Fixing a 0 xSpeed");
+                this._properties.xSpeed = game.Utils.randomFloatInRange (-1, 1) > 0 ? 1 : -1;
+            }
+
+            // Make sure our ySpeed is valid.
+            if (this._properties.ySpeed == 0)
+            {
+                console.log ("Fixing a 0 ySpeed");
+                this._properties.ySpeed = game.Utils.randomFloatInRange (-1, 1) > 0 ? 1 : -1;
+            }
         }
 
         /**
