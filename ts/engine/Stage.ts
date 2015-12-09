@@ -328,7 +328,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private keyDownEvent = (evt : Event) =>
+        private keyDownEvent = (evt : KeyboardEvent) =>
         {
             if (this._sceneManager.currentScene.inputKeyDown (evt))
                 evt.preventDefault ();
@@ -340,7 +340,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private keyUpEvent = (evt : Event) =>
+        private keyUpEvent = (evt : KeyboardEvent) =>
         {
             if (this._sceneManager.currentScene.inputKeyUp (evt))
                 evt.preventDefault ();
@@ -352,7 +352,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private mouseMoveEvent = (evt : Event) =>
+        private mouseMoveEvent = (evt : MouseEvent) =>
         {
             this._sceneManager.currentScene.inputMouseMove (evt);
         };
@@ -363,7 +363,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private mouseClickEvent = (evt : Event) =>
+        private mouseClickEvent = (evt : MouseEvent) =>
         {
             this._sceneManager.currentScene.inputMouseClick (evt);
         };
