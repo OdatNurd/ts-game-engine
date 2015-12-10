@@ -12,7 +12,7 @@ module nurdz.game.Utils
      *
      * @returns {number} a random number somewhere in the range of min and max, inclusive
      */
-    export function randomFloatInRange (min : number, max: number) : number
+    export function randomFloatInRange (min : number, max : number) : number
     {
         return Math.random () * (max - min) + min;
     }

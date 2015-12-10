@@ -97,7 +97,7 @@ module nurdz.game
          *
          * @returns {number}
          */
-        set zOrder (newZOrder : number )
+        set zOrder (newZOrder : number)
         { this._zOrder = newZOrder; }
 
         /**

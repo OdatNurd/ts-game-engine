@@ -168,7 +168,7 @@ module nurdz.game
         private sceneLoop = () =>
         {
             // Get the current time for this frame and the elapsed time since we started.
-            var currentTime = new Date ().getTime();
+            var currentTime = new Date ().getTime ();
             var elapsedTime = (currentTime - _startTime) / 1000;
 
             // This counts as a frame.

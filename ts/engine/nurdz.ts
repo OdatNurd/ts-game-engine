@@ -15,8 +15,8 @@ interface StringConstructor
 if (!String.format)
 {
     /**
-     * Takes a format string and one or more other strings, and does a replacement, returning a copy of the newly
-     * formatted string.
+     * Takes a format string and one or more other strings, and does a replacement, returning a copy of the
+     * newly formatted string.
      *
      * The format string can contain sequences like {0} or {1} or {n}, where that text (including the braces)
      * will get replaced with the argument at that location.
@@ -36,7 +36,7 @@ if (!String.format)
      */
     String.format = function (formatString : string, ... params) : string
     {
-        return formatString.replace(/{(\d+)}/g, function (match, number)
+        return formatString.replace (/{(\d+)}/g, function (match, number)
         {
             return typeof params[number] != 'undefined'
                 ? params[number]

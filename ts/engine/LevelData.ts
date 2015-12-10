@@ -206,7 +206,7 @@ module nurdz.game
                 {
                     // Pull a tileID out of the level data, and validate that the tileset knows what it is.
                     var tileID = this._levelData[y * this._width + x];
-                    if (this._tileset.isValidTileID(tileID) == false)
+                    if (this._tileset.isValidTileID (tileID) == false)
                         this.error ("Invalid tileID '${tileID}' found at [${x}, ${y}] in level ${this.name}");
                 }
             }
