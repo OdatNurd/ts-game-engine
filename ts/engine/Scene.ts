@@ -273,7 +273,7 @@ module nurdz.game
          * @param eventObj the event object
          * @returns {boolean} true if the key event was handled, false otherwise
          */
-        inputKeyDown (eventObj : Event) : boolean
+        inputKeyDown (eventObj : KeyboardEvent) : boolean
         {
             return false;
         }
@@ -288,7 +288,7 @@ module nurdz.game
          * @param eventObj the event object
          * @returns {boolean} true if the key event was handled, false otherwise
          */
-        inputKeyUp (eventObj : Event) : boolean
+        inputKeyUp (eventObj : KeyboardEvent) : boolean
         {
             return false;
         }
@@ -300,7 +300,7 @@ module nurdz.game
          * @param eventObj the event object
          * @see Stage.calculateMousePos
          */
-        inputMouseMove (eventObj : Event)
+        inputMouseMove (eventObj : MouseEvent)
         {
         }
 
@@ -311,7 +311,7 @@ module nurdz.game
          * @param eventObj the event object
          * @see Stage.calculateMousePos
          */
-        inputMouseClick (eventObj : Event)
+        inputMouseClick (eventObj : MouseEvent)
         {
         }
 
