@@ -1158,19 +1158,27 @@ var nurdz;
              * This gets triggered while the game is running, this scene is the current scene, and the mouse
              * moves over the stage.
              *
+             * The method should return true if the mouse event was handled or false if it was not. The Stage
+             * will prevent the default handling for all mouse events that are handled.
+             *
              * @param eventObj the event object
              * @see Stage.calculateMousePos
              */
             Scene.prototype.inputMouseMove = function (eventObj) {
+                return false;
             };
             /**
              * This gets triggered while the game is running, this scene is the current scene, and the mouse
              * is clicked on the stage.
              *
+             * The method should return true if the mouse event was handled or false if it was not. The Stage
+             * will prevent the default handling for all mouse events that are handled.
+             *
              * @param eventObj the event object
              * @see Stage.calculateMousePos
              */
             Scene.prototype.inputMouseClick = function (eventObj) {
+                return false;
             };
             /**
              * Open a new tab/window that displays the current contents of the stage. The generated page will
@@ -1854,7 +1862,8 @@ var nurdz;
                  * @param evt the event object for this event
                  */
                 this.mouseMoveEvent = function (evt) {
-                    _this._sceneManager.currentScene.inputMouseMove(evt);
+                    if (_this._sceneManager.currentScene.inputMouseMove(evt))
+                        evt.preventDefault();
                 };
                 /**
                  * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
@@ -1863,7 +1872,8 @@ var nurdz;
                  * @param evt the event object for this event
                  */
                 this.mouseClickEvent = function (evt) {
-                    _this._sceneManager.currentScene.inputMouseClick(evt);
+                    if (_this._sceneManager.currentScene.inputMouseClick(evt))
+                        evt.preventDefault();
                 };
                 /**
                  * Turn on input handling for the game. This will capture keyboard events from the document and mouse

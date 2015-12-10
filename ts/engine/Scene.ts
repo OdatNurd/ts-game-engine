@@ -297,22 +297,30 @@ module nurdz.game
          * This gets triggered while the game is running, this scene is the current scene, and the mouse
          * moves over the stage.
          *
+         * The method should return true if the mouse event was handled or false if it was not. The Stage
+         * will prevent the default handling for all mouse events that are handled.
+         *
          * @param eventObj the event object
          * @see Stage.calculateMousePos
          */
-        inputMouseMove (eventObj : MouseEvent)
+        inputMouseMove (eventObj : MouseEvent) : boolean
         {
+            return false;
         }
 
         /**
          * This gets triggered while the game is running, this scene is the current scene, and the mouse
          * is clicked on the stage.
          *
+         * The method should return true if the mouse event was handled or false if it was not. The Stage
+         * will prevent the default handling for all mouse events that are handled.
+         *
          * @param eventObj the event object
          * @see Stage.calculateMousePos
          */
-        inputMouseClick (eventObj : MouseEvent)
+        inputMouseClick (eventObj : MouseEvent) : boolean
         {
+            return false;
         }
 
         /**

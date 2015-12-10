@@ -354,7 +354,8 @@ module nurdz.game
          */
         private mouseMoveEvent = (evt : MouseEvent) =>
         {
-            this._sceneManager.currentScene.inputMouseMove (evt);
+            if (this._sceneManager.currentScene.inputMouseMove (evt))
+                evt.preventDefault ();
         };
 
         /**
@@ -365,7 +366,8 @@ module nurdz.game
          */
         private mouseClickEvent = (evt : MouseEvent) =>
         {
-            this._sceneManager.currentScene.inputMouseClick (evt);
+            if (this._sceneManager.currentScene.inputMouseClick (evt))
+                evt.preventDefault ();
         };
 
         /**
