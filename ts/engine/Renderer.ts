@@ -64,6 +64,20 @@ module nurdz.game
     }
 
     /**
+     * This is a simple type that represents a polygon. It is an array of points to join together where
+     * each point is described as an array of two numbers.
+     *
+     * The last point will implicitly connect to the first point when rendered, so it is not neccesary to
+     * include an end point that "closes" the polygon.
+     *
+     * This does not use Point objects as most polygons are more easily described with constant arrays. Do
+     * note however that the Point class can turn itself into an array.
+     *
+     * @see Point.toArray
+     */
+    export type Polygon = Array<Array<number>>;
+
+    /**
      * This interface determines the rendering capabilities of the engine. Some class needs to be plugged
      * into the Stage that implements this interface.
      */
@@ -113,6 +127,17 @@ module nurdz.game
          * @param color the color to fill the circle with
          */
         fillCircle (x : number, y : number, radius : number, color : string);
+
+        /**
+         * Render an arbitrary polygon by connecting all of the points provided in the polygon and then
+         * filling the result.
+         *
+         * The points should be in the polygon in clockwise order.
+         *
+         * @param pointList the list of points that describe the polygon to render.
+         * @param color the color to fill the polygon with.
+         */
+        fillPolygon (pointList : Polygon, color : string);
 
         /**
          * This helper method sets all of the styles necessary for rendering lines. This can be called before

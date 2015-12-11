@@ -97,6 +97,30 @@ module nurdz.game
         }
 
         /**
+         * Render an arbitrary polygon by connecting all of the points provided in the polygon and then
+         * filling the result.
+         *
+         * The points should be in the polygon in clockwise order.
+         *
+         * @param pointList the list of points that describe the polygon to render.
+         * @param color the color to fill the polygon with.
+         */
+        fillPolygon (pointList : Polygon, color : string)
+        {
+            // Set the color and begin our polygon.
+            this._canvasContext.fillStyle = color;
+            this._canvasContext.beginPath ();
+
+            // Use the first point to start the polygon, then join the rest of the points together in turn.
+            this._canvasContext.moveTo (pointList[0][0], pointList[0][1]);
+            for (let i = 1 ; i < pointList.length ; i++)
+                this._canvasContext.lineTo (pointList[i][0], pointList[i][1]);
+
+            // FIll the shape now. This closes the shape by connecting the start and end point for us.
+            this._canvasContext.fill ();
+        }
+
+        /**
          * This helper method sets all of the styles necessary for rendering lines to the stage. This can be
          * called before drawing operations as a convenience to set all desired values in one call.
          *
