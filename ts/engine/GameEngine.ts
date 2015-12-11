@@ -56,6 +56,18 @@ module nurdz.game
         KEY_RIGHT,
         KEY_DOWN,
 
+        // Number keys
+        KEY_0 = 48,
+        KEY_1,
+        KEY_2,
+        KEY_3,
+        KEY_4,
+        KEY_5,
+        KEY_6,
+        KEY_7,
+        KEY_8,
+        KEY_9,
+
         // Alpha keys; these are all a single case because shift state is tracked separately.
         KEY_A = 65,
         KEY_B,

@@ -136,6 +136,17 @@ var nurdz;
             KeyCodes[KeyCodes["KEY_UP"] = 38] = "KEY_UP";
             KeyCodes[KeyCodes["KEY_RIGHT"] = 39] = "KEY_RIGHT";
             KeyCodes[KeyCodes["KEY_DOWN"] = 40] = "KEY_DOWN";
+            // Number keys
+            KeyCodes[KeyCodes["KEY_0"] = 48] = "KEY_0";
+            KeyCodes[KeyCodes["KEY_1"] = 49] = "KEY_1";
+            KeyCodes[KeyCodes["KEY_2"] = 50] = "KEY_2";
+            KeyCodes[KeyCodes["KEY_3"] = 51] = "KEY_3";
+            KeyCodes[KeyCodes["KEY_4"] = 52] = "KEY_4";
+            KeyCodes[KeyCodes["KEY_5"] = 53] = "KEY_5";
+            KeyCodes[KeyCodes["KEY_6"] = 54] = "KEY_6";
+            KeyCodes[KeyCodes["KEY_7"] = 55] = "KEY_7";
+            KeyCodes[KeyCodes["KEY_8"] = 56] = "KEY_8";
+            KeyCodes[KeyCodes["KEY_9"] = 57] = "KEY_9";
             // Alpha keys; these are all a single case because shift state is tracked separately.
             KeyCodes[KeyCodes["KEY_A"] = 65] = "KEY_A";
             KeyCodes[KeyCodes["KEY_B"] = 66] = "KEY_B";
