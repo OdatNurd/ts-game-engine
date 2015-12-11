@@ -169,6 +169,26 @@ module nurdz.game
         }
 
         /**
+         * Set the position of this point to the first two values in the array passed in, where the first
+         * value is treated as the X value and the second value is treated as the Y value.
+         *
+         * It is valid for the array to have more than two elements, but if it has fewer than two, nothing
+         * happens.
+         *
+         * @param array the array to get the new values from.
+         * @returns {Point} this point after the operation completes, for chaining calls.
+         */
+        setToArray (array : Array<number>) : Point
+        {
+            if (array.length >= 2)
+            {
+                this._x = array[0];
+                this._y = array[1];
+                return this;
+            }
+        }
+
+        /**
          * Compares this point to the point passed in to determine if they represent the same point.
          *
          * @param other the point to compare to
@@ -330,6 +350,16 @@ module nurdz.game
             this.clampX (0, stage.width - 1);
             this.clampY (0, stage.height - 1);
             return this;
+        }
+
+        /**
+         * Return a copy of this point as an array of two numbers in x, y ordering.
+         *
+         * @returns {Array<number>} the point as an array of two numbers.
+         */
+        toArray () : Array<number>
+        {
+            return [this._x, this._y];
         }
 
         /**
