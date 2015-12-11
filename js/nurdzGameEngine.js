@@ -2083,13 +2083,11 @@ var nurdz;
             };
             /**
              * Register a scene object with the stage using a textual name. This scene can then be switched to
-             * via
-             * the switchToScene method.
+             * via the switchToScene method.
              *
              * You can invoke this with null as a scene object to remove a scene from the internal scene list.
-             * You
-             * can also register the same object multiple times with different names, if that's interesting to
-             * you.
+             * You can also register the same object multiple times with different names, if that's interesting
+             * to you.
              *
              * It is an error to attempt to register a scene using the name of a scene that already exists.
              *

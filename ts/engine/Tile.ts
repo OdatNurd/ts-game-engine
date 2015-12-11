@@ -85,7 +85,7 @@ module nurdz.game
          * @param y the y location to render the tile at, in stage coordinates (NOT world)
          * @param renderer the renderer to use to render ourselves.
          */
-        render (x : number, y : number, renderer : Renderer)
+        render (x : number, y : number, renderer : Renderer) : void
         {
             renderer.fillRect (x, y, TILE_SIZE, TILE_SIZE, this._debugColor);
         }

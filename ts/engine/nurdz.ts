@@ -74,7 +74,7 @@ module nurdz
      * @param fn the function to invoke when the DOM is ready.
      */
 
-    export function contentLoaded (win : Window, fn : Function)
+    export function contentLoaded (win : Window, fn : Function) : void
     {
         // The typecast below was added for TypeScript compatibility because HTMLElement doesn't include
         // the doScroll() method used below when the browser is IE.

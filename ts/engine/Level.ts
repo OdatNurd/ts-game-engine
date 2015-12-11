@@ -238,7 +238,7 @@ module nurdz.game
          * @param idSpec the id or ids of entities to find or null too do nothing
          * @param activator the actor that is activating the entities, or null
          */
-        triggerEntitiesWithIDs (idSpec : Array<string>, activator : Actor)
+        triggerEntitiesWithIDs (idSpec : Array<string>, activator : Actor) : void
         {
             // If there is not an idSpec, do nothing.
             if (idSpec == null)
@@ -349,7 +349,7 @@ module nurdz.game
          *
          * @param renderer the renderer to render with
          */
-        render (renderer : Renderer)
+        render (renderer : Renderer) : void
         {
             // Iterate over the tiles.
             for (var y = 0 ; y < this._height ; y++)

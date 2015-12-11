@@ -142,7 +142,7 @@ module nurdz.game
          *
          * @param stage the stage that the actor is on
          */
-        update (stage : Stage)
+        update (stage : Stage) : void
         {
 
         }
@@ -155,7 +155,7 @@ module nurdz.game
          * @param y the y location to render the actor at, in stage coordinates (NOT world)
          * @param renderer the class to use to render the actor
          */
-        render (x : number, y : number, renderer : Renderer)
+        render (x : number, y : number, renderer : Renderer) : void
         {
             // Draw a filled rectangle for actor using the debug color.
             renderer.fillRect (x, y, this._width, this._height, this._debugColor);
@@ -167,7 +167,7 @@ module nurdz.game
          *
          * @param point the new position for this actor
          */
-        setStagePosition (point : Point)
+        setStagePosition (point : Point) : void
         {
             this.setStagePositionXY (point.x, point.y);
         }
@@ -180,7 +180,7 @@ module nurdz.game
          * @param x the new X coordinate for the actor
          * @param y the new Y coordinate for the actor
          */
-        setStagePositionXY (x : number, y : number)
+        setStagePositionXY (x : number, y : number) : void
         {
             this._position.setToXY (x, y);
             this._mapPosition = this._position.copyReduced (TILE_SIZE);
@@ -192,7 +192,7 @@ module nurdz.game
          *
          * @param point the new position for this actor
          */
-        setMapPosition (point : Point)
+        setMapPosition (point : Point) : void
         {
             this.setMapPositionXY (point.x, point.y);
         }
@@ -204,7 +204,7 @@ module nurdz.game
          * @param x the new X coordinate for this actor
          * @param y the new Y coordinate for this actor
          */
-        setMapPositionXY (x : number, y : number)
+        setMapPositionXY (x : number, y : number) : void
         {
             this._mapPosition.setToXY (x, y);
             this._position = this._mapPosition.copyScaled (TILE_SIZE);

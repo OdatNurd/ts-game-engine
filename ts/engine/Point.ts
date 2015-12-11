@@ -345,7 +345,7 @@ module nurdz.game
          * @param stage the stage to clamp to
          * @returns {Point} this point after the clamp is completed, for chaining calls.
          */
-        clampToStage (stage : Stage)
+        clampToStage (stage : Stage) : Point
         {
             this.clampX (0, stage.width - 1);
             this.clampY (0, stage.height - 1);

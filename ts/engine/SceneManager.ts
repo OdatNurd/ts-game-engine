@@ -71,7 +71,7 @@ module nurdz.game
          * @param newScene the scene object to add
          * @see Scene.switchToScene
          */
-        addScene (name : string, newScene : Scene = null)
+        addScene (name : string, newScene : Scene = null) : void
         {
             // If this name is in use and we were given a scene object, we should complain.
             if (this._sceneList[name] != null && newScene != null)
@@ -97,7 +97,7 @@ module nurdz.game
          * @param {String} sceneName the name of the new scene to change to, or null to cancel a pending
          * change
          */
-        switchToScene (sceneName : string = null)
+        switchToScene (sceneName : string = null) : void
         {
             // Get the actual new scene, which might be null if the scene named passed in is null.
             var newScene = sceneName != null ? this._sceneList[sceneName] : null;
@@ -121,7 +121,7 @@ module nurdz.game
          *
          * @see SceneManager.switchToScene
          */
-        checkSceneSwitch ()
+        checkSceneSwitch () : void
         {
             // If there is a scene change scheduled, change it now.
             if (this._nextScene != null && this._nextScene !== this._currentScene)

@@ -165,7 +165,7 @@ module nurdz.game
          *
          * In practice, this gets invoked on a timer at the desired FPS that the game should run at.
          */
-        private sceneLoop = () =>
+        private sceneLoop = () : void =>
         {
             // Get the current time for this frame and the elapsed time since we started.
             var currentTime = new Date ().getTime ();
@@ -215,7 +215,7 @@ module nurdz.game
          * @see Stage.stop
          * @param fps the FPS to attempt to run at
          */
-        run (fps : number = 30)
+        run (fps : number = 30) : void
         {
             if (_gameTimerID != null)
                 throw new Error ("Attempt to start the game running when it is already running");
@@ -240,7 +240,7 @@ module nurdz.game
          *
          * @see Stage.run
          */
-        stop ()
+        stop () : void
         {
             // Make sure the game is running.
             if (_gameTimerID == null)
@@ -256,13 +256,11 @@ module nurdz.game
 
         /**
          * Register a scene object with the stage using a textual name. This scene can then be switched to
-         * via
-         * the switchToScene method.
+         * via the switchToScene method.
          *
          * You can invoke this with null as a scene object to remove a scene from the internal scene list.
-         * You
-         * can also register the same object multiple times with different names, if that's interesting to
-         * you.
+         * You can also register the same object multiple times with different names, if that's interesting
+         * to you.
          *
          * It is an error to attempt to register a scene using the name of a scene that already exists.
          *
@@ -270,7 +268,7 @@ module nurdz.game
          * @param newScene the scene object to add
          * @see Scene.switchToScene
          */
-        addScene (name : string, newScene : Scene = null)
+        addScene (name : string, newScene : Scene = null) : void
         {
             this._sceneManager.addScene (name, newScene);
         }
@@ -287,7 +285,7 @@ module nurdz.game
          * @param {String} sceneName the name of the new scene to change to, or null to cancel a pending
          * change
          */
-        switchToScene (sceneName : string = null)
+        switchToScene (sceneName : string = null) : void
         {
             // Indicate that we want to switch to the scene provided.
             this._sceneManager.switchToScene (sceneName);
@@ -328,7 +326,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private keyDownEvent = (evt : KeyboardEvent) =>
+        private keyDownEvent = (evt : KeyboardEvent) : void =>
         {
             if (this._sceneManager.currentScene.inputKeyDown (evt))
                 evt.preventDefault ();
@@ -340,7 +338,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private keyUpEvent = (evt : KeyboardEvent) =>
+        private keyUpEvent = (evt : KeyboardEvent) : void =>
         {
             if (this._sceneManager.currentScene.inputKeyUp (evt))
                 evt.preventDefault ();
@@ -352,7 +350,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private mouseMoveEvent = (evt : MouseEvent) =>
+        private mouseMoveEvent = (evt : MouseEvent) : void =>
         {
             if (this._sceneManager.currentScene.inputMouseMove (evt))
                 evt.preventDefault ();
@@ -364,7 +362,7 @@ module nurdz.game
          *
          * @param evt the event object for this event
          */
-        private mouseClickEvent = (evt : MouseEvent) =>
+        private mouseClickEvent = (evt : MouseEvent) : void =>
         {
             if (this._sceneManager.currentScene.inputMouseClick (evt))
                 evt.preventDefault ();
@@ -376,7 +374,7 @@ module nurdz.game
          *
          * @param canvas the canvas to listen for mouse events on.
          */
-        private enableInputEvents = (canvas : HTMLCanvasElement) =>
+        private enableInputEvents = (canvas : HTMLCanvasElement) : void =>
         {
             // Mouse events are specific to the canvas.
             canvas.addEventListener ('mousemove', this.mouseMoveEvent);
@@ -391,7 +389,7 @@ module nurdz.game
          * Turn off input handling for the game. This will turn off keyboard events from the document and
          * mouse events for the canvas provided.
          */
-        private disableInputEvents = (canvas : HTMLCanvasElement) =>
+        private disableInputEvents = (canvas : HTMLCanvasElement) : void =>
         {
             canvas.removeEventListener ('mousemove', this.mouseMoveEvent);
             canvas.removeEventListener ('mousedown', this.mouseClickEvent);

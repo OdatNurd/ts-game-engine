@@ -58,7 +58,7 @@ module nurdz.game
          *
          * @param color the color to clear the stage with.
          */
-        clear (color : string = 'black')
+        clear (color : string = 'black') : void
         {
             this._canvasContext.fillStyle = color;
             this._canvasContext.fillRect (0, 0, STAGE_WIDTH, STAGE_HEIGHT);
@@ -74,7 +74,7 @@ module nurdz.game
          * @param height height of the rectangle to render
          * @param color the color to fill the rectangle with
          */
-        fillRect (x : number, y : number, width : number, height : number, color : string)
+        fillRect (x : number, y : number, width : number, height : number, color : string) : void
         {
             this._canvasContext.fillStyle = color;
             this._canvasContext.fillRect (x, y, width, height);
@@ -88,7 +88,7 @@ module nurdz.game
          * @param radius radius of the circle to draw
          * @param color the color to fill the circle with
          */
-        fillCircle (x : number, y : number, radius : number, color : string)
+        fillCircle (x : number, y : number, radius : number, color : string) : void
         {
             this._canvasContext.fillStyle = color;
             this._canvasContext.beginPath ();
@@ -105,7 +105,7 @@ module nurdz.game
          * @param pointList the list of points that describe the polygon to render.
          * @param color the color to fill the polygon with.
          */
-        fillPolygon (pointList : Polygon, color : string)
+        fillPolygon (pointList : Polygon, color : string) : void
         {
             // Set the color and begin our polygon.
             this._canvasContext.fillStyle = color;
@@ -132,7 +132,7 @@ module nurdz.game
          * @param lineCap the line cap style to use for rendering lines
          * @see Render.setArrowStyle
          */
-        setLineStyle (color : string, lineWidth : number = 3, lineCap : string = "round")
+        setLineStyle (color : string, lineWidth : number = 3, lineCap : string = "round") : void
         {
             this._canvasContext.strokeStyle = color;
             this._canvasContext.lineWidth = lineWidth;
@@ -160,7 +160,7 @@ module nurdz.game
          * @param style the style of arrow to drw
          */
         private drawHead (x0 : number, y0 : number, x1 : number, y1 : number, x2 : number, y2 : number,
-                          style : number)
+                          style : number) : void
         {
             var backDistance;
 
@@ -252,7 +252,7 @@ module nurdz.game
          * @param lineWidth the width of the arrow line
          * @see Render.setLineStyle
          */
-        setArrowStyle (color : string, lineWidth : number = 2)
+        setArrowStyle (color : string, lineWidth : number = 2) : void
         {
             this._canvasContext.strokeStyle = color;
             this._canvasContext.fillStyle = color;
@@ -298,7 +298,7 @@ module nurdz.game
         drawArrow (x1 : number, y1 : number, x2 : number, y2 : number,
                    style : ArrowStyle = ArrowStyle.QUADRATIC,
                    which : ArrowType = ArrowType.END,
-                   angle : number = Math.PI / 8, d : number = 16)
+                   angle : number = Math.PI / 8, d : number = 16) : void
         {
             // For ends with arrow we actually want to stop before we get to the arrow so that wide lines
             // won't put a flat end on the arrow caused by the rendered line end cap.
@@ -384,7 +384,7 @@ module nurdz.game
          * @param y Y location of the text
          * @param color the color to draw the text with
          */
-        drawTxt (text : string, x : number, y : number, color : string)
+        drawTxt (text : string, x : number, y : number, color : string) : void
         {
             this._canvasContext.fillStyle = color;
             this._canvasContext.fillText (text, x, y);
@@ -399,7 +399,7 @@ module nurdz.game
          * @see Render.blitCentered
          * @see Render.blitCenteredRotated
          */
-        blit (bitmap : HTMLImageElement, x : number, y : number)
+        blit (bitmap : HTMLImageElement, x : number, y : number) : void
         {
             this._canvasContext.drawImage (bitmap, x, y);
         }
@@ -413,7 +413,7 @@ module nurdz.game
          * @see Render.blit
          * @see Render.blitCenteredRotated
          */
-        blitCentered (bitmap : HTMLImageElement, x : number, y : number)
+        blitCentered (bitmap : HTMLImageElement, x : number, y : number) : void
         {
             this.translateAndRotate (x, y);
             this._canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
@@ -430,7 +430,7 @@ module nurdz.game
          * @see Render.blit
          * @see Render.blitCentered
          */
-        blitCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number)
+        blitCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number) : void
         {
             this.translateAndRotate (x, y, angle);
             this._canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
@@ -461,7 +461,7 @@ module nurdz.game
          * @param angle the angle to rotate the canvas, in degrees or null for no translation
          * @see Render.restore
          */
-        translateAndRotate (x : number = null, y : number = null, angle : number = null)
+        translateAndRotate (x : number = null, y : number = null, angle : number = null) : void
         {
             // First, save the canvas context.
             this._canvasContext.save ();
@@ -482,7 +482,7 @@ module nurdz.game
          *
          * @see Render.translateAndRotate
          */
-        restore ()
+        restore () : void
         {
             this._canvasContext.restore ();
         }

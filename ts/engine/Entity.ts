@@ -97,7 +97,7 @@ module nurdz.game
          *
          * @param defaults default properties to apply to this entity
          */
-        protected applyDefaultProperties (defaults : EntityProperties)
+        protected applyDefaultProperties (defaults : EntityProperties) : void
         {
             for (var propertyName in defaults)
             {
@@ -150,7 +150,7 @@ module nurdz.game
          * of the property being validated
          * @throws {Error} if the property is not valid for any reason
          */
-        protected isPropertyValid (name : string, required : boolean, values : string[] = null)
+        protected isPropertyValid (name : string, required : boolean, values : string[] = null) : void
         {
             // Get the value of the property (if any).
             var propertyValue : any = this._properties[name];
@@ -198,7 +198,7 @@ module nurdz.game
          *
          * @throw {Error} if any properties in this entity are invalid
          */
-        protected validateProperties ()
+        protected validateProperties () : void
         {
             // If there is not an id property, install it. We don't have to otherwise validate anything,
             // as this is the only property that we care about and the compiler ensures that its type is
@@ -233,7 +233,7 @@ module nurdz.game
          * @param activator the actor that triggered this entity, or null if unknown
          * @see Entity.triggerTouch
          */
-        trigger (activator : Actor = null)
+        trigger (activator : Actor = null) : void
         {
 
         }
@@ -248,7 +248,7 @@ module nurdz.game
          * @param activator the actor that triggered this entity by touching (colliding) with it
          * @see Entity.trigger
          */
-        triggerTouch (activator : Actor)
+        triggerTouch (activator : Actor) : void
         {
 
         }

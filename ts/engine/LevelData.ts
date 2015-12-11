@@ -174,7 +174,7 @@ module nurdz.game
          *
          * @param message the error to throw
          */
-        private error (message : string)
+        private error (message : string) : void
         {
             throw new Error (message);
         }
@@ -187,7 +187,7 @@ module nurdz.game
          *
          * @throws {Error} if the level data is inconsistent in some way
          */
-        private validateData ()
+        private validateData () : void
         {
             // Ensure that the length of the level data agrees with the dimensions that we were given, to make
             // sure we didn't get sorted.

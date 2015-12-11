@@ -85,7 +85,7 @@ module nurdz.game
          * This base version invokes the update method for all actors that are currently registered with the
          * scene.
          */
-        update ()
+        update () : void
         {
             for (var i = 0 ; i < this._actorList.length ; i++)
                 this._actorList[i].update (this._stage);
@@ -98,7 +98,7 @@ module nurdz.game
          * This base version invokes the render method for all actors that are currently registered with the
          * stage.
          */
-        render ()
+        render () : void
         {
             for (var i = 0 ; i < this._actorList.length ; i++)
             {
@@ -121,7 +121,7 @@ module nurdz.game
          * @param previousScene the previous scene, if any (the very first scene change in the game has no
          * previous scene)
          */
-        activating (previousScene : Scene = null)
+        activating (previousScene : Scene = null) : void
         {
             console.log ("Scene activation:", this.toString ());
         }
@@ -135,7 +135,7 @@ module nurdz.game
          *
          * @param nextScene the scene that is about to become active
          */
-        deactivating (nextScene : Scene)
+        deactivating (nextScene : Scene) : void
         {
             console.log ("Scene deactivation:", this.toString ());
         }
@@ -147,7 +147,7 @@ module nurdz.game
          * @param actor the actor to add to the scene
          * @see Scene.addActorArray
          */
-        addActor (actor : Actor)
+        addActor (actor : Actor) : void
         {
             this._actorList.push (actor);
         }
@@ -160,7 +160,7 @@ module nurdz.game
          * @param actorArray the list of actors to add
          * @see Scene.addActorArray
          */
-        addActorArray (actorArray : Array<Actor>)
+        addActorArray (actorArray : Array<Actor>) : void
         {
             for (var i = 0 ; i < actorArray.length ; i++)
                 this.addActor (actorArray[i]);
@@ -177,7 +177,7 @@ module nurdz.game
          * @see Scene.actorsAtMap
          * @see Scene.actorsAtMapXY
          */
-        actorsAt (location : Point)
+        actorsAt (location : Point) : Array<Actor>
         {
             return this.actorsAtXY (location.x, location.y);
         }
@@ -220,7 +220,7 @@ module nurdz.game
          * @see Scene.actorsAtXY
          * @see Scene.actorsAtMapXY
          */
-        actorsAtMap (location : Point)
+        actorsAtMap (location : Point) : Array<Actor>
         {
             return this.actorsAtMapXY (location.x, location.y);
         }
@@ -258,7 +258,7 @@ module nurdz.game
          *
          * Note that the sort used is not stable.
          */
-        sortActors ()
+        sortActors () : void
         {
             this._actorList.sort (function (left, right) { return left.zOrder - right.zOrder; });
         }
@@ -344,7 +344,7 @@ module nurdz.game
          * @param filename the name of the screenshot image to create
          * @param windowTitle the title of the window
          */
-        screenshot (filename : string = "screenshot", windowTitle : string = "Screenshot")
+        screenshot (filename : string = "screenshot", windowTitle : string = "Screenshot") : void
         {
             // Create a window to hold the screen shot.
             var wind = window.open ("about:blank", "screenshot");
