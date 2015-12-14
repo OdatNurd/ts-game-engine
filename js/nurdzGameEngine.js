@@ -641,6 +641,26 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Actor.prototype, "width", {
+                /**
+                 * Get the width of this actor, in pixels.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._width; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Actor.prototype, "height", {
+                /**
+                 * Get the height of this actor, in pixels.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._height; },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Actor.prototype, "zOrder", {
                 /**
                  * Get the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered

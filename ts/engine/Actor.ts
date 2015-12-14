@@ -81,6 +81,22 @@ module nurdz.game
         { return this._position; }
 
         /**
+         * Get the width of this actor, in pixels.
+         *
+         * @returns {number}
+         */
+        get width () : number
+        { return this._width; }
+
+        /**
+         * Get the height of this actor, in pixels.
+         *
+         * @returns {number}
+         */
+        get height () : number
+        { return this._height; }
+
+        /**
          * Get the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered
          * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
          * by type.
