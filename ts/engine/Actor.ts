@@ -174,7 +174,7 @@ module nurdz.game
         render (x : number, y : number, renderer : Renderer) : void
         {
             // Draw a filled rectangle for actor using the debug color.
-            renderer.fillRect (x, y, this._width, this._height, this._debugColor);
+            renderer.strokeRect (x, y, this._width, this._height, this._debugColor, 1);
         }
 
         /**

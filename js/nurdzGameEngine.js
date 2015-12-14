@@ -708,7 +708,7 @@ var nurdz;
              */
             Actor.prototype.render = function (x, y, renderer) {
                 // Draw a filled rectangle for actor using the debug color.
-                renderer.fillRect(x, y, this._width, this._height, this._debugColor);
+                renderer.strokeRect(x, y, this._width, this._height, this._debugColor, 1);
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The
@@ -1446,6 +1446,23 @@ var nurdz;
                 this._canvasContext.fillRect(x, y, width, height);
             };
             /**
+             * Render an outlined rectangle with its upper left corner at the position provided and with the
+             * provided dimensions.
+             *
+             * @param x X location of the upper left corner of the rectangle
+             * @param y Y location of the upper left corner of the rectangle
+             * @param width width of the rectangle to render
+             * @param height height of the rectangle to render
+             * @param color the color to stroke the rectangle with
+             * @param lineWidth the thickness of the line to stroke with
+             */
+            CanvasRenderer.prototype.strokeRect = function (x, y, width, height, color, lineWidth) {
+                if (lineWidth === void 0) { lineWidth = 1; }
+                this._canvasContext.strokeStyle = color;
+                this._canvasContext.lineWidth = lineWidth;
+                this._canvasContext.strokeRect(x, y, width, height);
+            };
+            /**
              * Render a filled circle with its center at the position provided.
              *
              * @param x X location of the center of the circle
@@ -1460,6 +1477,68 @@ var nurdz;
                 this._canvasContext.fill();
             };
             /**
+             * Render a stroked circle with its center at the position provided.
+             *
+             * @param x X location of the center of the circle
+             * @param y Y location of the center of the circle
+             * @param radius radius of the circle to draw
+             * @param color the color to stroke the circle with
+             * @param lineWidth the thickness of the line to stroke with
+             */
+            CanvasRenderer.prototype.strokeCircle = function (x, y, radius, color, lineWidth) {
+                if (lineWidth === void 0) { lineWidth = 1; }
+                this._canvasContext.strokeStyle = color;
+                this._canvasContext.lineWidth = lineWidth;
+                this._canvasContext.beginPath();
+                this._canvasContext.arc(x, y, radius, 0, Math.PI * 2, true);
+                this._canvasContext.stroke();
+            };
+            /**
+             * Perform the job of executing the commands that will render the polygon points listed.
+             *
+             * This begins a path, executes all of the commands, and then returns. It is up to the color to
+             * set any styles needed and stroke or fill the path as desired.
+             *
+             * @param pointList the polygon to do something with.
+             */
+            CanvasRenderer.prototype.renderPolygon = function (pointList) {
+                // Start the path now
+                this._canvasContext.beginPath();
+                // Iterate over all points and handle them.
+                for (var i = 0; i < pointList.length; i++) {
+                    // Alias the point
+                    var point = pointList[i];
+                    var cmd = void 0, x = void 0, y = void 0;
+                    // If the first item is a string, then it is a command and the following parts are the
+                    // point values (except for a 'c' command, which does not need them.
+                    if (typeof point[0] == "string") {
+                        cmd = point[0];
+                        x = point[1];
+                        y = point[2];
+                    }
+                    else {
+                        // There are only two elements, so there is an implicit command. If this is the first
+                        // point, the command is an implicit moveTo, otherwise it is an implicit lineTo.
+                        cmd = (i == 0 ? 'm' : 'l');
+                        x = point[0];
+                        y = point[1];
+                    }
+                    switch (cmd) {
+                        case 'm':
+                            this._canvasContext.moveTo(x, y);
+                            break;
+                        case 'l':
+                            this._canvasContext.lineTo(x, y);
+                            break;
+                        case 'c':
+                            this._canvasContext.closePath();
+                            break;
+                    }
+                }
+                // Close the path now
+                this._canvasContext.closePath();
+            };
+            /**
              * Render an arbitrary polygon by connecting all of the points provided in the polygon and then
              * filling the result.
              *
@@ -1469,15 +1548,28 @@ var nurdz;
              * @param color the color to fill the polygon with.
              */
             CanvasRenderer.prototype.fillPolygon = function (pointList, color) {
-                // Set the color and begin our polygon.
+                // Set the color, render and fill.
                 this._canvasContext.fillStyle = color;
-                this._canvasContext.beginPath();
-                // Use the first point to start the polygon, then join the rest of the points together in turn.
-                this._canvasContext.moveTo(pointList[0][0], pointList[0][1]);
-                for (var i = 1; i < pointList.length; i++)
-                    this._canvasContext.lineTo(pointList[i][0], pointList[i][1]);
-                // FIll the shape now. This closes the shape by connecting the start and end point for us.
+                this.renderPolygon(pointList);
                 this._canvasContext.fill();
+            };
+            /**
+             * Render an arbitrary polygon by connecting all of the points provided in the polygon and then
+             * stroking the result.
+             *
+             * The points should be in the polygon in clockwise order.
+             *
+             * @param pointList the list of points that describe the polygon to render.
+             * @param color the color to fill the polygon with.
+             * @param lineWidth the thickness of the line to stroke with
+             */
+            CanvasRenderer.prototype.strokePolygon = function (pointList, color, lineWidth) {
+                if (lineWidth === void 0) { lineWidth = 1; }
+                // Set the color and line width, render and stroke.
+                this._canvasContext.strokeStyle = color;
+                this._canvasContext.lineWidth = lineWidth;
+                this.renderPolygon(pointList);
+                this._canvasContext.stroke();
             };
             /**
              * This helper method sets all of the styles necessary for rendering lines to the stage. This can be
