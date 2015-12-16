@@ -695,8 +695,9 @@ var nurdz;
              * Update internal stage for this actor. The default implementation does nothing.
              *
              * @param stage the stage that the actor is on
+             * @param tick the game tick; this is a count of how many times the game loop has executed
              */
-            Actor.prototype.update = function (stage) {
+            Actor.prototype.update = function (stage, tick) {
             };
             /**
              * Render this actor to the stage provided. The default implementation renders a positioning box
@@ -1031,10 +1032,12 @@ var nurdz;
              *
              * This base version invokes the update method for all actors that are currently registered with the
              * scene.
+             *
+             * @param tick the game tick; this is a count of how many times the game loop has executed
              */
-            Scene.prototype.update = function () {
+            Scene.prototype.update = function (tick) {
                 for (var i = 0; i < this._actorList.length; i++)
-                    this._actorList[i].update(this._stage);
+                    this._actorList[i].update(this._stage, tick);
             };
             /**
              * This method is invoked every frame after the update() method is invoked to allow this scene to
@@ -1944,6 +1947,13 @@ var nurdz;
          */
         var _gameTimerID = null;
         /**
+         * The number of update ticks that have occurred so far. This gets incremented every time the game
+         * loop executes.
+         *
+         * @type {number}
+         */
+        var _updateTicks = 0;
+        /**
          * This class represents the stage area in the page, which is where the game renders itself.
          *
          * The class knows how to create the stage and do some rendering. This is also where the core
@@ -1993,7 +2003,7 @@ var nurdz;
                         // anyone asked for an update to occur.
                         _this._sceneManager.checkSceneSwitch();
                         // Do the frame update now
-                        _this._sceneManager.currentScene.update();
+                        _this._sceneManager.currentScene.update(_updateTicks++);
                         _this._sceneManager.currentScene.render();
                     }
                     catch (error) {

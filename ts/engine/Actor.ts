@@ -157,8 +157,9 @@ module nurdz.game
          * Update internal stage for this actor. The default implementation does nothing.
          *
          * @param stage the stage that the actor is on
+         * @param tick the game tick; this is a count of how many times the game loop has executed
          */
-        update (stage : Stage) : void
+        update (stage : Stage, tick : number) : void
         {
 
         }

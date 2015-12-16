@@ -34,6 +34,14 @@ module nurdz.game
     var _gameTimerID : number = null;
 
     /**
+     * The number of update ticks that have occurred so far. This gets incremented every time the game
+     * loop executes.
+     *
+     * @type {number}
+     */
+    var _updateTicks : number = 0;
+
+    /**
      * This class represents the stage area in the page, which is where the game renders itself.
      *
      * The class knows how to create the stage and do some rendering. This is also where the core
@@ -193,7 +201,7 @@ module nurdz.game
                 this._sceneManager.checkSceneSwitch ();
 
                 // Do the frame update now
-                this._sceneManager.currentScene.update ();
+                this._sceneManager.currentScene.update (_updateTicks++);
                 this._sceneManager.currentScene.render ();
             }
             catch (error)

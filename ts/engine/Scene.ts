@@ -84,11 +84,13 @@ module nurdz.game
          *
          * This base version invokes the update method for all actors that are currently registered with the
          * scene.
+         *
+         * @param tick the game tick; this is a count of how many times the game loop has executed
          */
-        update () : void
+        update (tick : number) : void
         {
             for (var i = 0 ; i < this._actorList.length ; i++)
-                this._actorList[i].update (this._stage);
+                this._actorList[i].update (this._stage, tick);
         }
 
         /**
