@@ -2162,6 +2162,19 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Stage.prototype, "tick", {
+                /**
+                 * Obtain the current engine update tick. This is incremented once every time the frame update
+                 * loop is invoked, and can be used to time things in a crude fashion.
+                 *
+                 * The frame update loop is invoked at a set frame rate.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return _updateTicks; },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * Start the game running. This will start with the scene that is currently set. The game will run
              * (or attempt to) at the frame rate you provide.

@@ -125,6 +125,17 @@ module nurdz.game
         { return this._sceneManager.currentScene; }
 
         /**
+         * Obtain the current engine update tick. This is incremented once every time the frame update
+         * loop is invoked, and can be used to time things in a crude fashion.
+         *
+         * The frame update loop is invoked at a set frame rate.
+         *
+         * @returns {number}
+         */
+        get tick () : number
+        { return _updateTicks; }
+
+        /**
          * Create the stage on which all rendering for the game will be done.
          *
          * A canvas will be created and inserted into the DOM as the last child of the container DIV with the
