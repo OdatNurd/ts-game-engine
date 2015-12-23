@@ -42,6 +42,22 @@ module nurdz.game
     var _updateTicks : number = 0;
 
     /**
+     * Every time a screenshot is generated, this value is used in the filename. It is then incremented.
+     *
+     * @type {number}
+     */
+    var _ss_number : number = 0;
+
+    /**
+     * This template is used to determine the number at the end of a screenshot filename. The end
+     * characters are replaced with the current number of the screenshot. This implicitly specifies
+     * how many screenshots can be taken in the same session without the filename overflowing.
+     *
+     * @type {string}
+     */
+    var _ss_format : string = "0000";
+
+    /**
      * This class represents the stage area in the page, which is where the game renders itself.
      *
      * The class knows how to create the stage and do some rendering. This is also where the core
@@ -49,6 +65,23 @@ module nurdz.game
      */
     export class Stage
     {
+        /**
+         * This string is used as the default screenshot filename base in the screenshot method if none is
+         * specified.
+         *
+         * @see screenshot
+         * @type {string}
+         */
+        static screenshotFilenameBase = "screenshot";
+
+        /**
+         * This string is used as the default window title for the screenshot window/tab if none is specified.
+         *
+         * @see screenshot
+         * @type {string}
+         */
+        static screenshotWindowTitle = "Screenshot";
+
         /**
          * The canvas that the stage renders itself to.
          *
@@ -314,6 +347,57 @@ module nurdz.game
             // property to track property.
             if (_gameTimerID == null)
                 this._sceneManager.checkSceneSwitch ();
+        }
+
+        /**
+         * Open a new tab/window that displays the current contents of the stage. The generated page will
+         * display the image and is set up so that a click on the image will cause the browser to download
+         * the file.
+         *
+         * The filename you provide is the filename that is automatically suggested for the image, and the
+         * title passed in will be the title of the window opened and also the alternate text for the image
+         * on the page.
+         *
+         * The filename provided will have an identifying number and an extension appended to the end. The
+         * window title will also have the screenshot number appended to the end of it. This allows you to
+         * easily distinguish multiple screenshots.
+         *
+         * This all requires support from the current browser. Some browsers may not support the notion of
+         * automatically downloading the image on a click, some might not use the filename provided.
+         *
+         * In particular, the browser in use needs to support data URI's. I assume most decent ones do.
+         *
+         * @param filename the name of the screenshot image to create
+         * @param windowTitle the title of the window
+         * @see screenshotFilenameBase
+         * @see screenshotWindowTitle
+         */
+        screenshot (filename : string = Stage.screenshotFilenameBase,
+                    windowTitle : string = Stage.screenshotWindowTitle) : void
+        {
+            // Create a window to hold the screen shot.
+            var wind = window.open ("about:blank", "screenshot");
+
+            // Create a special data URI which the browser will interpret as an image to display.
+            var imageURL = this._canvas.toDataURL ();
+
+            // Append the screenshot number to the window title and also to the filename for the generated
+            // image, then advance the screenshot counter for the next image.
+            filename += ((_ss_format + _ss_number).slice (-_ss_format.length)) + ".png";
+            windowTitle += " " + _ss_number;
+            _ss_number++;
+
+            // Now we need to write some HTML into the new document. The image tag using our data URL will
+            // cause the browser to display the image. Wrapping it in the anchor tag with the same URL and a
+            // download attribute is a hint to the browser that when the image is clicked, it should download
+            // it using the name provided.
+            //
+            // This might not work in all browsers, in which case clicking the link just displays the image.
+            // You can always save via a right click.
+            wind.document.write ("<head><title>" + windowTitle + "</title></head>");
+            wind.document.write ('<a href="' + imageURL + '" download="' + filename + '">');
+            wind.document.write ('<img src="' + imageURL + '" title="' + windowTitle + '"/>');
+            wind.document.write ('</a>');
         }
 
         /**

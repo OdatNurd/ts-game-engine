@@ -1240,51 +1240,6 @@ var nurdz;
                 return false;
             };
             /**
-             * Open a new tab/window that displays the current contents of the stage. The generated page will
-             * display the image and is set up so that a click on the image will cause the browser to download
-             * the file.
-             *
-             * The filename you provide is the filename that is automatically suggested for the image, and the
-             * title passed in will be the title of the window opened and also the alternate text for the image
-             * on the page.
-             *
-             * The filename provided will have an identifying number and an extension appended to the end. The
-             * window title will also have the screenshot number appended to the end of it. This allows you to
-             * easily distinguish multiple screenshots.
-             *
-             * This all requires support from the current browser. Some browsers may not support the notion of
-             * automatically downloading the image on a click, some might not use the filename provided.
-             *
-             * In particular, the browser in use needs to support data URI's. I assume most decent ones do.
-             *
-             * @param filename the name of the screenshot image to create
-             * @param windowTitle the title of the window
-             */
-            Scene.prototype.screenshot = function (filename, windowTitle) {
-                if (filename === void 0) { filename = "screenshot"; }
-                if (windowTitle === void 0) { windowTitle = "Screenshot"; }
-                // Create a window to hold the screen shot.
-                var wind = window.open("about:blank", "screenshot");
-                // Create a special data URI which the browser will interpret as an image to display.
-                var imageURL = this._stage.canvas.toDataURL();
-                // Append the screenshot number to the window title and also to the filename for the generated
-                // image, then advance the screenshot counter for the next image.
-                filename += ((Scene._ss_format + Scene._ss_number).slice(-Scene._ss_format.length)) + ".png";
-                windowTitle += " " + Scene._ss_number;
-                Scene._ss_number++;
-                // Now we need to write some HTML into the new document. The image tag using our data URL will
-                // cause the browser to display the image. Wrapping it in the anchor tag with the same URL and a
-                // download attribute is a hint to the browser that when the image is clicked, it should download
-                // it using the name provided.
-                //
-                // This might not work in all browsers, in which case clicking the link just displays the image.
-                // You can always save via a right click.
-                wind.document.write("<head><title>" + windowTitle + "</title></head>");
-                wind.document.write('<a href="' + imageURL + '" download="' + filename + '">');
-                wind.document.write('<img src="' + imageURL + '" title="' + windowTitle + '"/>');
-                wind.document.write('</a>');
-            };
-            /**
              * Return a string representation of the object, for debugging purposes.
              *
              * @returns {String} a debug string representation
@@ -1292,20 +1247,6 @@ var nurdz;
             Scene.prototype.toString = function () {
                 return String.format("[Scene name={0}]", this._name);
             };
-            /**
-             * Every time a screenshot is generated, this value is used in the filename. It is then incremented.
-             *
-             * @type {number}
-             */
-            Scene._ss_number = 0;
-            /**
-             * This template is used to determine the number at the end of a screenshot filename. The end
-             * characters are replaced with the current number of the screenshot. This implicitly specifies
-             * how many screenshots can be taken in the same session without the filename overflowing.
-             *
-             * @type {string}
-             */
-            Scene._ss_format = "0000";
             return Scene;
         })();
         game.Scene = Scene;
@@ -1954,6 +1895,20 @@ var nurdz;
          */
         var _updateTicks = 0;
         /**
+         * Every time a screenshot is generated, this value is used in the filename. It is then incremented.
+         *
+         * @type {number}
+         */
+        var _ss_number = 0;
+        /**
+         * This template is used to determine the number at the end of a screenshot filename. The end
+         * characters are replaced with the current number of the screenshot. This implicitly specifies
+         * how many screenshots can be taken in the same session without the filename overflowing.
+         *
+         * @type {string}
+         */
+        var _ss_format = "0000";
+        /**
          * This class represents the stage area in the page, which is where the game renders itself.
          *
          * The class knows how to create the stage and do some rendering. This is also where the core
@@ -2257,6 +2212,53 @@ var nurdz;
                     this._sceneManager.checkSceneSwitch();
             };
             /**
+             * Open a new tab/window that displays the current contents of the stage. The generated page will
+             * display the image and is set up so that a click on the image will cause the browser to download
+             * the file.
+             *
+             * The filename you provide is the filename that is automatically suggested for the image, and the
+             * title passed in will be the title of the window opened and also the alternate text for the image
+             * on the page.
+             *
+             * The filename provided will have an identifying number and an extension appended to the end. The
+             * window title will also have the screenshot number appended to the end of it. This allows you to
+             * easily distinguish multiple screenshots.
+             *
+             * This all requires support from the current browser. Some browsers may not support the notion of
+             * automatically downloading the image on a click, some might not use the filename provided.
+             *
+             * In particular, the browser in use needs to support data URI's. I assume most decent ones do.
+             *
+             * @param filename the name of the screenshot image to create
+             * @param windowTitle the title of the window
+             * @see screenshotFilenameBase
+             * @see screenshotWindowTitle
+             */
+            Stage.prototype.screenshot = function (filename, windowTitle) {
+                if (filename === void 0) { filename = Stage.screenshotFilenameBase; }
+                if (windowTitle === void 0) { windowTitle = Stage.screenshotWindowTitle; }
+                // Create a window to hold the screen shot.
+                var wind = window.open("about:blank", "screenshot");
+                // Create a special data URI which the browser will interpret as an image to display.
+                var imageURL = this._canvas.toDataURL();
+                // Append the screenshot number to the window title and also to the filename for the generated
+                // image, then advance the screenshot counter for the next image.
+                filename += ((_ss_format + _ss_number).slice(-_ss_format.length)) + ".png";
+                windowTitle += " " + _ss_number;
+                _ss_number++;
+                // Now we need to write some HTML into the new document. The image tag using our data URL will
+                // cause the browser to display the image. Wrapping it in the anchor tag with the same URL and a
+                // download attribute is a hint to the browser that when the image is clicked, it should download
+                // it using the name provided.
+                //
+                // This might not work in all browsers, in which case clicking the link just displays the image.
+                // You can always save via a right click.
+                wind.document.write("<head><title>" + windowTitle + "</title></head>");
+                wind.document.write('<a href="' + imageURL + '" download="' + filename + '">');
+                wind.document.write('<img src="' + imageURL + '" title="' + windowTitle + '"/>');
+                wind.document.write('</a>');
+            };
+            /**
              * Given an event that represents a mouse event for the stage, calculate the position that the mouse
              * is actually at relative to the top left of the stage. This is needed because the position of mouse
              * events is normally relative to the document itself, which may be larger than the actual window.
@@ -2284,6 +2286,21 @@ var nurdz;
             Stage.prototype.toString = function () {
                 return String.format("[Stage dimensions={0}x{1}, tileSize={2}]", game.STAGE_WIDTH, game.STAGE_HEIGHT, game.TILE_SIZE);
             };
+            /**
+             * This string is used as the default screenshot filename base in the screenshot method if none is
+             * specified.
+             *
+             * @see screenshot
+             * @type {string}
+             */
+            Stage.screenshotFilenameBase = "screenshot";
+            /**
+             * This string is used as the default window title for the screenshot window/tab if none is specified.
+             *
+             * @see screenshot
+             * @type {string}
+             */
+            Stage.screenshotWindowTitle = "Screenshot";
             return Stage;
         })();
         game.Stage = Stage;
@@ -3179,6 +3196,9 @@ var nurdz;
             try {
                 // Set up the stage.
                 var stage = new nurdz.game.Stage('gameContent');
+                // Set up the default values used for creating a screen shot.
+                nurdz.game.Stage.screenshotFilenameBase = "screenshot";
+                nurdz.game.Stage.screenshotWindowTitle = "Screenshot";
                 // Set up the button that will stop the game if something goes wrong.
                 setupButton(stage, "controlBtn");
                 // Register all of our scenes.
