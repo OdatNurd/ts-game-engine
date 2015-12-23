@@ -1194,10 +1194,18 @@ var nurdz;
              * The method should return true if the key event was handled or false if it was not. The Stage will
              * prevent the default handling for all key events that are handled.
              *
+             * The base scene method handles this by intercepting F5 to take a screenshot with default settings;
+             * you can chain to the super to inherit this behaviour if desired.
+             *
              * @param eventObj the event object
              * @returns {boolean} true if the key event was handled, false otherwise
              */
             Scene.prototype.inputKeyDown = function (eventObj) {
+                // If the key pressed is the F5 key, take a screenshot.
+                if (eventObj.keyCode == game.KeyCodes.KEY_F5) {
+                    this._stage.screenshot();
+                    return true;
+                }
                 return false;
             };
             /**
