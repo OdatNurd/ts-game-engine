@@ -11,6 +11,7 @@
     "files": [
         "engine/nurdz.ts",
         "engine/GameEngine.ts",
+        "engine/Preloader.ts",
         "engine/Utils.ts",
         "engine/Point.ts",
         "engine/Actor.ts",

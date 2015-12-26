@@ -106,6 +106,14 @@ module nurdz.game
         private _sceneManager : SceneManager;
 
         /**
+         * This is false when we have never told the preloader to preload, and true if we have. This is
+         * used to guard against repeated attempts to preload.
+         *
+         * @type {boolean}
+         */
+        private _didPreload : boolean;
+
+        /**
          * The width of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @type {number} the width of the stage area in pixels
@@ -184,6 +192,9 @@ module nurdz.game
          */
         constructor (containerDivID : string, initialColor : string = 'black')
         {
+            // We don't start off having done a preload.
+            this._didPreload = false;
+
             // Set up our scene manager object.
             this._sceneManager = new SceneManager (this);
 
@@ -219,6 +230,8 @@ module nurdz.game
          */
         private sceneLoop = () : void =>
         {
+            console.log ("Loop");
+
             // Get the current time for this frame and the elapsed time since we started.
             var currentTime = new Date ().getTime ();
             var elapsedTime = (currentTime - _startTime) / 1000;
@@ -272,15 +285,29 @@ module nurdz.game
             if (_gameTimerID != null)
                 throw new Error ("Attempt to start the game running when it is already running");
 
-            // Reset the variables we use for frame counts.
-            _startTime = 0;
-            _frameNumber = 0;
+            // When invoked, this starts the scene loop.
+            function startSceneLoop ()
+            {
+                console.log ("Starting the scene loop now");
+                // Reset the variables we use for frame counts.
+                _startTime = 0;
+                _frameNumber = 0;
 
-            // Fire off a timer to invoke our scene loop using an appropriate interval.
-            _gameTimerID = setInterval (this.sceneLoop, 1000 / fps);
+                // Fire off a timer to invoke our scene loop using an appropriate interval.
+                _gameTimerID = setInterval (this.sceneLoop, 1000 / fps);
 
-            // Turn on input events.
-            this.enableInputEvents (this._canvas);
+                // Turn on input events.
+                this.enableInputEvents (this._canvas);
+            }
+
+            // If we already did a preload, just start the frame loop now. Otherwise, start the preload
+            // and the preloader will start it once its done.
+            //
+            // When we pass the function to the preloader we need to set the implicit this using bind.
+            if (this._didPreload)
+                startSceneLoop ();
+            else
+                Preloader.commence (startSceneLoop.bind (this));
         }
 
         /**

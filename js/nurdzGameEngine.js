@@ -191,6 +191,104 @@ var nurdz;
         var KeyCodes = game.KeyCodes;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
+var nurdz;
+(function (nurdz) {
+    var game;
+    (function (game) {
+        var Preloader;
+        (function (Preloader) {
+            /**
+             * This tracks whether or not preloading has already started or not. Once preloading has started, we
+             * don't allow any more submissions to the preload queue.
+             *
+             * @type {boolean}
+             * @private
+             */
+            var _preloadStarted = false;
+            /**
+             * The list of items that are being preloaded.
+             *
+             * @type {Array<Preload>}
+             * @private
+             */
+            var _preloadList = [];
+            /**
+             * The number of images that still need to be loaded before all images are considered loaded. This
+             * gets incremented as preloads are added and decremented as loads are completed.
+             *
+             * @type {number}
+             * @private
+             */
+            var _imagesToLoad = 0;
+            /**
+             * The callback to invoke when preloading has started and all images are loaded.
+             */
+            var _completionCallback;
+            /**
+             * This gets invoked every time one of the images that we are preloading fully loads.
+             */
+            function imageLoaded() {
+                // TODO This doesn't report image load errors. I don't know if that matters
+                // One less image needs loading.
+                _imagesToLoad--;
+                if (_imagesToLoad == 0)
+                    _completionCallback();
+            }
+            /**
+             * Add the image filename specified to the list of images that will be preloaded. The "filename" is
+             * assumed to be a path that is relative to the page that the game is being served from and inside of
+             * an "images/" sub-folder.
+             *
+             * The return value is an image tag that can be used to render the image once it is loaded.
+             *
+             * @param filename the filename of the image to load; assumed to be relative to a images/ folder in
+             * the same path as the page is in.
+             * @returns {HTMLImageElement} the tag that the image will be loaded into.
+             * @throws {Error} if an attempt is made to add an image to preload after preloading has already started
+             */
+            function addImage(filename) {
+                // Make sure that preloading has not started.
+                if (_preloadStarted)
+                    throw new Error("Cannot add images after preloading has already begun or started");
+                // Count this as an image to load.
+                _imagesToLoad++;
+                // Create the tag that we will use to do the preload and set up the callback, and then add this as
+                // an entry into the callback list along with the source. We can't set the source now because that
+                // will trigger the browser into starting to load the image.
+                var tag = document.createElement("img");
+                tag.onload = imageLoaded;
+                _preloadList.push({ src: "images/" + filename, tag: tag });
+                // Return the tag back to the caller so that they know how to render later.
+                return tag;
+            }
+            Preloader.addImage = addImage;
+            /**
+             * Start the image preload happening.
+             *
+             * @throws {Error} if image preloading is already started
+             */
+            function commence(callback) {
+                console.log("Commence");
+                // Make sure that image preloading is not already started
+                if (_preloadStarted)
+                    throw new Error("Cannot start preloading; preloading is already started");
+                // Save the callback and then indicate that the preload has started.
+                _completionCallback = callback;
+                _preloadStarted = true;
+                // If no images were requested to load, just fire the callback now and leave.
+                if (_imagesToLoad == 0) {
+                    _completionCallback();
+                    return;
+                }
+                // Iterate over the entire preload list and set in the source to get the image from. This will start
+                // the browser loading things.
+                for (var i = 0; i < _preloadList.length; i++)
+                    _preloadList[i].tag.src = _preloadList[i].src;
+            }
+            Preloader.commence = commence;
+        })(Preloader = game.Preloader || (game.Preloader = {}));
+    })(game = nurdz.game || (nurdz.game = {}));
+})(nurdz || (nurdz = {}));
 /**
  * This module exports various helper routines that might be handy in a game context but which don't
  * otherwise fit into a class.
@@ -1947,6 +2045,7 @@ var nurdz;
                  * In practice, this gets invoked on a timer at the desired FPS that the game should run at.
                  */
                 this.sceneLoop = function () {
+                    console.log("Loop");
                     // Get the current time for this frame and the elapsed time since we started.
                     var currentTime = new Date().getTime();
                     var elapsedTime = (currentTime - _startTime) / 1000;
@@ -2040,6 +2139,8 @@ var nurdz;
                     document.removeEventListener('keydown', _this.keyDownEvent);
                     document.removeEventListener('keyup', _this.keyUpEvent);
                 };
+                // We don't start off having done a preload.
+                this._didPreload = false;
                 // Set up our scene manager object.
                 this._sceneManager = new game.SceneManager(this);
                 // Obtain the container element that we want to insert the canvas into.
@@ -2152,13 +2253,25 @@ var nurdz;
                 if (fps === void 0) { fps = 30; }
                 if (_gameTimerID != null)
                     throw new Error("Attempt to start the game running when it is already running");
-                // Reset the variables we use for frame counts.
-                _startTime = 0;
-                _frameNumber = 0;
-                // Fire off a timer to invoke our scene loop using an appropriate interval.
-                _gameTimerID = setInterval(this.sceneLoop, 1000 / fps);
-                // Turn on input events.
-                this.enableInputEvents(this._canvas);
+                // When invoked, this starts the scene loop.
+                function startSceneLoop() {
+                    console.log("Starting the scene loop now");
+                    // Reset the variables we use for frame counts.
+                    _startTime = 0;
+                    _frameNumber = 0;
+                    // Fire off a timer to invoke our scene loop using an appropriate interval.
+                    _gameTimerID = setInterval(this.sceneLoop, 1000 / fps);
+                    // Turn on input events.
+                    this.enableInputEvents(this._canvas);
+                }
+                // If we already did a preload, just start the frame loop now. Otherwise, start the preload
+                // and the preloader will start it once its done.
+                //
+                // When we pass the function to the preloader we need to set the implicit this using bind.
+                if (this._didPreload)
+                    startSceneLoop();
+                else
+                    game.Preloader.commence(startSceneLoop.bind(this));
             };
             /**
              * Stop a running game. This halts the update loop but otherwise has no effect. Thus after this call,
@@ -3112,18 +3225,21 @@ var nurdz;
              * Construct an instance; it needs to know how it will be rendered.
              *
              * @param stage the stage that owns this actor.
+             * @param image the image to render ourselves with
              * @param properties the properties to apply to this entity
              */
-            function Dot(stage, properties) {
+            function Dot(stage, image, properties) {
                 if (properties === void 0) { properties = {}; }
                 // Invoke the super to construct us. We position ourselves in the center of the stage.
-                _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, nurdz.game.TILE_SIZE, nurdz.game.TILE_SIZE, 1, properties, {
+                _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1, properties, {
                     xSpeed: nurdz.game.Utils.randomIntInRange(-5, 5),
                     ySpeed: nurdz.game.Utils.randomIntInRange(-5, 5)
                 });
                 // Our radius is half our width because our position is registered via the center of our own
                 // bounds.
                 this._radius = this._width / 2;
+                // Save the image
+                this._image = image;
                 // Show what we did in the console.
                 console.log("Dot entity created with properties: ", this._properties);
             }
@@ -3171,7 +3287,7 @@ var nurdz;
              * @param renderer the renderer to render with
              */
             Dot.prototype.render = function (x, y, renderer) {
-                renderer.fillCircle(x, y, this._radius, this._debugColor);
+                renderer.blitCentered(this._image, x, y);
             };
             return Dot;
         })(nurdz.game.Entity);
@@ -3184,8 +3300,19 @@ var nurdz;
          */
         var TestScene = (function (_super) {
             __extends(TestScene, _super);
-            function TestScene() {
-                _super.apply(this, arguments);
+            /**
+             * Create a new test scene to be managed by the provided stage.
+             *
+             * @param stage the stage to manage us/
+             */
+            function TestScene(stage) {
+                _super.call(this, "A Scene", stage);
+                // Indicate that we want to preload a couple of images.
+                var ball1 = nurdz.game.Preloader.addImage("ball_blue.png");
+                var ball2 = nurdz.game.Preloader.addImage("ball_yellow.png");
+                // Create two actors and add them to ourselves.
+                this.addActor(new Dot(stage, ball1));
+                this.addActor(new Dot(stage, ball2));
             }
             /**
              * Render the scene.
@@ -3210,11 +3337,9 @@ var nurdz;
                 // Set up the button that will stop the game if something goes wrong.
                 setupButton(stage, "controlBtn");
                 // Register all of our scenes.
-                stage.addScene("sceneName", new TestScene("A Scene", stage));
+                stage.addScene("sceneName", new TestScene(stage));
                 // Switch to the initial scene, add a dot to display and then run the game.
                 stage.switchToScene("sceneName");
-                stage.currentScene.addActor(new Dot(stage));
-                stage.currentScene.addActor(new Dot(stage));
                 stage.run();
             }
             catch (error) {

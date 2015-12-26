@@ -79,6 +79,13 @@ module nurdz.main
         private _radius : number;
 
         /**
+         * The image that we use to render ourselves.
+         *
+         * @type {HTMLImageElement}
+         */
+        private _image : HTMLImageElement;
+
+        /**
          * Our properties; This is an override to the version in the Entity base class which changes the
          * type to be our extended properties type.
          *
@@ -91,12 +98,13 @@ module nurdz.main
          * Construct an instance; it needs to know how it will be rendered.
          *
          * @param stage the stage that owns this actor.
+         * @param image the image to render ourselves with
          * @param properties the properties to apply to this entity
          */
-        constructor (stage : nurdz.game.Stage, properties : DotProperties = {})
+        constructor (stage : game.Stage, image : HTMLImageElement, properties : DotProperties = {})
         {
             // Invoke the super to construct us. We position ourselves in the center of the stage.
-            super ("A dot", stage, stage.width / 2, stage.height / 2, game.TILE_SIZE, game.TILE_SIZE, 1,
+            super ("A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1,
                    properties, <DotProperties> {
                     xSpeed: game.Utils.randomIntInRange (-5, 5),
                     ySpeed: game.Utils.randomIntInRange (-5, 5)
@@ -105,6 +113,9 @@ module nurdz.main
             // Our radius is half our width because our position is registered via the center of our own
             // bounds.
             this._radius = this._width / 2;
+
+            // Save the image
+            this._image = image;
 
             // Show what we did in the console.
             console.log ("Dot entity created with properties: ", this._properties);
@@ -142,7 +153,7 @@ module nurdz.main
          *
          * @param stage the stage we are on
          */
-        update (stage : nurdz.game.Stage)
+        update (stage : game.Stage)
         {
             // Translate;
             this._position.translateXY (this._properties.xSpeed, this._properties.ySpeed);
@@ -163,9 +174,9 @@ module nurdz.main
          * @param y the y location to render the actor at, in stage coordinates (NOT world)
          * @param renderer the renderer to render with
          */
-        render (x : number, y : number, renderer : nurdz.game.Renderer)
+        render (x : number, y : number, renderer : game.Renderer)
         {
-            renderer.fillCircle (x, y, this._radius, this._debugColor);
+            renderer.blitCentered (this._image, x, y);
         }
     }
 
@@ -176,8 +187,26 @@ module nurdz.main
      * the screen, so that when you override it you can get the actor rendering "for free" without it
      * making assumptions about when it gets invoked.
      */
-    class TestScene extends nurdz.game.Scene
+    class TestScene extends game.Scene
     {
+        /**
+         * Create a new test scene to be managed by the provided stage.
+         *
+         * @param stage the stage to manage us/
+         */
+        constructor (stage : game.Stage)
+        {
+            super ("A Scene", stage);
+
+            // Indicate that we want to preload a couple of images.
+            let ball1 = game.Preloader.addImage ("ball_blue.png");
+            let ball2 = game.Preloader.addImage ("ball_yellow.png");
+
+            // Create two actors and add them to ourselves.
+            this.addActor (new Dot (stage, ball1));
+            this.addActor (new Dot (stage, ball2));
+        }
+
         /**
          * Render the scene.
          */
@@ -207,12 +236,10 @@ module nurdz.main
             setupButton (stage, "controlBtn");
 
             // Register all of our scenes.
-            stage.addScene ("sceneName", new TestScene ("A Scene", stage));
+            stage.addScene ("sceneName", new TestScene (stage));
 
             // Switch to the initial scene, add a dot to display and then run the game.
             stage.switchToScene ("sceneName");
-            stage.currentScene.addActor (new Dot (stage));
-            stage.currentScene.addActor (new Dot (stage));
             stage.run ();
         }
         catch (error)
