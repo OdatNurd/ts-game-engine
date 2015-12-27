@@ -211,7 +211,7 @@ var nurdz;
              * @type {Array<Preload>}
              * @private
              */
-            var _preloadList = [];
+            var _preloadList = {};
             /**
              * The number of images that still need to be loaded before all images are considered loaded. This
              * gets incremented as preloads are added and decremented as loads are completed.
@@ -250,14 +250,21 @@ var nurdz;
                 // Make sure that preloading has not started.
                 if (_preloadStarted)
                     throw new Error("Cannot add images after preloading has already begun or started");
-                // Count this as an image to load.
-                _imagesToLoad++;
-                // Create the tag that we will use to do the preload and set up the callback, and then add this as
-                // an entry into the callback list along with the source. We can't set the source now because that
-                // will trigger the browser into starting to load the image.
-                var tag = document.createElement("img");
-                tag.onload = imageLoaded;
-                _preloadList.push({ src: "images/" + filename, tag: tag });
+                // Create a key that is the U
+                // RL that we will be loading, and then see if there is a tag already in
+                // the preload dictionary that uses that URL.
+                var key = "images/" + filename;
+                var tag = _preloadList[key];
+                // If there is not already a tag, then we need to create a new one.
+                if (tag == null) {
+                    // Create a new tag, indicate the function to invoke when it is fully loaded, and then add it
+                    // to the preload list.
+                    tag = document.createElement("img");
+                    tag.onload = imageLoaded;
+                    _preloadList[key] = tag;
+                    // This counts as an image that we are going to preload.
+                    _imagesToLoad++;
+                }
                 // Return the tag back to the caller so that they know how to render later.
                 return tag;
             }
@@ -281,8 +288,10 @@ var nurdz;
                 }
                 // Iterate over the entire preload list and set in the source to get the image from. This will start
                 // the browser loading things.
-                for (var i = 0; i < _preloadList.length; i++)
-                    _preloadList[i].tag.src = _preloadList[i].src;
+                for (var key in _preloadList) {
+                    if (_preloadList.hasOwnProperty(key))
+                        _preloadList[key].src = key;
+                }
             }
             Preloader.commence = commence;
         })(Preloader = game.Preloader || (game.Preloader = {}));
