@@ -230,8 +230,6 @@ module nurdz.game
          */
         private sceneLoop = () : void =>
         {
-            console.log ("Loop");
-
             // Get the current time for this frame and the elapsed time since we started.
             var currentTime = new Date ().getTime ();
             var elapsedTime = (currentTime - _startTime) / 1000;
@@ -285,10 +283,12 @@ module nurdz.game
             if (_gameTimerID != null)
                 throw new Error ("Attempt to start the game running when it is already running");
 
-            // When invoked, this starts the scene loop.
-            function startSceneLoop ()
+            // When invoked, this starts the scene loop. We use the lambda syntax to capture the
+            // appropriate this pointer so that everything works the way we want it to.
+            var startSceneLoop = () =>
             {
-                console.log ("Starting the scene loop now");
+                this._didPreload = true;
+
                 // Reset the variables we use for frame counts.
                 _startTime = 0;
                 _frameNumber = 0;
@@ -298,7 +298,7 @@ module nurdz.game
 
                 // Turn on input events.
                 this.enableInputEvents (this._canvas);
-            }
+            };
 
             // If we already did a preload, just start the frame loop now. Otherwise, start the preload
             // and the preloader will start it once its done.
@@ -307,7 +307,7 @@ module nurdz.game
             if (this._didPreload)
                 startSceneLoop ();
             else
-                Preloader.commence (startSceneLoop.bind (this));
+                Preloader.commence (startSceneLoop);
         }
 
         /**

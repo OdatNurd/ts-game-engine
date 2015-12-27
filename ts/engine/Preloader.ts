@@ -107,7 +107,6 @@ module nurdz.game.Preloader
      */
     export function commence (callback : ImagePreloadCallback)
     {
-        console.log ("Commence");
         // Make sure that image preloading is not already started
         if (_preloadStarted)
             throw new Error ("Cannot start preloading; preloading is already started");

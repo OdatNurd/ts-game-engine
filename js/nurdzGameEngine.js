@@ -268,7 +268,6 @@ var nurdz;
              * @throws {Error} if image preloading is already started
              */
             function commence(callback) {
-                console.log("Commence");
                 // Make sure that image preloading is not already started
                 if (_preloadStarted)
                     throw new Error("Cannot start preloading; preloading is already started");
@@ -2046,7 +2045,6 @@ var nurdz;
                  * In practice, this gets invoked on a timer at the desired FPS that the game should run at.
                  */
                 this.sceneLoop = function () {
-                    console.log("Loop");
                     // Get the current time for this frame and the elapsed time since we started.
                     var currentTime = new Date().getTime();
                     var elapsedTime = (currentTime - _startTime) / 1000;
@@ -2251,20 +2249,22 @@ var nurdz;
              * @param fps the FPS to attempt to run at
              */
             Stage.prototype.run = function (fps) {
+                var _this = this;
                 if (fps === void 0) { fps = 30; }
                 if (_gameTimerID != null)
                     throw new Error("Attempt to start the game running when it is already running");
-                // When invoked, this starts the scene loop.
-                function startSceneLoop() {
-                    console.log("Starting the scene loop now");
+                // When invoked, this starts the scene loop. We use the lambda syntax to capture the
+                // appropriate this pointer so that everything works the way we want it to.
+                var startSceneLoop = function () {
+                    _this._didPreload = true;
                     // Reset the variables we use for frame counts.
                     _startTime = 0;
                     _frameNumber = 0;
                     // Fire off a timer to invoke our scene loop using an appropriate interval.
-                    _gameTimerID = setInterval(this.sceneLoop, 1000 / fps);
+                    _gameTimerID = setInterval(_this.sceneLoop, 1000 / fps);
                     // Turn on input events.
-                    this.enableInputEvents(this._canvas);
-                }
+                    _this.enableInputEvents(_this._canvas);
+                };
                 // If we already did a preload, just start the frame loop now. Otherwise, start the preload
                 // and the preloader will start it once its done.
                 //
@@ -2272,7 +2272,7 @@ var nurdz;
                 if (this._didPreload)
                     startSceneLoop();
                 else
-                    game.Preloader.commence(startSceneLoop.bind(this));
+                    game.Preloader.commence(startSceneLoop);
             };
             /**
              * Stop a running game. This halts the update loop but otherwise has no effect. Thus after this call,
