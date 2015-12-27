@@ -86,6 +86,11 @@ module nurdz.main
         private _image : HTMLImageElement;
 
         /**
+         * The sound to play whenever we bounce off of the sides of the screen.
+         */
+        private _sound : HTMLAudioElement;
+
+        /**
          * Our properties; This is an override to the version in the Entity base class which changes the
          * type to be our extended properties type.
          *
@@ -99,9 +104,11 @@ module nurdz.main
          *
          * @param stage the stage that owns this actor.
          * @param image the image to render ourselves with
+         * @param sound the sound to play when we bounce off the sides of the screen
          * @param properties the properties to apply to this entity
          */
-        constructor (stage : game.Stage, image : HTMLImageElement, properties : DotProperties = {})
+        constructor (stage : game.Stage, image : HTMLImageElement, sound : HTMLAudioElement,
+                     properties : DotProperties = {})
         {
             // Invoke the super to construct us. We position ourselves in the center of the stage.
             super ("A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1,
@@ -114,8 +121,9 @@ module nurdz.main
             // bounds.
             this._radius = this._width / 2;
 
-            // Save the image
+            // Save the image and sound we were given.
             this._image = image;
+            this._sound = sound;
 
             // Show what we did in the console.
             console.log ("Dot entity created with properties: ", this._properties);
@@ -131,7 +139,7 @@ module nurdz.main
         protected validateProperties ()
         {
             // Let the super class do its job.
-            super.validateProperties();
+            super.validateProperties ();
 
             // Make sure our xSpeed is valid.
             if (this._properties.xSpeed == 0)
@@ -160,11 +168,17 @@ module nurdz.main
 
             // Bounce left and right
             if (this._position.x < this._radius || this._position.x >= stage.width - this._radius)
+            {
                 this._properties.xSpeed *= -1;
+                this._sound.play ();
+            }
 
             // Bounce up and down.
             if (this._position.y < this._radius || this._position.y >= stage.height - this._radius)
+            {
                 this._properties.ySpeed *= -1;
+                this._sound.play ();
+            }
         }
 
         /**
@@ -201,10 +215,11 @@ module nurdz.main
             // Indicate that we want to preload a couple of images.
             let ball1 = game.Preloader.addImage ("ball_blue.png");
             let ball2 = game.Preloader.addImage ("ball_yellow.png");
+            let bounce = game.Preloader.addSound ("bounce_wall");
 
             // Create two actors and add them to ourselves.
-            this.addActor (new Dot (stage, ball1));
-            this.addActor (new Dot (stage, ball2));
+            this.addActor (new Dot (stage, ball1, bounce));
+            this.addActor (new Dot (stage, ball2, bounce));
         }
 
         /**
@@ -216,7 +231,7 @@ module nurdz.main
             // left corner.
             this._stage.renderer.clear ("black");
             super.render ();
-            this._stage.renderer.drawTxt(`FPS: ${this._stage.fps}`, 16, 16, 'white');
+            this._stage.renderer.drawTxt (`FPS: ${this._stage.fps}`, 16, 16, 'white');
         }
     }
 
