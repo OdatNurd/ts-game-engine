@@ -1883,6 +1883,7 @@ var nurdz;
             CanvasRenderer.prototype.blitCentered = function (bitmap, x, y) {
                 this.translateAndRotate(x, y);
                 this._canvasContext.drawImage(bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
+                this._canvasContext.restore();
             };
             /**
              * Display a bitmap to the stage such that its center is at the point provided. The bitmap is also

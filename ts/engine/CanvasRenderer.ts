@@ -522,6 +522,7 @@ module nurdz.game
         {
             this.translateAndRotate (x, y);
             this._canvasContext.drawImage (bitmap, -(bitmap.width / 2), -(bitmap.height / 2));
+            this._canvasContext.restore ();
         }
 
         /**
