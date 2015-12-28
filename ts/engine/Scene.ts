@@ -107,7 +107,7 @@ module nurdz.game
          * @param previousScene the previous scene, if any (the very first scene change in the game has no
          * previous scene)
          */
-        activating (previousScene : Scene = null) : void
+        activating (previousScene : Scene) : void
         {
             console.log ("Scene activation:", this.toString ());
         }
