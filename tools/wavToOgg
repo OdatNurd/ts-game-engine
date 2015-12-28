@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#
+# Make sure that a file was specified to do something with
+if [ "$1" ==  "" ]; then
+    echo "Specify the mp3 file to convert to a wav file"
+    exit
+fi
+
+#
+# Make sure that the file actually exists.
+if [  ! -f "$1" ]; then
+    echo "Unable to locate input file '$1'"
+    exit
+fi
+
+#
+# Use oggenc to encode the wav file to an ogg
+oggenc --bitrate 128 "$1"
