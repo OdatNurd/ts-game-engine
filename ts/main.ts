@@ -88,7 +88,7 @@ module nurdz.main
         /**
          * The sound to play whenever we bounce off of the sides of the screen.
          */
-        private _sound : HTMLAudioElement;
+        private _sound : game.Sound;
 
         /**
          * Our properties; This is an override to the version in the Entity base class which changes the
@@ -107,7 +107,7 @@ module nurdz.main
          * @param sound the sound to play when we bounce off the sides of the screen
          * @param properties the properties to apply to this entity
          */
-        constructor (stage : game.Stage, image : HTMLImageElement, sound : HTMLAudioElement,
+        constructor (stage : game.Stage, image : HTMLImageElement, sound : game.Sound,
                      properties : DotProperties = {})
         {
             // Invoke the super to construct us. We position ourselves in the center of the stage.
@@ -204,6 +204,11 @@ module nurdz.main
     class TestScene extends game.Scene
     {
         /**
+         * The music we play in our scene.
+         */
+        private _music : game.Music;
+
+        /**
          * Create a new test scene to be managed by the provided stage.
          *
          * @param stage the stage to manage us/
@@ -212,14 +217,28 @@ module nurdz.main
         {
             super ("A Scene", stage);
 
-            // Indicate that we want to preload a couple of images.
+            // Preload some images.
             let ball1 = game.Preloader.addImage ("ball_blue.png");
             let ball2 = game.Preloader.addImage ("ball_yellow.png");
+
+            // Preload a bounce sound
             let bounce = game.Preloader.addSound ("bounce_wall");
 
-            // Create two actors and add them to ourselves.
+            // Preload some music.
+            this._music = game.Preloader.addMusic ("WhoLikesToParty");
+
+            // Create two actors and add them to ourselves. These use the images and sounds we said we
+            // want to preload.
             this.addActor (new Dot (stage, ball1, bounce));
             this.addActor (new Dot (stage, ball2, bounce));
+        }
+
+
+        update (tick : number) : void
+        {
+            super.update (tick);
+            if (this._music.isPlaying == false)
+                this._music.play ();
         }
 
         /**
@@ -232,6 +251,30 @@ module nurdz.main
             this._stage.renderer.clear ("black");
             super.render ();
             this._stage.renderer.drawTxt (`FPS: ${this._stage.fps}`, 16, 16, 'white');
+        }
+
+        /**
+         * Invoked when we become the active scene
+         *
+         * @param previousScene the scene that used to be active
+         */
+        activating (previousScene :  game.Scene) : void
+        {
+            // Let the super report the scene change in a debug log, then start our music.
+            super.activating (previousScene);
+            //this._music.play ();
+        }
+
+        /**
+         * Invoked when we are no longer the active scene
+         *
+         * @param nextScene the scene that is going to become active
+         */
+        deactivating (nextScene : game.Scene) : void
+        {
+            // Let the super report the scene change in a debug log, then stop our music.
+            super.deactivating (nextScene);
+            this._music.pause ();
         }
     }
 
