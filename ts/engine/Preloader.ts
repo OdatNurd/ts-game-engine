@@ -1,3 +1,91 @@
+module nurdz.game
+{
+    /**
+     * This is a simple class whose purpose is to wrap an audio element to make it a little easier to work
+     * with (and shield audio tag properties from modification).
+     */
+    export class Sound
+    {
+        /**
+         * The HTML Audio tag that we use to play our sound.
+         */
+        protected _tag : HTMLAudioElement;
+
+        /**
+         * Construct a new sound object, telling it to wrap the provided audio tag, which it will use for
+         * its playback.
+         *
+         * @param audioTag the audio tag that represents the sound to be played.
+         */
+        constructor (audioTag : HTMLAudioElement)
+        {
+            this._tag = audioTag;
+        }
+
+        /**
+         * Determines if this sound is currently playing or not.
+         *
+         * @returns {boolean}
+         */
+        get isPlaying () : boolean
+        { return this._tag.paused == false; }
+
+        /**
+         * Plays the sound. If it is already playing, it will be restarted.
+         */
+        play () : void
+        {
+            // Play the sound, but make sure that it starts at the beginning.
+            this._tag.currentTime = 0;
+            this._tag.play ();
+        }
+
+        /**
+         * Pause playback of the sound.
+         */
+        pause () : void
+        {
+            this._tag.pause ();
+        }
+
+        /**
+         * Toggle the state of the sound; if it is playing, it will be paused, otherwisse it will start
+         * playing.
+         *
+         * When the sound restarts, it will be started at the beginning.
+         *
+         * This method is generally used for longer sounds that you might want to cut off (e.g. music).
+         */
+        toggle () : void
+        {
+            if (this.isPlaying)
+                this.pause ();
+            else
+                this.play ();
+        }
+    }
+
+    /**
+     * This is a simple class whose purpose is to wrap an audio element that is meant to be used as music.
+     * This has a slightly different API than a regular sound.
+     */
+    export class Music extends Sound
+    {
+        /**
+         * Construct a new music object, telling it to wrap the provided audio tag as music, which it will
+         * use for its playback.
+         *
+         * @param audioTag the audio tag that represents the music to play
+         */
+        constructor (audioTag : HTMLAudioElement)
+        {
+            // Invoke the super to set up, then make sure that this audio element loops when we play it.
+            super (audioTag);
+            this._tag.loop = true;
+        }
+    }
+}
+
 module nurdz.game.Preloader
 {
     /**
@@ -161,6 +249,48 @@ module nurdz.game.Preloader
     }
 
     /**
+     * This does all of the work of actually adding a sound to the preload queue for sound files as
+     * needed, returning back the audio tag that wraps the passed filename.
+     *
+     * This assumes that the filename is relative to a folder named subFolder inside the path that the game
+     * page is in, and that it does not have an extension so that one can be properly selected.
+     *
+     * @param subFolder the subFolder that the filename is assumed to be in
+     * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
+     * the same path as the page is in and to have no extension
+     * @returns {HTMLAudioElement} the sound object that will (eventually) play the requested audio
+     * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
+     */
+    var doAddSound = function (subFolder : string, filename : string) : HTMLAudioElement
+    {
+        // Make sure that preloading has not started.
+        if (_preloadStarted)
+            throw new Error ("Cannot add sounds after preloading has already begun or started");
+
+        // Create a key that is the URL that we will be loading, and then see if there is a tag already in
+        // the preload dictionary that uses that URL.
+        let key = subFolder + filename + _audioExtension;
+        let tag = _soundPreloadList[key];
+
+        // If there is not already a tag, then we need to create a new one.
+        if (tag == null)
+        {
+            console.log ("Creating tag for", key);
+            // Create a new tag, indicate the function to invoke when it is fully loaded, and then add it
+            // to the preload list.
+            tag = document.createElement ("audio");
+            tag.addEventListener ("canplaythrough", soundLoaded);
+            _soundPreloadList[key] = tag;
+            console.log ("Done", tag);
+            // This counts as a sound that we are going to preload.
+            _soundsToLoad++;
+        }
+
+        // Return the tag back to the caller so that they can play it later.
+        return tag;
+    };
+
+    /**
      * Add the sound filename specified to the list of sounds that will be preloaded. The "filename" is
      * assumed to be in a path that is relative to the page that the game is being served from an inside
      * of a "sounds/" sub-folder.
@@ -169,39 +299,40 @@ module nurdz.game.Preloader
      * an OGG version of the same file, and provide a filename that has no extension on it. The code in
      * this method will apply the correct extension based on the browser in use and load the appropriate file.
      *
-     * The return value is an audio tag that can be used to play the sound once it's loaded.
+     * The return value is a sound object that can be used to play the sound once it's loaded.
      *
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
-     * @returns {HTMLAudioElement} the tag that the sound will be loaded into.
+     * @returns {Sound} the sound object that will (eventually) play the requested audio
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
+     * @see addMusic
      */
-    export function addSound (filename : string) : HTMLAudioElement
+    export function addSound (filename : string) : Sound
     {
-        // Make sure that preloading has not started.
-        if (_preloadStarted)
-            throw new Error ("Cannot add sounds after preloading has already begun or started");
+        // Use our helper to actually get the audio tag, then wrap it in a sound.
+        return new Sound (doAddSound ("sounds/", filename));
+    }
 
-        // Create a key that is the URL that we will be loading, and then see if there is a tag already in
-        // the preload dictionary that uses that URL.
-        let key = "sounds/" + filename + _audioExtension;
-        let tag = _soundPreloadList[key];
-
-        // If there is not already a tag, then we need to create a new one.
-        if (tag == null)
-        {
-            // Create a new tag, indicate the function to invoke when it is fully loaded, and then add it
-            // to the preload list.
-            tag = document.createElement ("audio");
-            tag.addEventListener ("canplaythrough", soundLoaded);
-            _soundPreloadList[key] = tag;
-
-            // This counts as a sound that we are going to preload.
-            _soundsToLoad++;
-        }
-
-        // Return the tag back to the caller so that they can play it later.
-        return tag;
+    /**
+     * Add the music filename specified to the list of music that will be preloaded. The "filename" is
+     * assumed to be in a path that is relative to the page that the game is being served from an inside
+     * of a "music/" sub-folder.
+     *
+     * NOTE: Since different browsers support different file formats, you should provide both an MP3 and
+     * an OGG version of the same file, and provide a filename that has no extension on it. The code in
+     * this method will apply the correct extension based on the browser in use and load the appropriate file.
+     *
+     * The return value is a music object that can be used to play the music once it's loaded.
+     *
+     * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
+     * the same path as the page is in and to have no extension
+     * @returns {Sound} the sound object that will (eventually) play the requested audio
+     * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
+     * @see addSound
+     */
+    export function addMusic (filename : string) : Music
+    {
+        return new Music (doAddSound ("music/", filename));
     }
 
     /**
