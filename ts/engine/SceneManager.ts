@@ -45,6 +45,16 @@ module nurdz.game
         { return this._currentScene; }
 
         /**
+         * The scene that will imminently become active the next time a scene change check is scheduled.
+         *
+         * This value is null when there is no pending scene change yet.
+         *
+         * @returns {Scene}
+         */
+        get nextScene () : Scene
+        { return this._nextScene; }
+
+        /**
          * Create a new instance of the Scene manager that will manage scenes for the passed in stage.
          *
          * @param stage the stage whose scenes we are managing.

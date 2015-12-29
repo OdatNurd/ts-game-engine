@@ -2697,6 +2697,18 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(SceneManager.prototype, "nextScene", {
+                /**
+                 * The scene that will imminently become active the next time a scene change check is scheduled.
+                 *
+                 * This value is null when there is no pending scene change yet.
+                 *
+                 * @returns {Scene}
+                 */
+                get: function () { return this._nextScene; },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * Register a scene object using a textual name for reference. This scene can then be switched to
              * via the switchToScene method.
