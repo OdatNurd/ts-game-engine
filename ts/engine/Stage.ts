@@ -163,7 +163,20 @@ module nurdz.game
          * @returns {Scene}
          */
         get currentScene () : Scene
-        { return this._sceneManager.currentScene; }
+        {
+            // When the game loop is not running, no scene switches can happen. Primarily this happens
+            // during engine setup.
+            //
+            // When that happens, if the scene manager thinks that there is an upcoming scene change, we
+            // report that to be the current scene because that is what WOULD be the current scene if we
+            // were running.
+            //
+            // When this is not the case, OR it is the case but there is no next scene, whatever the scene
+            // manager thinks is the current scene is good enough for us.
+            return _gameTimerID != null
+                ? this._sceneManager.currentScene
+                : (this._sceneManager.nextScene || this._sceneManager.currentScene);
+        }
 
         /**
          * Obtain the current engine update tick. This is incremented once every time the frame update
@@ -367,13 +380,11 @@ module nurdz.game
         switchToScene (sceneName : string = null) : void
         {
             // Indicate that we want to switch to the scene provided.
+            //
+            // This tells the scene manager that the next time we call checkSceneSwitch() we want this to
+            // be the active scene. That happens in the game loop, to make sure that it doesn't happen
+            // mid-loop.
             this._sceneManager.switchToScene (sceneName);
-
-            // If the game is not currently running, then perform the switch right now; external code
-            // might want to switch the scene while the game is not running and we want the currentScene
-            // property to track property.
-            if (_gameTimerID == null)
-                this._sceneManager.checkSceneSwitch ();
         }
 
         /**
