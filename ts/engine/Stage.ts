@@ -453,9 +453,8 @@ module nurdz.game
         /**
          * Iterate all of the sounds known to the stage and toggle their mute stage.
          *
-         * For maximum confusion, this only affects registered sound objects that are set to not loop,
-         * since such a sound is often used as music and we might want to mute the music separate from the
-         * sound (or vice versa).
+         * This only mutes known sound objects which are not flagged as being music so that the mute state of
+         * music and sound can be toggled independently.
          *
          * The mute state of all such sounds is set to the state passed in.
          *
@@ -465,7 +464,7 @@ module nurdz.game
         {
             for (let i = 0 ; i < this._knownSounds.length ; i++)
             {
-                if (this._knownSounds[i].loop == false)
+                if (this._knownSounds[i].isMusic == false)
                     this._knownSounds[i].muted = mute;
             }
         }
@@ -473,11 +472,8 @@ module nurdz.game
         /**
          * Iterate all of the sounds known to the stage and change their volume
          *
-         * For maximum confusion, this only affects registered sound objects that are set to not loop,
-         * since such a sound is often used as music and we might want to adjust the volume of the music
-         * separate from the sound (or vice versa).
-         *
-         * The volume state of all such sounds is set to the state passed in.
+         * This only changes the volume of sounds which are not flagged as being music so that the volume
+         * of music and sound can be changed independently.
          *
          * @param volume the new volume level for all sounds (0.0 to 1.0)
          */
@@ -485,7 +481,7 @@ module nurdz.game
         {
             for (let i = 0 ; i < this._knownSounds.length ; i++)
             {
-                if (this._knownSounds[i].loop == false)
+                if (this._knownSounds[i].isMusic == false)
                     this._knownSounds[i].volume = volume;
             }
         }
@@ -493,11 +489,8 @@ module nurdz.game
         /**
          * Iterate all of the music known to the stage and toggle their mute stage.
          *
-         * This scans all of the registered sound objects and changes the mute state of any sound objects
-         * that are set to loop, since such a sound is often used as music and we might want to mute the
-         * music separate from the sound (or vice versa)
-         *
-         * The mute state of all such sounds is set to the state passed in.
+         * This only mutes known sound objects which are flagged as being music so that the mute state of
+         * music and sound an be toggled independently.
          *
          * @param mute true to mute all music or false to un-mute all music
          */
@@ -505,7 +498,7 @@ module nurdz.game
         {
             for (let i = 0 ; i < this._knownSounds.length ; i++)
             {
-                if (this._knownSounds[i].loop == true)
+                if (this._knownSounds[i].isMusic == true)
                     this._knownSounds[i].muted = mute;
             }
         }
@@ -513,11 +506,8 @@ module nurdz.game
         /**
          * Iterate all of the music known to the stage and change their volume.
          *
-         * This scans all of the registered sound objects and changes the volume of any sound objects
-         * that are set to loop, since such a sound is often used as music and we might want to adjust the
-         * volume of music separate from sound (or vice versa)
-         *
-         * The volume of all such sounds is set to the state passed in.
+         * This only changes the volume of sounds which are flagged as being music so that the volume of
+         * music and sound can be changed independently.
          *
          * @param volume the new volume level for all sounds (0.0 to 1.0)
          */
@@ -525,7 +515,7 @@ module nurdz.game
         {
             for (let i = 0 ; i < this._knownSounds.length ; i++)
             {
-                if (this._knownSounds[i].loop == true)
+                if (this._knownSounds[i].isMusic == true)
                     this._knownSounds[i].volume = volume;
             }
         }

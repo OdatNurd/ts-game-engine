@@ -12,18 +12,37 @@ module nurdz.game
         protected _tag : HTMLAudioElement;
 
         /**
+         * True if this sound is flagged as being music, false otherwise.
+         */
+        protected _isMusic : boolean;
+
+        /**
          * Construct a new sound object, telling it to wrap the provided audio tag, which it will use for
          * its playback.
          *
+         * You can specify if this sound is meant to be used as music, in which case it will loop by default.
+         *
          * @param audioTag the audio tag that represents the sound to be played.
-         * @param playbackLooped true if this sound should loop when played (e.g. music), false otherwise
+         * @param isMusic true if this sound will be used to play back music
          */
-        constructor (audioTag : HTMLAudioElement, playbackLooped : boolean = false)
+        constructor (audioTag : HTMLAudioElement, isMusic : boolean = false)
         {
-            // Save the tag and set the loop flag.
+            // Save the tag and type
             this._tag = audioTag;
-            this._tag.loop = playbackLooped;
+            this._isMusic = isMusic;
+
+            // If this is music, set us to loop by default
+            if (isMusic)
+                this._tag.loop = true;
         }
+
+        /**
+         * Determine if this sound represents music or not.
+         *
+         * @returns {boolean}
+         */
+        get isMusic () : boolean
+        { return this._isMusic; }
 
         /**
          * Determines if this sound is currently playing or not.

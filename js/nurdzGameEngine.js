@@ -2524,9 +2524,8 @@ var nurdz;
             /**
              * Iterate all of the sounds known to the stage and toggle their mute stage.
              *
-             * For maximum confusion, this only affects registered sound objects that are set to not loop,
-             * since such a sound is often used as music and we might want to mute the music separate from the
-             * sound (or vice versa).
+             * This only mutes known sound objects which are not flagged as being music so that the mute state of
+             * music and sound can be toggled independently.
              *
              * The mute state of all such sounds is set to the state passed in.
              *
@@ -2534,58 +2533,49 @@ var nurdz;
              */
             Stage.prototype.muteSounds = function (mute) {
                 for (var i = 0; i < this._knownSounds.length; i++) {
-                    if (this._knownSounds[i].loop == false)
+                    if (this._knownSounds[i].isMusic == false)
                         this._knownSounds[i].muted = mute;
                 }
             };
             /**
              * Iterate all of the sounds known to the stage and change their volume
              *
-             * For maximum confusion, this only affects registered sound objects that are set to not loop,
-             * since such a sound is often used as music and we might want to adjust the volume of the music
-             * separate from the sound (or vice versa).
-             *
-             * The volume state of all such sounds is set to the state passed in.
+             * This only changes the volume of sounds which are not flagged as being music so that the volume
+             * of music and sound can be changed independently.
              *
              * @param volume the new volume level for all sounds (0.0 to 1.0)
              */
             Stage.prototype.soundVolume = function (volume) {
                 for (var i = 0; i < this._knownSounds.length; i++) {
-                    if (this._knownSounds[i].loop == false)
+                    if (this._knownSounds[i].isMusic == false)
                         this._knownSounds[i].volume = volume;
                 }
             };
             /**
              * Iterate all of the music known to the stage and toggle their mute stage.
              *
-             * This scans all of the registered sound objects and changes the mute state of any sound objects
-             * that are set to loop, since such a sound is often used as music and we might want to mute the
-             * music separate from the sound (or vice versa)
-             *
-             * The mute state of all such sounds is set to the state passed in.
+             * This only mutes known sound objects which are flagged as being music so that the mute state of
+             * music and sound an be toggled independently.
              *
              * @param mute true to mute all music or false to un-mute all music
              */
             Stage.prototype.muteMusic = function (mute) {
                 for (var i = 0; i < this._knownSounds.length; i++) {
-                    if (this._knownSounds[i].loop == true)
+                    if (this._knownSounds[i].isMusic == true)
                         this._knownSounds[i].muted = mute;
                 }
             };
             /**
              * Iterate all of the music known to the stage and change their volume.
              *
-             * This scans all of the registered sound objects and changes the volume of any sound objects
-             * that are set to loop, since such a sound is often used as music and we might want to adjust the
-             * volume of music separate from sound (or vice versa)
-             *
-             * The volume of all such sounds is set to the state passed in.
+             * This only changes the volume of sounds which are flagged as being music so that the volume of
+             * music and sound can be changed independently.
              *
              * @param volume the new volume level for all sounds (0.0 to 1.0)
              */
             Stage.prototype.musicVolume = function (volume) {
                 for (var i = 0; i < this._knownSounds.length; i++) {
-                    if (this._knownSounds[i].loop == true)
+                    if (this._knownSounds[i].isMusic == true)
                         this._knownSounds[i].volume = volume;
                 }
             };
@@ -3495,15 +3485,30 @@ var nurdz;
              * Construct a new sound object, telling it to wrap the provided audio tag, which it will use for
              * its playback.
              *
+             * You can specify if this sound is meant to be used as music, in which case it will loop by default.
+             *
              * @param audioTag the audio tag that represents the sound to be played.
-             * @param playbackLooped true if this sound should loop when played (e.g. music), false otherwise
+             * @param isMusic true if this sound will be used to play back music
              */
-            function Sound(audioTag, playbackLooped) {
-                if (playbackLooped === void 0) { playbackLooped = false; }
-                // Save the tag and set the loop flag.
+            function Sound(audioTag, isMusic) {
+                if (isMusic === void 0) { isMusic = false; }
+                // Save the tag and type
                 this._tag = audioTag;
-                this._tag.loop = playbackLooped;
+                this._isMusic = isMusic;
+                // If this is music, set us to loop by default
+                if (isMusic)
+                    this._tag.loop = true;
             }
+            Object.defineProperty(Sound.prototype, "isMusic", {
+                /**
+                 * Determine if this sound represents music or not.
+                 *
+                 * @returns {boolean}
+                 */
+                get: function () { return this._isMusic; },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Sound.prototype, "isPlaying", {
                 /**
                  * Determines if this sound is currently playing or not.
