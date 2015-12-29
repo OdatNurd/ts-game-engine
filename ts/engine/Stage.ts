@@ -114,6 +114,14 @@ module nurdz.game
         private _didPreload : boolean;
 
         /**
+         * A list of all sound objects that are known to the stage, either because we were the proxy for
+         * preloading them or because they were registered with us.
+         *
+         * This is the list of sounds that our API functions for sound can affect
+         */
+        private _knownSounds : Array<Sound>;
+
+        /**
          * The width of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @type {number} the width of the stage area in pixels
@@ -207,6 +215,9 @@ module nurdz.game
         {
             // We don't start off having done a preload.
             this._didPreload = false;
+
+            // Set up the list of sounds.
+            this._knownSounds = [];
 
             // Set up our scene manager object.
             this._sceneManager = new SceneManager (this);
@@ -344,6 +355,179 @@ module nurdz.game
 
             // Turn off input events.
             this.disableInputEvents (this._canvas);
+        }
+
+        /**
+         * Request preloading of an image filename. When the run() method is invoked, the game loop will
+         * not start until all images requested by this method call are available.
+         *
+         * Images are expected to be in a folder named "images/" inside of the folder that the game page
+         * is served from, so only a filename and extension is required.
+         *
+         * Requests for preloads of the same image multiple times cause the same image element to be
+         * returned each time, since image drawing is non-destructive.
+         *
+         * This is just a proxy for the Preloader.addImage() method, placed here for convenience.
+         *
+         * @param filename the filename of the image to load
+         * @returns {HTMLImageElement} the image element that will contain the image once it is loaded
+         * @see Preloader.addImage
+         */
+        preloadImage (filename : string) : HTMLImageElement
+        {
+            return Preloader.addImage (filename);
+        }
+
+        /**
+         * Request that the stage preload a sound file for later playback and also implicitly add it to the
+         * list of known sounds for later sound manipulation with the stage sound API.
+         *
+         * Sounds are expected to be in a folder named "sounds/" inside of the folder that the game page is
+         * served from. You should not specify an extension on the filename as the system will determine what
+         * the browser can play and load the appropriate file for you.
+         *
+         * Unlike images, requests for sound preloads of the same sound do not share the same tag so that the
+         * playback properties of individual sounds can be manipulated individually.
+         *
+         * This is just a simple proxy for the Preloader.addSound() method which invokes Stage.addSound() for
+         * you.
+         *
+         * @param filename the filename of the sound to load
+         * @returns {Sound} the preloaded sound object
+         * @see Preloader.addSound
+         * @see Stage.addSound
+         */
+        preloadSound (filename : string) : Sound
+        {
+            return this.addSound (Preloader.addSound (filename));
+        }
+
+        /**
+         * Request that the stage preload a music file for later playback and also implicitly add it to the
+         * list of known sounds for later sound manipulation with the stage sound API.
+         *
+         * NOTE: Music is just a regular Sound object that is set to loop by default
+         *
+         * Music is expected to be in a folder named "music/" inside of the folder that the game page is
+         * served from. You should not specify an extension on the filename as the system will determine what
+         * the browser can play and load the appropriate file for you.
+         *
+         * Unlike images, requests for music preloads of the same music do not share the same tag so that
+         * the playback properties of individual songs can be manipulated individually.
+         *
+         * This is just a simple proxy for the Preloader.addMusic() method which invokes Stage.addSound()
+         * for you.
+         *
+         * @param filename the filename of the music to load
+         * @returns {Sound} the preloaded sound object
+         * @see Preloader.addMusic
+         * @see Stage.addSound
+         */
+        preloadMusic (filename : string) : Sound
+        {
+            return this.addSound (Preloader.addMusic (filename));
+        }
+
+        /**
+         * Add a sound object to the list of sound objects known by the stage. Only sound objects that the
+         * stage knows about will be manipulated by the stage sound API functions.
+         *
+         * This is invoked automatically for sounds that you have asked the stage to preload for you, but
+         * you need to invoke it manually if you use the preloader directly.
+         *
+         * This does not do a check to see if the sound object provided is already managed by the stage.
+         *
+         * @param sound the sound object to register with the stage
+         * @returns {Sound} the sound object that was registered, for convenience in chained method calls
+         * @see Stage.preloadSound
+         * @see Stage.preloadMusic
+         * @see Preloader.addSound
+         * @see Preloader.addMusic
+         */
+        addSound (sound : Sound) : Sound
+        {
+            this._knownSounds.push (sound);
+            return sound;
+        }
+
+        /**
+         * Iterate all of the sounds known to the stage and toggle their mute stage.
+         *
+         * For maximum confusion, this only affects registered sound objects that are set to not loop,
+         * since such a sound is often used as music and we might want to mute the music separate from the
+         * sound (or vice versa).
+         *
+         * The mute state of all such sounds is set to the state passed in.
+         *
+         * @param mute true to mute all sounds or false to un-mute all sounds
+         */
+        muteSounds (mute : boolean) : void
+        {
+            for (let i = 0 ; i < this._knownSounds.length ; i++)
+            {
+                if (this._knownSounds[i].loop == false)
+                    this._knownSounds[i].muted = mute;
+            }
+        }
+
+        /**
+         * Iterate all of the sounds known to the stage and change their volume
+         *
+         * For maximum confusion, this only affects registered sound objects that are set to not loop,
+         * since such a sound is often used as music and we might want to adjust the volume of the music
+         * separate from the sound (or vice versa).
+         *
+         * The volume state of all such sounds is set to the state passed in.
+         *
+         * @param volume the new volume level for all sounds (0.0 to 1.0)
+         */
+        soundVolume (volume : number) : void
+        {
+            for (let i = 0 ; i < this._knownSounds.length ; i++)
+            {
+                if (this._knownSounds[i].loop == false)
+                    this._knownSounds[i].volume = volume;
+            }
+        }
+
+        /**
+         * Iterate all of the music known to the stage and toggle their mute stage.
+         *
+         * This scans all of the registered sound objects and changes the mute state of any sound objects
+         * that are set to loop, since such a sound is often used as music and we might want to mute the
+         * music separate from the sound (or vice versa)
+         *
+         * The mute state of all such sounds is set to the state passed in.
+         *
+         * @param mute true to mute all music or false to un-mute all music
+         */
+        muteMusic (mute : boolean) : void
+        {
+            for (let i = 0 ; i < this._knownSounds.length ; i++)
+            {
+                if (this._knownSounds[i].loop == true)
+                    this._knownSounds[i].muted = mute;
+            }
+        }
+
+        /**
+         * Iterate all of the music known to the stage and change their volume.
+         *
+         * This scans all of the registered sound objects and changes the volume of any sound objects
+         * that are set to loop, since such a sound is often used as music and we might want to adjust the
+         * volume of music separate from sound (or vice versa)
+         *
+         * The volume of all such sounds is set to the state passed in.
+         *
+         * @param volume the new volume level for all sounds (0.0 to 1.0)
+         */
+        musicVolume (volume : number) : void
+        {
+            for (let i = 0 ; i < this._knownSounds.length ; i++)
+            {
+                if (this._knownSounds[i].loop == true)
+                    this._knownSounds[i].volume = volume;
+            }
         }
 
         /**
