@@ -3369,7 +3369,7 @@ var nurdz;
                 /**
                  * Set the volume that this sound plays back on, which should be a value between 0 and 1.
                  *
-                 * @param newVolume
+                 * @param newVolume the new volume level for the sound (0.0 to 1.0)
                  */
                 set: function (newVolume) {
                     this._tag.volume = newVolume;
@@ -3388,9 +3388,25 @@ var nurdz;
                  * Change the state of looping for this sound. When true, playback will loop continuously until
                  * told to stop.
                  *
-                 * @param newLoop
+                 * @param newLoop the new loop state (true to loop playback, false to play once and stop)
                  */
                 set: function (newLoop) { this._tag.loop = newLoop; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Sound.prototype, "muted", {
+                /**
+                 * Determine if this sound object is currently muted or not.
+                 *
+                 * @returns {boolean}
+                 */
+                get: function () { return this._tag.muted; },
+                /**
+                 * Change the mute state of this object.
+                 *
+                 * @param newMuted the new muted state (true for mute, false for un-muted)
+                 */
+                set: function (newMuted) { this._tag.muted = newMuted; },
                 enumerable: true,
                 configurable: true
             });
