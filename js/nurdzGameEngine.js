@@ -420,13 +420,11 @@ var nurdz;
                 var tag = _soundPreloadList[key];
                 // If there is not already a tag, then we need to create a new one.
                 if (tag == null) {
-                    console.log("Creating tag for", key);
                     // Create a new tag, indicate the function to invoke when it is fully loaded, and then add it
                     // to the preload list.
                     tag = document.createElement("audio");
                     tag.addEventListener("canplaythrough", soundLoaded);
                     _soundPreloadList[key] = tag;
-                    console.log("Done", tag);
                     // This counts as a sound that we are going to preload.
                     _soundsToLoad++;
                 }
