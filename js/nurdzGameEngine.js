@@ -191,92 +191,6 @@ var nurdz;
         var KeyCodes = game.KeyCodes;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var nurdz;
-(function (nurdz) {
-    var game;
-    (function (game) {
-        /**
-         * This is a simple class whose purpose is to wrap an audio element to make it a little easier to work
-         * with (and shield audio tag properties from modification).
-         */
-        var Sound = (function () {
-            /**
-             * Construct a new sound object, telling it to wrap the provided audio tag, which it will use for
-             * its playback.
-             *
-             * @param audioTag the audio tag that represents the sound to be played.
-             */
-            function Sound(audioTag) {
-                this._tag = audioTag;
-            }
-            Object.defineProperty(Sound.prototype, "isPlaying", {
-                /**
-                 * Determines if this sound is currently playing or not.
-                 *
-                 * @returns {boolean}
-                 */
-                get: function () { return this._tag.paused == false; },
-                enumerable: true,
-                configurable: true
-            });
-            /**
-             * Plays the sound. If it is already playing, it will be restarted.
-             */
-            Sound.prototype.play = function () {
-                // Play the sound, but make sure that it starts at the beginning.
-                this._tag.currentTime = 0;
-                this._tag.play();
-            };
-            /**
-             * Pause playback of the sound.
-             */
-            Sound.prototype.pause = function () {
-                this._tag.pause();
-            };
-            /**
-             * Toggle the state of the sound; if it is playing, it will be paused, otherwisse it will start
-             * playing.
-             *
-             * When the sound restarts, it will be started at the beginning.
-             *
-             * This method is generally used for longer sounds that you might want to cut off (e.g. music).
-             */
-            Sound.prototype.toggle = function () {
-                if (this.isPlaying)
-                    this.pause();
-                else
-                    this.play();
-            };
-            return Sound;
-        })();
-        game.Sound = Sound;
-        /**
-         * This is a simple class whose purpose is to wrap an audio element that is meant to be used as music.
-         * This has a slightly different API than a regular sound.
-         */
-        var Music = (function (_super) {
-            __extends(Music, _super);
-            /**
-             * Construct a new music object, telling it to wrap the provided audio tag as music, which it will
-             * use for its playback.
-             *
-             * @param audioTag the audio tag that represents the music to play
-             */
-            function Music(audioTag) {
-                // Invoke the super to set up, then make sure that this audio element loops when we play it.
-                _super.call(this, audioTag);
-                this._tag.loop = true;
-            }
-            return Music;
-        })(Sound);
-        game.Music = Music;
-    })(game = nurdz.game || (nurdz.game = {}));
-})(nurdz || (nurdz = {}));
 var nurdz;
 (function (nurdz) {
     var game;
@@ -462,7 +376,8 @@ var nurdz;
              * an OGG version of the same file, and provide a filename that has no extension on it. The code in
              * this method will apply the correct extension based on the browser in use and load the appropriate file.
              *
-             * The return value is a music object that can be used to play the music once it's loaded.
+             * This works identically to addSound() except that the sound returned is set to play looped by
+             * default.
              *
              * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
              * the same path as the page is in and to have no extension
@@ -471,7 +386,7 @@ var nurdz;
              * @see addSound
              */
             function addMusic(filename) {
-                return new game.Music(doAddSound("music/", filename));
+                return new game.Sound(doAddSound("music/", filename), true);
             }
             Preloader.addMusic = addMusic;
             /**
@@ -1080,6 +995,11 @@ var nurdz;
         game.Actor = Actor;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var nurdz;
 (function (nurdz) {
     var game;
@@ -3409,6 +3329,123 @@ var nurdz;
             return Level;
         })();
         game.Level = Level;
+    })(game = nurdz.game || (nurdz.game = {}));
+})(nurdz || (nurdz = {}));
+var nurdz;
+(function (nurdz) {
+    var game;
+    (function (game) {
+        /**
+         * This class wraps an HTML audio tag to provide an extended API for sound and music playing. This
+         * shields the client code from having to work with the tag directly and provides an enhanced API.
+         */
+        var Sound = (function () {
+            /**
+             * Construct a new sound object, telling it to wrap the provided audio tag, which it will use for
+             * its playback.
+             *
+             * @param audioTag the audio tag that represents the sound to be played.
+             * @param playbackLooped true if this sound should loop when played (e.g. music), false otherwise
+             */
+            function Sound(audioTag, playbackLooped) {
+                if (playbackLooped === void 0) { playbackLooped = false; }
+                // Save the tag and set the loop flag.
+                this._tag = audioTag;
+                this._tag.loop = playbackLooped;
+            }
+            Object.defineProperty(Sound.prototype, "isPlaying", {
+                /**
+                 * Determines if this sound is currently playing or not.
+                 *
+                 * @returns {boolean}
+                 */
+                get: function () { return this._tag.paused == false; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Sound.prototype, "volume", {
+                /**
+                 * Get the current volume that this sound is playing at. This ranges between 0 and 1.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._tag.volume; },
+                /**
+                 * Set the volume that this sound plays back on, which should be a value between 0 and 1.
+                 *
+                 * @param newVolume
+                 */
+                set: function (newVolume) {
+                    this._tag.volume = newVolume;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Sound.prototype, "loop", {
+                /**
+                 * Determines if this sound loops during playback or not.
+                 *
+                 * @returns {boolean}
+                 */
+                get: function () { return this._tag.loop; },
+                /**
+                 * Change the state of looping for this sound. When true, playback will loop continuously until
+                 * told to stop.
+                 *
+                 * @param newLoop
+                 */
+                set: function (newLoop) { this._tag.loop = newLoop; },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Start the sound playing, optionally also restarting the playback from the beginning if it is
+             * already playing.
+             *
+             * The restart parameter can be used to restart playback from the beginning; this is useful if the
+             * sound is already playing and you want it to immediately restart or if the sound is paused and
+             * you want playback to start from the beginning and not the pause point.
+             *
+             *
+             * When the sound is already playing and the parameter passed in is false, this call effectively
+             * does nothing.
+             *
+             * @param restart true to start the sound playing from the beginning or false to leave the current
+             * play position alone
+             */
+            Sound.prototype.play = function (restart) {
+                if (restart === void 0) { restart = true; }
+                // Change the current playback time if we were asked to.
+                if (restart)
+                    this._tag.currentTime = 0;
+                // Play it now
+                this._tag.play();
+            };
+            /**
+             * Pause playback of the sound.
+             */
+            Sound.prototype.pause = function () {
+                this._tag.pause();
+            };
+            /**
+             * Toggle the play state of the sound; if it is currently playing, it will be paused, otherwise it
+             * will start playing. The restart parameter can be used to cause paused playback to restart at
+             * the beginning of the sound and has no effect if the sound is already playing.
+             *
+             * This method is generally used for longer sounds that you might want to cut off (e.g. music).
+             *
+             * @see Sound.play
+             */
+            Sound.prototype.toggle = function (restart) {
+                if (restart === void 0) { restart = true; }
+                if (this.isPlaying)
+                    this.pause();
+                else
+                    this.play(restart);
+            };
+            return Sound;
+        })();
+        game.Sound = Sound;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
 var nurdz;

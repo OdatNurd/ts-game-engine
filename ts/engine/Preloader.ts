@@ -1,91 +1,3 @@
-module nurdz.game
-{
-    /**
-     * This is a simple class whose purpose is to wrap an audio element to make it a little easier to work
-     * with (and shield audio tag properties from modification).
-     */
-    export class Sound
-    {
-        /**
-         * The HTML Audio tag that we use to play our sound.
-         */
-        protected _tag : HTMLAudioElement;
-
-        /**
-         * Construct a new sound object, telling it to wrap the provided audio tag, which it will use for
-         * its playback.
-         *
-         * @param audioTag the audio tag that represents the sound to be played.
-         */
-        constructor (audioTag : HTMLAudioElement)
-        {
-            this._tag = audioTag;
-        }
-
-        /**
-         * Determines if this sound is currently playing or not.
-         *
-         * @returns {boolean}
-         */
-        get isPlaying () : boolean
-        { return this._tag.paused == false; }
-
-        /**
-         * Plays the sound. If it is already playing, it will be restarted.
-         */
-        play () : void
-        {
-            // Play the sound, but make sure that it starts at the beginning.
-            this._tag.currentTime = 0;
-            this._tag.play ();
-        }
-
-        /**
-         * Pause playback of the sound.
-         */
-        pause () : void
-        {
-            this._tag.pause ();
-        }
-
-        /**
-         * Toggle the state of the sound; if it is playing, it will be paused, otherwisse it will start
-         * playing.
-         *
-         * When the sound restarts, it will be started at the beginning.
-         *
-         * This method is generally used for longer sounds that you might want to cut off (e.g. music).
-         */
-        toggle () : void
-        {
-            if (this.isPlaying)
-                this.pause ();
-            else
-                this.play ();
-        }
-    }
-
-    /**
-     * This is a simple class whose purpose is to wrap an audio element that is meant to be used as music.
-     * This has a slightly different API than a regular sound.
-     */
-    export class Music extends Sound
-    {
-        /**
-         * Construct a new music object, telling it to wrap the provided audio tag as music, which it will
-         * use for its playback.
-         *
-         * @param audioTag the audio tag that represents the music to play
-         */
-        constructor (audioTag : HTMLAudioElement)
-        {
-            // Invoke the super to set up, then make sure that this audio element loops when we play it.
-            super (audioTag);
-            this._tag.loop = true;
-        }
-    }
-}
-
 module nurdz.game.Preloader
 {
     /**
@@ -280,6 +192,7 @@ module nurdz.game.Preloader
             tag = document.createElement ("audio");
             tag.addEventListener ("canplaythrough", soundLoaded);
             _soundPreloadList[key] = tag;
+
             // This counts as a sound that we are going to preload.
             _soundsToLoad++;
         }
@@ -320,7 +233,8 @@ module nurdz.game.Preloader
      * an OGG version of the same file, and provide a filename that has no extension on it. The code in
      * this method will apply the correct extension based on the browser in use and load the appropriate file.
      *
-     * The return value is a music object that can be used to play the music once it's loaded.
+     * This works identically to addSound() except that the sound returned is set to play looped by
+     * default.
      *
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
@@ -328,9 +242,9 @@ module nurdz.game.Preloader
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
      * @see addSound
      */
-    export function addMusic (filename : string) : Music
+    export function addMusic (filename : string) : Sound
     {
-        return new Music (doAddSound ("music/", filename));
+        return new Sound (doAddSound ("music/", filename), true);
     }
 
     /**

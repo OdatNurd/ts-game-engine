@@ -224,7 +224,7 @@ module nurdz.main
         /**
          * The music we play in our scene.
          */
-        private _music : game.Music;
+        private _music : game.Sound;
 
         /**
          * Create a new test scene to be managed by the provided stage.
