@@ -228,10 +228,10 @@ var nurdz;
             var _imagePreloadList = {};
             /**
              * The list of sounds (and music, which is a special case of sound) to be preloaded.
-             * @type {Object<string,HTMLAudioElement>}
+             * @type {Array<SoundPreload>}
              * @private
              */
-            var _soundPreloadList = {};
+            var _soundPreloadList = [];
             /**
              * The number of images that still need to be loaded before all images are considered loaded. This
              * gets incremented as preloads are added and decremented as loads are completed.
@@ -328,22 +328,19 @@ var nurdz;
                 // Make sure that preloading has not started.
                 if (_preloadStarted)
                     throw new Error("Cannot add sounds after preloading has already begun or started");
-                // Create a key that is the URL that we will be loading, and then see if there is a tag already in
-                // the preload dictionary that uses that URL.
-                var key = subFolder + filename + _audioExtension;
-                var tag = _soundPreloadList[key];
-                // If there is not already a tag, then we need to create a new one.
-                if (tag == null) {
-                    // Create a new tag, indicate the function to invoke when it is fully loaded, and then add it
-                    // to the preload list.
-                    tag = document.createElement("audio");
-                    tag.addEventListener("canplaythrough", soundLoaded);
-                    _soundPreloadList[key] = tag;
-                    // This counts as a sound that we are going to preload.
-                    _soundsToLoad++;
-                }
+                // Create a sound preload object.
+                var preload = {
+                    src: subFolder + filename + _audioExtension,
+                    tag: document.createElement("audio")
+                };
+                // Set up an event listener to ensure that once the sound can play through, we mark it as loaded
+                // enough for our purposes.
+                preload.tag.addEventListener("canplaythrough", soundLoaded);
+                // Insert it into the sound preload list and count it as a sound to be preloaded.
+                _soundPreloadList.push(preload);
+                _soundsToLoad++;
                 // Return the tag back to the caller so that they can play it later.
-                return tag;
+                return preload.tag;
             };
             /**
              * Add the sound filename specified to the list of sounds that will be preloaded. The "filename" is
@@ -412,10 +409,9 @@ var nurdz;
                     if (_imagePreloadList.hasOwnProperty(key))
                         _imagePreloadList[key].src = key;
                 }
-                for (var key in _soundPreloadList) {
-                    if (_soundPreloadList.hasOwnProperty(key))
-                        _soundPreloadList[key].src = key;
-                }
+                // For sounds they're in an array instead of an object so that we can load duplicates.
+                for (var i = 0; i < _soundPreloadList.length; i++)
+                    _soundPreloadList[i].tag.src = _soundPreloadList[i].src;
             }
             Preloader.commence = commence;
         })(Preloader = game.Preloader || (game.Preloader = {}));

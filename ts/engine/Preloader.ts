@@ -17,13 +17,26 @@ module nurdz.game.Preloader
     }
 
     /**
-     * This interface is used to shape entries in our preload list for sounds. It tells the TypeScript
-     * compiler that objects of this type need to be indexed by a string and that the result should be an
-     * HTML audio tag.
+     * This interface is used to shape entries in our preload list for sounds.
+     *
+     * Unlike images where we coalesce all duplicate images into a single image tag, for sounds we don't
+     * do this. If sounds share the same tag, then changes to the volume or loop of one instance would
+     * affect all instances.
+     *
+     * As such, this type associates the source of a sound with the tag that wraps it so that we can store
+     * the values in an array for preloading.
      */
     interface SoundPreload
     {
-        [index : string] : HTMLAudioElement;
+        /**
+         * The source URL for this sound object.
+         */
+        src : string;
+
+        /**
+         * The tag element that will be preloaded.
+         */
+        tag : HTMLAudioElement;
     }
 
     /**
@@ -61,10 +74,10 @@ module nurdz.game.Preloader
 
     /**
      * The list of sounds (and music, which is a special case of sound) to be preloaded.
-     * @type {Object<string,HTMLAudioElement>}
+     * @type {Array<SoundPreload>}
      * @private
      */
-    var _soundPreloadList : SoundPreload = {};
+    var _soundPreloadList : Array<SoundPreload> = [];
 
     /**
      * The number of images that still need to be loaded before all images are considered loaded. This
@@ -179,26 +192,23 @@ module nurdz.game.Preloader
         if (_preloadStarted)
             throw new Error ("Cannot add sounds after preloading has already begun or started");
 
-        // Create a key that is the URL that we will be loading, and then see if there is a tag already in
-        // the preload dictionary that uses that URL.
-        let key = subFolder + filename + _audioExtension;
-        let tag = _soundPreloadList[key];
-
-        // If there is not already a tag, then we need to create a new one.
-        if (tag == null)
+        // Create a sound preload object.
+        let preload : SoundPreload =
         {
-            // Create a new tag, indicate the function to invoke when it is fully loaded, and then add it
-            // to the preload list.
-            tag = document.createElement ("audio");
-            tag.addEventListener ("canplaythrough", soundLoaded);
-            _soundPreloadList[key] = tag;
+            src: subFolder + filename + _audioExtension,
+            tag: document.createElement ("audio")
+        };
 
-            // This counts as a sound that we are going to preload.
-            _soundsToLoad++;
-        }
+        // Set up an event listener to ensure that once the sound can play through, we mark it as loaded
+        // enough for our purposes.
+        preload.tag.addEventListener ("canplaythrough", soundLoaded);
+
+        // Insert it into the sound preload list and count it as a sound to be preloaded.
+        _soundPreloadList.push (preload);
+        _soundsToLoad++;
 
         // Return the tag back to the caller so that they can play it later.
-        return tag;
+        return preload.tag;
     };
 
     /**
@@ -277,10 +287,8 @@ module nurdz.game.Preloader
                 _imagePreloadList[key].src = key;
         }
 
-        for (let key in _soundPreloadList)
-        {
-            if (_soundPreloadList.hasOwnProperty (key))
-                _soundPreloadList[key].src = key;
-        }
+        // For sounds they're in an array instead of an object so that we can load duplicates.
+        for (let i = 0 ; i < _soundPreloadList.length ; i++)
+            _soundPreloadList[i].tag.src = _soundPreloadList[i].src;
     }
 }
