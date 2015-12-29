@@ -3562,11 +3562,6 @@ var nurdz;
                 this.addActor(new Dot(stage, ball1, bounce));
                 this.addActor(new Dot(stage, ball2, bounce));
             }
-            TestScene.prototype.update = function (tick) {
-                _super.prototype.update.call(this, tick);
-                if (this._music.isPlaying == false)
-                    this._music.play();
-            };
             /**
              * Render the scene.
              */
@@ -3585,7 +3580,7 @@ var nurdz;
             TestScene.prototype.activating = function (previousScene) {
                 // Let the super report the scene change in a debug log, then start our music.
                 _super.prototype.activating.call(this, previousScene);
-                //this._music.play ();
+                this._music.play();
             };
             /**
              * Invoked when we are no longer the active scene

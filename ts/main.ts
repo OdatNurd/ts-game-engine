@@ -233,14 +233,6 @@ module nurdz.main
             this.addActor (new Dot (stage, ball2, bounce));
         }
 
-
-        update (tick : number) : void
-        {
-            super.update (tick);
-            if (this._music.isPlaying == false)
-                this._music.play ();
-        }
-
         /**
          * Render the scene.
          */
@@ -262,7 +254,7 @@ module nurdz.main
         {
             // Let the super report the scene change in a debug log, then start our music.
             super.activating (previousScene);
-            //this._music.play ();
+            this._music.play ();
         }
 
         /**
