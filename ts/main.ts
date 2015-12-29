@@ -63,11 +63,6 @@ module nurdz.main
          * The Y speed of this dot as it moves around. If it's not specified, a random default is provided.
          */
         ySpeed? : number;
-
-        /**
-         * When true, we don't make a sound when we bound. This defaults to false.
-         */
-        mute? : boolean;
     }
 
     /**
@@ -130,7 +125,6 @@ module nurdz.main
                    properties, <DotProperties> {
                     xSpeed: game.Utils.randomIntInRange (-5, 5),
                     ySpeed: game.Utils.randomIntInRange (-5, 5),
-                    mute : false
                 });
 
             // Our radius is half our width because our position is registered via the center of our own
@@ -186,16 +180,14 @@ module nurdz.main
             if (this._position.x < this._radius || this._position.x >= stage.width - this._radius)
             {
                 this._properties.xSpeed *= -1;
-                if (this._properties.mute == false)
-                    this._sound.play ();
+                this._sound.play ();
             }
 
             // Bounce up and down.
             if (this._position.y < this._radius || this._position.y >= stage.height - this._radius)
             {
                 this._properties.ySpeed *= -1;
-                if (this._properties.mute == false)
-                    this._sound.play ();
+                this._sound.play ();
             }
         }
 
@@ -227,6 +219,16 @@ module nurdz.main
         private _music : game.Sound;
 
         /**
+         * True if we should play music or false otherwise.
+         */
+        private _playMusic : boolean;
+
+        /**
+         * True if we should play sounds or false otherwise.
+         */
+        private _playSounds : boolean;
+
+        /**
          * Create a new test scene to be managed by the provided stage.
          *
          * @param stage the stage to manage us/
@@ -235,15 +237,19 @@ module nurdz.main
         {
             super ("A Scene", stage);
 
+            // By default, we're playing music and sounds.
+            this._playMusic = true;
+            this._playSounds = true;
+
             // Preload some images.
-            let ball1 = game.Preloader.addImage ("ball_blue.png");
-            let ball2 = game.Preloader.addImage ("ball_yellow.png");
+            let ball1 = stage.preloadImage ("ball_blue.png");
+            let ball2 = stage.preloadImage ("ball_yellow.png");
 
             // Preload a bounce sound
-            let bounce = game.Preloader.addSound ("bounce_wall");
+            let bounce = stage.preloadSound ("bounce_wall");
 
             // Preload some music.
-            this._music = game.Preloader.addMusic ("WhoLikesToParty");
+            this._music = stage.preloadMusic ("WhoLikesToParty");
 
             // Create two actors and add them to ourselves. These use the images and sounds we said we
             // want to preload.
@@ -268,10 +274,16 @@ module nurdz.main
          *
          * @param previousScene the scene that used to be active
          */
-        activating (previousScene :  game.Scene) : void
+        activating (previousScene : game.Scene) : void
         {
             // Let the super report the scene change in a debug log, then start our music.
             super.activating (previousScene);
+
+            // Set the appropriate mute state for sounds and music.
+            this._stage.muteMusic (!this._playMusic);
+            this._stage.muteSounds (!this._playSounds);
+
+            // Start music playing now (it might be muted).
             this._music.play ();
         }
 
@@ -295,28 +307,24 @@ module nurdz.main
          */
         inputKeyDown (eventObj : KeyboardEvent) : boolean
         {
-            // If the key is the M key, toggle music and then make the sounds in the dots follow suit.
-            if (eventObj.keyCode == KeyCodes.KEY_M)
+            switch (eventObj.keyCode)
             {
-                this._music.toggle ();
+                // Toggle the mute state of the music
+                case KeyCodes.KEY_M:
+                    this._playMusic = !this._playMusic;
+                    this._stage.muteMusic (!this._playMusic);
+                    return true;
 
-                // Iterate the actors. For any that are dots, set their mute property so that they're
-                // muted while the music is not playing. Although this uses a typecast to tell TypeScript
-                // that the actor is really a Dot entity, this is safe because we only do this for actual
-                // Dot instances.
-                for (let i = 0 ; i < this._actorList.length ; i++)
-                {
-                    if (this._actorList[i] instanceof Dot)
-                    {
-                        let dot : Dot = <Dot> this._actorList[i];
-                        dot.properties.mute = !this._music.isPlaying;
-                    }
-                }
-                return true;
+                // Toggle the mute state of the sound
+                case KeyCodes.KEY_S:
+                    this._playSounds = !this._playSounds;
+                    this._stage.muteSounds (!this._playSounds);
+                    return true;
+
+                default:
+                    // Let the super do what super does. This allows screen shots to still work as expected.
+                    return super.inputKeyDown (eventObj);
             }
-
-            // Let the super do what super does. This allows screen shots to still work as expected.
-            return super.inputKeyDown (eventObj);
         }
     }
 
