@@ -1,5 +1,6 @@
 module nurdz.main
 {
+    import KeyCodes = nurdz.game.KeyCodes;
     /**
      * Set up the button on the page to toggle the state of the game.
      *
@@ -62,6 +63,11 @@ module nurdz.main
          * The Y speed of this dot as it moves around. If it's not specified, a random default is provided.
          */
         ySpeed? : number;
+
+        /**
+         * When true, we don't make a sound when we bound. This defaults to false.
+         */
+        mute? : boolean;
     }
 
     /**
@@ -100,6 +106,15 @@ module nurdz.main
         protected _properties : DotProperties;
 
         /**
+         * We need to override the properties property as well to change the type, otherwise outside code
+         * will think our properties are EntityProperties, which is not very useful.
+         *
+         * @returns {DotProperties}
+         */
+        get properties () : DotProperties
+        { return this._properties; }
+
+        /**
          * Construct an instance; it needs to know how it will be rendered.
          *
          * @param stage the stage that owns this actor.
@@ -114,7 +129,8 @@ module nurdz.main
             super ("A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1,
                    properties, <DotProperties> {
                     xSpeed: game.Utils.randomIntInRange (-5, 5),
-                    ySpeed: game.Utils.randomIntInRange (-5, 5)
+                    ySpeed: game.Utils.randomIntInRange (-5, 5),
+                    mute : false
                 });
 
             // Our radius is half our width because our position is registered via the center of our own
@@ -170,14 +186,16 @@ module nurdz.main
             if (this._position.x < this._radius || this._position.x >= stage.width - this._radius)
             {
                 this._properties.xSpeed *= -1;
-                this._sound.play ();
+                if (this._properties.mute == false)
+                    this._sound.play ();
             }
 
             // Bounce up and down.
             if (this._position.y < this._radius || this._position.y >= stage.height - this._radius)
             {
                 this._properties.ySpeed *= -1;
-                this._sound.play ();
+                if (this._properties.mute == false)
+                    this._sound.play ();
             }
         }
 
@@ -267,6 +285,38 @@ module nurdz.main
             // Let the super report the scene change in a debug log, then stop our music.
             super.deactivating (nextScene);
             this._music.pause ();
+        }
+
+        /**
+         * Invoked when a key is pressed.
+         *
+         * @param eventObj the key press event
+         * @returns {boolean} true if we handled the event or false otherwise
+         */
+        inputKeyDown (eventObj : KeyboardEvent) : boolean
+        {
+            // If the key is the M key, toggle music and then make the sounds in the dots follow suit.
+            if (eventObj.keyCode == KeyCodes.KEY_M)
+            {
+                this._music.toggle ();
+
+                // Iterate the actors. For any that are dots, set their mute property so that they're
+                // muted while the music is not playing. Although this uses a typecast to tell TypeScript
+                // that the actor is really a Dot entity, this is safe because we only do this for actual
+                // Dot instances.
+                for (let i = 0 ; i < this._actorList.length ; i++)
+                {
+                    if (this._actorList[i] instanceof Dot)
+                    {
+                        let dot : Dot = <Dot> this._actorList[i];
+                        dot.properties.mute = !this._music.isPlaying;
+                    }
+                }
+                return true;
+            }
+
+            // Let the super do what super does. This allows screen shots to still work as expected.
+            return super.inputKeyDown (eventObj);
         }
     }
 
