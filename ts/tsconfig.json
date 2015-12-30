@@ -26,6 +26,6 @@
         "engine/LevelData.ts",
         "engine/Level.ts",
         "engine/Sound.ts",
-        "main.ts"
+        "game/main.ts"
     ]
 }
