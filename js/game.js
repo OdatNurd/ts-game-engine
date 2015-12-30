@@ -28,10 +28,16 @@ var nurdz;
                 // a state it is already in, which can only happen if the engine stops itself when we didn't
                 // expect it.
                 try {
-                    if (gameRunning)
+                    if (gameRunning) {
+                        stage.muteMusic(true);
+                        stage.muteSounds(true);
                         stage.stop();
-                    else
+                    }
+                    else {
+                        stage.muteMusic(false);
+                        stage.muteSounds(false);
                         stage.run();
+                    }
                 }
                 // Log and then rethrow the error.
                 catch (error) {
