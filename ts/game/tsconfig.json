@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": false,
+        "declaration": false,
+        "sourceMap": false,
+        "outFile": "../../js/game.js"
+    },
+    "files": [
+        "../../js/engine.d.ts",
+        "main.ts"
+    ]
+}

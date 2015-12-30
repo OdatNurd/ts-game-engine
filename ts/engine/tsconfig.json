@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": false,
+        "declaration": true,
+        "sourceMap": false,
+        "outFile": "../../js/engine.js"
+    },
+    "files": [
+        "nurdz.ts",
+        "GameEngine.ts",
+        "Preloader.ts",
+        "Utils.ts",
+        "Point.ts",
+        "Actor.ts",
+        "Entity.ts",
+        "Scene.ts",
+        "Renderer.ts",
+        "CanvasRenderer.ts",
+        "Stage.ts",
+        "SceneManager.ts",
+        "Tile.ts",
+        "Tileset.ts",
+        "LevelData.ts",
+        "Level.ts",
+        "Sound.ts"
+    ]
+}
