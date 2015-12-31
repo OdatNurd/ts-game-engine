@@ -103,30 +103,61 @@ module nurdz.game.Preloader
     var _completionCallback : DataPreloadCallback;
 
     /**
-     * This gets invoked every time one of the images that we are preloading fully loads.
-     */
-    function imageLoaded ()
-    {
-        // TODO This doesn't report image load errors. I don't know if that matters
-        // One less image needs loading.
-        _imagesToLoad--;
-
-        // If everything is loaded, trigger the completion callback now.
-        if (_imagesToLoad == 0 && _soundsToLoad == 0)
-            _completionCallback ();
-    }
-
-    /**
-     * This gets invoked when a sound is "loaded".
+     * This gets invoked as the event handler function for all of our preloads of all file types. For
+     * images this is one of "load" or "error", while for sounds it is one of "canplaythrough" or "error".
      *
-     * In actuality, this tells us that based on the current download rate, enough of the audio has
-     * already been downloaded that if you tried to play it right now, it would be able to finish playing
-     * even though it may not be fully downloaded.
+     * Regardless of the event type, this removes itself as the event handler for events of the given
+     * type, counts down the preloaded file, and calls the main preload callback once everything is
+     * handled (error or not).
+     *
+     * Additionally, when an error happens, the file that is missing is logged to the console and a data
+     * URL is applied to the element so that everything still works. For images this is a red X in a box
+     * while for audio elements it is a small segment of silence.
+     *
+     * @param eventObj the event object being handled (one of "load", "error" or "canplaythrough"
      */
-    function soundLoaded ()
+    function preloadCallbackEvent (eventObj : Event) : void
     {
-        // TODO This doesn't report load errors. I'm not even sure this ever triggers on an error.
-        _soundsToLoad--;
+        // Get the element that is the target of the event. This requires a type cast since not all events
+        // are targeted to DOM elements, but we know that load/error/canplaythrough are.
+        let tag : HTMLImageElement|HTMLAudioElement = (<HTMLImageElement|HTMLAudioElement>eventObj.target);
+
+        // Determine if this is an image or not so we can act accordingly.
+        let isImage = tag.tagName.toLowerCase () == "img";
+
+        // Set up an error event object if this is an error event.
+        let errorEvent : ErrorEvent = (eventObj.type == "error") ? <ErrorEvent> eventObj : null;
+
+        // To start with, remove ourselves as the handlers for load and error events.
+        tag.removeEventListener ("load", preloadCallbackEvent, false);
+        tag.removeEventListener ("error", preloadCallbackEvent, false);
+
+        // Special handling if this is an error.
+        if (errorEvent != null)
+        {
+            // Note the error in the console.
+            console.log ("Preload error:", (isImage ? "image" : "sound"), tag.src);
+
+            // Depending on the tag type, use a data URL to approximate the missing data.
+            if (isImage)
+                tag.src = MISSING_IMAGE;
+            else
+            {
+                if (_audioExtension == ".mp3")
+                    tag.src = MISSING_MP3;
+                else
+                    tag.src = MISSING_OGG;
+
+                // For audio we want to make sure it doesn't loop.
+                (<HTMLAudioElement> tag).loop = false;
+            }
+        }
+
+        // Now decrement the appropriate count.
+        if (isImage)
+            _imagesToLoad--;
+        else
+            _soundsToLoad--;
 
         // If everything is loaded, trigger the completion callback now.
         if (_imagesToLoad == 0 && _soundsToLoad == 0)
@@ -159,10 +190,11 @@ module nurdz.game.Preloader
         // If there is not already a tag, then we need to create a new one.
         if (tag == null)
         {
-            // Create a new tag, indicate the function to invoke when it is fully loaded, and then add it
-            // to the preload list.
+            // Create a new tag, indicate the function to invoke when it is fully loaded or fails to load, and
+            // then add it to the preload list.
             tag = document.createElement ("img");
-            tag.addEventListener ("load", imageLoaded, false);
+            tag.addEventListener ("load", preloadCallbackEvent, false);
+            tag.addEventListener ("error", preloadCallbackEvent, false);
             _imagePreloadList[key] = tag;
 
             // This counts as an image that we are going to preload.
@@ -199,9 +231,10 @@ module nurdz.game.Preloader
             tag: document.createElement ("audio")
         };
 
-        // Set up an event listener to ensure that once the sound can play through, we mark it as loaded
-        // enough for our purposes.
-        preload.tag.addEventListener ("canplaythrough", soundLoaded);
+        // Create a new tag, indicate the function to invoke when it is fully loaded or fails to load, and
+        // then add it to the preload list.
+        preload.tag.addEventListener ("canplaythrough", preloadCallbackEvent);
+        preload.tag.addEventListener ("error", preloadCallbackEvent);
 
         // Insert it into the sound preload list and count it as a sound to be preloaded.
         _soundPreloadList.push (preload);
@@ -291,4 +324,103 @@ module nurdz.game.Preloader
         for (let i = 0 ; i < _soundPreloadList.length ; i++)
             _soundPreloadList[i].tag.src = _soundPreloadList[i].src;
     }
+
+    //noinspection SpellCheckingInspection
+    /**
+     * In case there is an image missing, this data URL is used to represent the image so that things can
+     * proceed, albeit in a broken manner. This aids in prototyping.
+     *
+     * This was drawn by me (which explains its quality) and is a 64x64 pixel image of a red X in a square
+     * with a white background.
+     *
+     * @type {string}
+     */
+    const MISSING_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABABAMAAABYR2ztAAAAAXNSR0IArs" +
+        "4c6QAAABVQTFRF////zDMz/8zMzGZmzJmZ/5mZ/2ZmAD7C7QAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAH" +
+        "dElNRQffDB8VMBekTnw9AAAAHWlUWHRDb21tZW50AAAAAABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAAE4SURBVEjH5ZVNEoIwDI" +
+        "WxoGsRdS03gBvoDeQGev9LOEn/XtIGFu60C2bafg0v6Qs0/cZotoFmdfwa4JNOY6HpDYG44kdHs5OIsKOlVwRGmt0FsI9naDia" +
+        "XJRIWhsw3KQAFJFhAPKpps16AAARc04ZC5Xiol4EkogHqgEgiuAcz5W7iJFTkYrLCiKwIBJgEZiuBnjrSTle635gEQM9joZhUj" +
+        "PcDGAJ+yfLcrsigAL2fv9sm9YDkw0sokgVYJQ5lsCsctAAO2ntFXORpQS6fiOLsSykAFy8icEAOMB7pdR8WLaoAA685ezbDN3S" +
+        "C0MB0KKna4aJ3XIwLNdFIzjpiARw5KfqXABcLpBorAToj8NRA+8cV4oIQIvlESICMGPyle7uRFQhwgOPlGMhggGnTIAi/u6fZQ" +
+        "Pf/v0/eDU21RARJ0gAAAAASUVORK5CYII=";
+
+    //noinspection SpellCheckingInspection
+    /**
+     * In case there is a sound missing in MP3 format, this data URL is used to represent it. It
+     * represents 0.03 seconds of silence in MP3 format as generated by:
+     *
+     * ffmpeg -ar 22000 -t 0.01 -f s16le -acodec pcm_s16le -ac 2 -i /dev/zero -acodec libmp3lame missing.mp3
+     *
+     * @type {string}
+     */
+    const MISSING_MP3 = "data:audio/mp3;base64,SUQzBAAAAAAAGVRTU0UAAAAPAAADTGF2ZjU0LjI1LjEwNQD/83AAAAAAAAAA" +
+        "AAAAAAAAAAAAAABJbmZvAAAABwAAAAMAAAMoAHt7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e3t7e729vb29vb29vb29vb" +
+        "29vb29vb29vb29vb29vb29vb29vf///////////////////////////////////////////0xhdmY1NC4yNS4xMDUAAAAAAAAA" +
+        "ACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/zgGQAAAABpAAAAAAAAANIAAAAAExBTUUzLjk5LjVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "VVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjk5LjVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "VVVVVVVVVVVVVVVVX/84JkQwAAAaQAAAAAAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "VVVVVVVVVVTEFNRTMuOTkuNVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "Vf/zgmRDAAABpAAAAAAAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" +
+        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+
+    //noinspection SpellCheckingInspection
+    /**
+     * In case there is a sound missing in Ogg format, this data URL is used to represent it. It
+     * represents 0.03 seconds of silence in Ogg format.
+     *
+     * This was generated similarly to the MP3 version above by generating a wav file instead (-acodec
+     * copy) and using oggenc at the lowest possible quality, downsampling to mono.
+     *
+     * @type {string}
+     */
+    const MISSING_OGG = "data:audio/ogg;base64,T2dnUwACAAAAAAAAAABUhPp7AAAAAAFv/AUBHgF2b3JiaXMAAAAAAfBVAAAA" +
+        "AAAAgD4AAAAAAACqAU9nZ1MAAAAAAAAAAAAAVIT6ewEAAADNTe8JDj3///////////////+aA3ZvcmJpcy0AAABYaXBoLk9yZy" +
+        "BsaWJWb3JiaXMgSSAyMDEwMTEwMSAoU2NoYXVmZW51Z2dldCkAAAAAAQV2b3JiaXMiQkNWAQAIAACAIAoZxoDQkFUAABAAAEKI" +
+        "RsZQp5QEl4KFEEfEUIeQ81Bq6SB4SmHJmPQUaxBCCN97z7333nsgNGQVAAAEAEAYBQ5i4DEJQgihGMUJUZwpCEIIYTkJlnIeOg" +
+        "lC9yCEEC7n3nLuvfceCA1ZBQAAAgAwCCGEEEIIIYQQQgoppRRSiimmmGLKMcccc8wxyCCDDDropJNOMqmkk44yyaij1FpKLcUU" +
+        "U2y5xVhrrTXn3GtQyhhjjDHGGGOMMcYYY4wxxghCQ1YBACAAAIRBBhlkEEIIIYUUUoopphxzzDHHgNCQVQAAIACAAAAAAEeRFM" +
+        "mRHMmRJEmyJEvSJM/yLM/yLE8TNVFTRVV1Vdu1fduXfdt3ddm3fdl2dVmXZVl3bVuXdVfXdV3XdV3XdV3XdV3XdV3XdSA0ZBUA" +
+        "IAEAoCM5jiM5jiM5kiMpkgKEhqwCAGQAAAQA4CiO4jiSIzmWY0mWpEma5Vme5WmeJmqiB4SGrAIAAAEABAAAAAAAoCiK4iiOI0" +
+        "mWpWma56meKIqmqqqiaaqqqpqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZpAaMgqAEACAEDHcRzHURzHcRzJkSQJ" +
+        "CA1ZBQDIAAAIAMBQFEeRHMuxJM3SLM/yNNEzPVeUTd3UVRsIDVkFAAACAAgAAAAAAMDxHM/xHE/yJM/yHM/xJE/SNE3TNE3TNE" +
+        "3TNE3TNE3TNE3TNE3TNE3TNE3TNE3TNE3TNE3TNE3TNE3TgNCQVQAAAgAAIIhChjEgNGQVAAAEAIAQopEx1CklwaVgIcQRMdQh" +
+        "5DyUWjoInlJYMiY9xRqEEML33nPvvfceCA1ZBQAAAQAQRoGDGHhMghBCKEZxQhRnCoIQQlhOgqWch06C0D0IIYTLubece++9B0" +
+        "JDVgEAgAAADEIIIYQQQgghhJBCSimFlGKKKaaYcswxxxxzDDLIIIMOOumkk0wq6aSjTDLqKLWWUksxxRRbbjHWWmvNOfcalDLG" +
+        "GGOMMcYYY4wxxhhjjDGC0JBVAAAIAABhkEEGGYQQQkghhZRiiinHHHPMMSA0ZBUAAAgAIAAAAMBRJEVyJEdyJEmSLMmSNMmzPM" +
+        "uzPMvTRE3UVFFVXdV2bd/2Zd/2XV32bV+2XV3WZVnWXdvWZd3VdV3XdV3XdV3XdV3XdV3XdR0IDVkFAEgAAOhIjuNIjuNIjuRI" +
+        "iqQAoSGrAAAZAAABADiKoziO5EiO5ViSJWmSZnmWZ3map4ma6AGhIasAAEAAAAEAAAAAACiKojiK40iSZWma5nmqJ4qiqaqqaJ" +
+        "qqqqqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZqmaZomEBqyCgCQAADQcRzHcRTHcRxHciRJAkJDVgEAMgAAAgAwFMVR" +
+        "JMdyLEmzNMuzPE30TM8VZVM3ddUGQkNWAQCAAAACAAAAAABwPMdzPMeTPMmzPMdzPMmTNE3TNE3TNE3TNE3TNE3TNE3TNE3TNE" +
+        "3TNE3TNE3TNE3TNE3TNE3TNE3TNCA0ZCUAAAQAgCDHtIMkCYSgguQZxBzEpBmFoILkOgYlxeQhp6Bi5DnJmEHkgtJFpiIIDVkR" +
+        "AEQBAADGIMYQc8g5J6WTFDnnpHRSGgihpY5SZ6m0WmLMKJXaUq0NhI5SSC2jVGItrXbUSq0ltgIAAAIcAAACLIRCQ1YEAFEAAI" +
+        "QxSCmkFGKMOcgcRIwx6BhkhjEGIXNOQccchVQqBx11UFLDGHOOQaigg1Q6R5WDUFJHnQAAgAAHAIAAC6HQkBUBQJwAgEGSNM3S" +
+        "NM+zNM/zPFFUVU8UVdUSPdP0TFNVPdNUVVM1ZVdUTVm2PNE0PdNUVc80VVU0Vdk1TdV1PVW1ZdNVdVl0Vd12bdm3XVkWbk9VZV" +
+        "tUXVs3VVfWVVm2fVe2bV8SRVUVVdV1PVV1XdV1ddt0XV33VFV2TdeVZdN1bdl1ZVtXZVn4NVWVZdN1bdl0Xdl2ZVe3VVnWbdF1" +
+        "fV2VZeE3Zdn3ZVvXfVm3lWF0XdtXZVn3TVkWftmWhd3VdV+YRFFVPVWVXVFVXdd0XVtXXde2NdWUXdN1bdlUXVlWZVn3XVfWdU" +
+        "1VZdmUZds2XVeWVVn2dVeWdVt0XV03ZVn4VVfWdVe3jWO2bV8YXVf3TVnWfVWWdV/WdWGYddvXNVXVfVN2feF0ZV3Yfd8YZl0X" +
+        "js91fV+VbeFYZdn4deEXllvXhd9zXV9XbdkYVtk2ht33jWH2feNYddsYZls3urpOGH5hOG7fOKq2LXR1W1he3Tbqxk+4jd+oqa" +
+        "qvm65r/KYs+7qs28Jw+75yfK7r+6osG78q28Jv67py7L5P+VzXF1ZZFobVloVh1nVh2YVhqdq6Mry6bxyvrSvD7QuN31eGqm0b" +
+        "y6vbwjD7tvDbwm8cu7EzBgAADDgAAASYUAYKDVkRAMQJAFgkyfMsyxJFy7JEUTRFVRVFUVUtTTNNTfNMU9M80zRNU3VF01RdS9" +
+        "NMU/M009Q8zTRN1XRV0zRlUzRN1zVV03ZFVZVl1ZVlWXVdXRZN05VF1XRl01RdWXVdV1ZdV5YlTTNNzfNMU/M80zRV05VNU3Vd" +
+        "y/NUU/NE0/VEUVVVU1VdU1VlV/M8U/VETzU9UVRV0zVl1VRVWTZV05ZNU5Vl01Vt2VVlV5Zd2bZNVZVlUzVd2XRd13Zd13Zd2R" +
+        "V2SdNMU/M809Q8TzVNU3VdU1Vd2fI81fREUVU1TzRVVVVd1zRVV7Y8z1Q9UVRVTdRU03RdWVZVU1ZF1bRlVVV12TRVWXZl2bZd" +
+        "1XVlU1Vd2VRdWTZVU3ZdV7a5siqrnmnKsqmqtmyqquzKtm3rruvqtqiasmuaqmyrqqq7smvrvizLtiyqquuarirLpqrKtizLui" +
+        "7LtrCrrmvbpurKuivLdFm1Xd/2bbrquravyq6vu7Js667t6rJu277vmaYsm6op26aqyrIsu7Zty7IvjKbp2qar2rKpurLtuq6u" +
+        "y7Js26JpyrKpuq5tqqYsy7Js+7Is27bqyrrs2rLtu64s27JtC7vsCrOvurKtu7JtC6ur2rbs2z5bV3VVAADAgAMAQIAJZaDQkJ" +
+        "UAQBQAAGAMY4xBaJRyzjkIjVLOOQchcw5CCKlkzkEIoaTMOQilpJQ5B6GUlEIIpaTUWgihlJRaKwAAoMABACDABk2JxQEKDVkJ" +
+        "AKQCABgcR9NM03Vl2RgWyxJFVZVl2zaGxbJEUVVl2baFYxNFVZVl29Z1NFFUVVm2bd1XjlNVZdm2fV04MlVVlm1b130jVZZtW9" +
+        "eFoZIqy7Zt675RSbZtXTeG46gk27bu+75xLPGFobAslfCVXzgqgQAA8AQHAKACG1ZHOCkaCyw0ZCUAkAEAABiklFFKKaOUUkop" +
+        "xpRSjAkAABhwAAAIMKEMFBqyIgCIAgAAnHPOOeecc84555xzzjnnnHPOOecYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMc" +
+        "YEAOxEOADsRFgIhYasBADCAQAAhBSCklIppZQSOeeklFJKKaWUyEEIpZRSSimlRNJJKaWUUkoppXFQSimllFJKKaGUUkoppZRS" +
+        "SgmllFJKKaWUUkoppZRSSimllFJKKaWUUkoppZRSSimllFJKKaWUUkoppZRSSimllFJKKaWUUkoppZRSSimllFJKKaWUUkoppZ" +
+        "RSSimllFJKKaWUUkoBACYPDgBQCTbOsJJ0VjgaXGjISgAgNwAAUIo5xiSUkEpIJYQQSuUYhM5JCSm1VkIKrYQKOmido5BSS62V" +
+        "lEpJmYQQQiihhFJaKSW1UjIIoYRQSgghpVJKCaFlUEIKJZSUUkkttFRKySCEUFoJqZXUWgollZRBKamEklIqrbWUSkqtg9JSKa" +
+        "211kpKIZWWUgelpJZSKaW1FkprrbVOUiktpNZSa62VVkopnaWUSkmttZZaaymlVkIprbTSWikltdZSay2V1FpLraXWUmutpdZK" +
+        "KSWlllprrbWWWioptZRCKaWVkkJqqaXWSiothNBSSaWVVlprKaWUSigllZRaKqm1llJopYXSSkklpZZKKiml1FIqoZQSUiqhld" +
+        "RSa6mllkoqLbXUUiuplJZKSqkUAAB04AAAEGBEpYXYacaVR+CIQoYJKAAAEAQAGIiQmUCgAAoMZADAAUKCFABQWGAoXeiCECJI" +
+        "F0EWD1w4ceOJG07o0AYAGIiQmQChGCIkZAPABEWFdACwuMAoXeiCECJIF0EWD1w4ceOJG07o0AIBAAAAAMABAB8AAAcGEBHRXI" +
+        "bGBkeHxwdIiAgAAAAAAAAAAAAAAIBPZ2dTAAQABAAAAAAAAFSE+nsCAAAAN7BaJQMBAQEAAAA=";
 }
