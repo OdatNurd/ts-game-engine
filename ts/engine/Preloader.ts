@@ -128,8 +128,12 @@ module nurdz.game.Preloader
         // Set up an error event object if this is an error event.
         let errorEvent : ErrorEvent = (eventObj.type == "error") ? <ErrorEvent> eventObj : null;
 
-        // To start with, remove ourselves as the handlers for load and error events.
-        tag.removeEventListener ("load", preloadCallbackEvent, false);
+        // To start with, remove ourselves as the handlers for load and error events. We use a load event
+        // for an image but a canplaythrough event for audio.
+        if (isImage)
+            tag.removeEventListener ("load", preloadCallbackEvent, false);
+        else
+            tag.removeEventListener ("canplaythrough", preloadCallbackEvent, false);
         tag.removeEventListener ("error", preloadCallbackEvent, false);
 
         // Special handling if this is an error.
