@@ -331,7 +331,7 @@ module nurdz.game
             if (this._didPreload)
                 startSceneLoop ();
             else
-                Preloader.commence (startSceneLoop);
+                Preloader.commence (startSceneLoop, this);
         }
 
         /**

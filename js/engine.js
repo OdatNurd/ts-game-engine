@@ -249,9 +249,38 @@ var nurdz;
              */
             var _soundsToLoad = 0;
             /**
+             * The stage passed to the commence method (if any). If this is set, every time the number of items to
+             * preload changes, the stage is updated to reflect it.
+             *
+             * @type {Stage}
+             * @private
+             */
+            var _stage = null;
+            /**
              * The callback to invoke when preloading has started and all images and sounds are loaded.
              */
             var _completionCallback;
+            /**
+             * If we have a stage, this centers some text on it that tells us how many items we have left to
+             * preload. It gets update every time the number of items left to preload changes.
+             */
+            function updatePreloadProgress() {
+                // If there is no stage, just leave.
+                if (_stage == null)
+                    return;
+                // Get the canvas context out, save its state and then set up our rendering.
+                var _context = _stage.renderer.context;
+                _context.save();
+                _context.textAlign = "center";
+                _context.textBaseline = "middle";
+                _context.font = "32px monospace";
+                // Clear the stage and draw the text now.
+                var text = "Preloading files, " + (_imagesToLoad + _soundsToLoad) + " left to go";
+                _stage.renderer.clear('black');
+                _stage.renderer.drawTxt(text, _stage.width / 2, _stage.height / 2, 'white');
+                // Done now
+                _context.restore();
+            }
             /**
              * This gets invoked as the event handler function for all of our preloads of all file types. For
              * images this is one of "load" or "error", while for sounds it is one of "canplaythrough" or "error".
@@ -302,9 +331,11 @@ var nurdz;
                     _imagesToLoad--;
                 else
                     _soundsToLoad--;
-                // If everything is loaded, trigger the completion callback now.
+                // If everything is loaded, trigger the completion callback now. Otherwise, update our progress text.
                 if (_imagesToLoad == 0 && _soundsToLoad == 0)
                     _completionCallback();
+                else
+                    updatePreloadProgress();
             }
             /**
              * Add the image filename specified to the list of images that will be preloaded. The "filename" is
@@ -418,15 +449,27 @@ var nurdz;
             }
             Preloader.addMusic = addMusic;
             /**
-             * Start the image preload happening.
+             * Start the file preloads happening. Once all images and sound/music files requested are fully
+             * loaded, the callback function provided will be invoked, which means that everything is ready to go.
+             *
+             * The preloader handles errors by logging them to the console and replacing the failed file with a
+             * placeholder, either an image or a sound, which is embedded in the source and is guaranteed to work.
+             *
+             * If a stage is provided, the preloader will output the number of things still to preload to the
+             * center of the stage, just so that you know that it's doing something.
+             *
+             * @param callback the callback to invoke when all of the preloading is completed
+             * @param stage the stage that is hosting the game (optional).
              *
              * @throws {Error} if image preloading is already started
              */
-            function commence(callback) {
+            function commence(callback, stage) {
+                if (stage === void 0) { stage = null; }
                 // Make sure that image preloading is not already started
                 if (_preloadStarted)
                     throw new Error("Cannot start preloading; preloading is already started");
-                // Save the callback and then indicate that the preload has started.
+                // Save the callback and stage and then indicate that the preload has started.
+                _stage = stage;
                 _completionCallback = callback;
                 _preloadStarted = true;
                 // If there is nothing to preload, fire the callback now and leave.
@@ -434,6 +477,8 @@ var nurdz;
                     _completionCallback();
                     return;
                 }
+                // Update the stage to say how many things are left.
+                updatePreloadProgress();
                 // Iterate over the entire preload list and set in the source to get the image from. This will start
                 // the browser loading things.
                 for (var key in _imagePreloadList) {
@@ -2542,7 +2587,7 @@ var nurdz;
                 if (this._didPreload)
                     startSceneLoop();
                 else
-                    game.Preloader.commence(startSceneLoop);
+                    game.Preloader.commence(startSceneLoop, this);
             };
             /**
              * Stop a running game. This halts the update loop but otherwise has no effect. Thus after this call,

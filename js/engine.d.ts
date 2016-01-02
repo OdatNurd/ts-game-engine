@@ -176,11 +176,21 @@ declare module nurdz.game.Preloader {
      */
     function addMusic(filename: string): Sound;
     /**
-     * Start the image preload happening.
+     * Start the file preloads happening. Once all images and sound/music files requested are fully
+     * loaded, the callback function provided will be invoked, which means that everything is ready to go.
+     *
+     * The preloader handles errors by logging them to the console and replacing the failed file with a
+     * placeholder, either an image or a sound, which is embedded in the source and is guaranteed to work.
+     *
+     * If a stage is provided, the preloader will output the number of things still to preload to the
+     * center of the stage, just so that you know that it's doing something.
+     *
+     * @param callback the callback to invoke when all of the preloading is completed
+     * @param stage the stage that is hosting the game (optional).
      *
      * @throws {Error} if image preloading is already started
      */
-    function commence(callback: DataPreloadCallback): void;
+    function commence(callback: DataPreloadCallback, stage?: Stage): void;
 }
 /**
  * This module exports various helper routines that might be handy in a game context but which don't
