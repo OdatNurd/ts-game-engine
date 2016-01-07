@@ -8,7 +8,7 @@
         "outFile": "../../js/game.js"
     },
     "files": [
-        "../../js/engine.d.ts",
+        "../../js/engine-0.2.0.d.ts",
         "main.ts"
     ]
 }
