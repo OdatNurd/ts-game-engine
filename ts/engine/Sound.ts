@@ -37,6 +37,14 @@ module nurdz.game
         }
 
         /**
+         * Obtain the underlying audio tag used for this sound object.
+         *
+         * @returns {HTMLAudioElement}
+         */
+        get tag () : HTMLAudioElement
+        { return this._tag; }
+
+        /**
          * Determine if this sound represents music or not.
          *
          * @returns {boolean}

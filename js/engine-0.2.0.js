@@ -3671,6 +3671,16 @@ var nurdz;
                 if (isMusic)
                     this._tag.loop = true;
             }
+            Object.defineProperty(Sound.prototype, "tag", {
+                /**
+                 * Obtain the underlying audio tag used for this sound object.
+                 *
+                 * @returns {HTMLAudioElement}
+                 */
+                get: function () { return this._tag; },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Sound.prototype, "isMusic", {
                 /**
                  * Determine if this sound represents music or not.

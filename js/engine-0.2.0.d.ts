@@ -2618,6 +2618,12 @@ declare module nurdz.game {
          */
         constructor(audioTag: HTMLAudioElement, isMusic?: boolean);
         /**
+         * Obtain the underlying audio tag used for this sound object.
+         *
+         * @returns {HTMLAudioElement}
+         */
+        tag: HTMLAudioElement;
+        /**
          * Determine if this sound represents music or not.
          *
          * @returns {boolean}
