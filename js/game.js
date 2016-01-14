@@ -159,17 +159,35 @@ var nurdz;
              * @param stage the stage to manage us/
              */
             function TestScene(stage) {
+                var _this = this;
                 _super.call(this, "A Scene", stage);
+                /**
+                 * This is invoked every time one of our images preloads; we get told which one has been loaded.
+                 *
+                 * @param image the image that loaded
+                 */
+                this.imageLoadComplete = function (image) {
+                    console.log(_this._name, "finished loading", image.src);
+                };
+                /**
+                 * This is invoked every time one of our sounds preloads; we get the sound object, from which we
+                 * can get the tag and also a determination on wether or not it is music or a sound effect.
+                 *
+                 * @param sound the sound (or music) that loaded
+                 */
+                this.soundLoadComplete = function (sound) {
+                    console.log(_this._name, "finished loading", sound.isMusic ? "music" : "sound", sound.tag.src);
+                };
                 // By default, we're playing music and sounds.
                 this._playMusic = true;
                 this._playSounds = true;
                 // Preload some images.
-                var ball1 = stage.preloadImage("ball_blue.png");
-                var ball2 = stage.preloadImage("ball_yellow.png");
+                var ball1 = stage.preloadImage("ball_blue.png", this.imageLoadComplete);
+                var ball2 = stage.preloadImage("ball_yellow.png", this.imageLoadComplete);
                 // Preload a bounce sound
-                var bounce = stage.preloadSound("bounce_wall");
+                var bounce = stage.preloadSound("bounce_wall", this.soundLoadComplete);
                 // Preload some music.
-                this._music = stage.preloadMusic("WhoLikesToParty");
+                this._music = stage.preloadMusic("WhoLikesToParty", this.soundLoadComplete);
                 // Create two actors and add them to ourselves. These use the images and sounds we said we
                 // want to preload.
                 this.addActor(new Dot(stage, ball1, bounce));

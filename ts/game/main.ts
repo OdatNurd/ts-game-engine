@@ -250,20 +250,41 @@ module nurdz.main
             this._playSounds = true;
 
             // Preload some images.
-            let ball1 = stage.preloadImage ("ball_blue.png");
-            let ball2 = stage.preloadImage ("ball_yellow.png");
+            let ball1 = stage.preloadImage ("ball_blue.png", this.imageLoadComplete);
+            let ball2 = stage.preloadImage ("ball_yellow.png", this.imageLoadComplete);
 
             // Preload a bounce sound
-            let bounce = stage.preloadSound ("bounce_wall");
+            let bounce = stage.preloadSound ("bounce_wall", this.soundLoadComplete);
 
             // Preload some music.
-            this._music = stage.preloadMusic ("WhoLikesToParty");
+            this._music = stage.preloadMusic ("WhoLikesToParty", this.soundLoadComplete);
 
             // Create two actors and add them to ourselves. These use the images and sounds we said we
             // want to preload.
             this.addActor (new Dot (stage, ball1, bounce));
             this.addActor (new Dot (stage, ball2, bounce));
         }
+
+        /**
+         * This is invoked every time one of our images preloads; we get told which one has been loaded.
+         *
+         * @param image the image that loaded
+         */
+        private imageLoadComplete = (image : HTMLImageElement) =>
+        {
+            console.log (this._name, "finished loading", image.src);
+        };
+
+        /**
+         * This is invoked every time one of our sounds preloads; we get the sound object, from which we
+         * can get the tag and also a determination on wether or not it is music or a sound effect.
+         *
+         * @param sound the sound (or music) that loaded
+         */
+        private soundLoadComplete = (sound : game.Sound) =>
+        {
+            console.log (this._name, "finished loading", sound.isMusic ? "music" : "sound", sound.tag.src);
+        };
 
         /**
          * Render the scene.
@@ -336,7 +357,7 @@ module nurdz.main
         }
     }
 
-    // Once the DOM is loaded, set things up.
+// Once the DOM is loaded, set things up.
     nurdz.contentLoaded (window, function ()
     {
         try
