@@ -126,18 +126,33 @@ declare module nurdz.game.Preloader {
      */
     type DataPreloadCallback = () => void;
     /**
+     * The type of a callback function to invoke when an image preload is completed. The function is passed as
+     * an argument the handle to the loaded image element and returns no value.
+     */
+    type ImagePreloadCallback = (HTMLImageElement) => void;
+    /**
+     * The type of a callback function to invoke when a sound preload is completed. The function is passed as
+     * an argument the handle to the loaded audio element and returns no value.
+     */
+    type SoundPreloadCallback = (Sound) => void;
+    /**
      * Add the image filename specified to the list of images that will be preloaded. The "filename" is
      * assumed to be a path that is relative to the page that the game is being served from and inside of
      * an "images/" sub-folder.
+     *
+     * The (optional) callback function can be provided to let you know when the image is finally finished
+     * loading, in case you need that information (e.g. for getting the dimensions). The callback is
+     * guaranteed to be invoked before the callback that indicates that all preloads have completed.
      *
      * The return value is an image tag that can be used to render the image once it is loaded.
      *
      * @param filename the filename of the image to load; assumed to be relative to a images/ folder in
      * the same path as the page is in.
+     * @param callback if non-null, this will be invoked when the image is fully loaded.
      * @returns {HTMLImageElement} the tag that the image will be loaded into.
      * @throws {Error} if an attempt is made to add an image to preload after preloading has already started
      */
-    function addImage(filename: string): HTMLImageElement;
+    function addImage(filename: string, callback?: ImagePreloadCallback): HTMLImageElement;
     /**
      * Add the sound filename specified to the list of sounds that will be preloaded. The "filename" is
      * assumed to be in a path that is relative to the page that the game is being served from an inside
@@ -145,17 +160,23 @@ declare module nurdz.game.Preloader {
      *
      * NOTE: Since different browsers support different file formats, you should provide both an MP3 and
      * an OGG version of the same file, and provide a filename that has no extension on it. The code in
-     * this method will apply the correct extension based on the browser in use and load the appropriate file.
+     * this method will apply the correct extension based on the browser in use and load the appropriate
+     * file.
+     *
+     * The (optional) callback function can be provided to let you know when the browser thinks that
+     * enough of the file has loaded that playing would play right through. The callback is guaranteed to be
+     * invoked before the callback that indicates that all preloads have completed.
      *
      * The return value is a sound object that can be used to play the sound once it's loaded.
      *
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
+     * @param callback if non-null, this will be invoked with the sound object when the load is finished.
      * @returns {Sound} the sound object that will (eventually) play the requested audio
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
      * @see addMusic
      */
-    function addSound(filename: string): Sound;
+    function addSound(filename: string, callback?: SoundPreloadCallback): Sound;
     /**
      * Add the music filename specified to the list of music that will be preloaded. The "filename" is
      * assumed to be in a path that is relative to the page that the game is being served from an inside
@@ -165,16 +186,21 @@ declare module nurdz.game.Preloader {
      * an OGG version of the same file, and provide a filename that has no extension on it. The code in
      * this method will apply the correct extension based on the browser in use and load the appropriate file.
      *
+     * The (optional) callback function can be provided to let you know when the browser thinks that
+     * enough of the file has loaded that playing would play right through. The callback is guaranteed to be
+     * invoked before the callback that indicates that all preloads have completed.
+     *
      * This works identically to addSound() except that the sound returned is set to play looped by
      * default.
      *
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
+     * @param callback if non-null, this will be invoked with the sound object when the load is finished.
      * @returns {Sound} the sound object that will (eventually) play the requested audio
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
      * @see addSound
      */
-    function addMusic(filename: string): Sound;
+    function addMusic(filename: string, callback?: SoundPreloadCallback): Sound;
     /**
      * Start the file preloads happening. Once all images and sound/music files requested are fully
      * loaded, the callback function provided will be invoked, which means that everything is ready to go.
@@ -1805,13 +1831,18 @@ declare module nurdz.game {
          * Requests for preloads of the same image multiple times cause the same image element to be
          * returned each time, since image drawing is non-destructive.
          *
+         * You may optionally provide a callback function to be invoked when the image has finished
+         * loading; the callback receives the actual loaded image. The callback is guaranteed to be
+         * invoked before the stage starts the initial scene running.
+         *
          * This is just a proxy for the Preloader.addImage() method, placed here for convenience.
          *
          * @param filename the filename of the image to load
+         * @param callback optional callback to be invoked when the image loads
          * @returns {HTMLImageElement} the image element that will contain the image once it is loaded
          * @see Preloader.addImage
          */
-        preloadImage(filename: string): HTMLImageElement;
+        preloadImage(filename: string, callback?: Preloader.ImagePreloadCallback): HTMLImageElement;
         /**
          * Request that the stage preload a sound file for later playback and also implicitly add it to the
          * list of known sounds for later sound manipulation with the stage sound API.
@@ -1823,15 +1854,25 @@ declare module nurdz.game {
          * Unlike images, requests for sound preloads of the same sound do not share the same tag so that the
          * playback properties of individual sounds can be manipulated individually.
          *
+         * If a callback is provided (i.e. non-null) it specifies a function to invoke when the sound is
+         * loaded. The actual sound object as returned from this method will be provided as an argument.
+         * Note that for sounds, the preload is considered finished when the browser decides that it has
+         * loaded enough of the sound that you can expect it to play through if you start it now, even if
+         * it is not fully loaded.
+         *
+         * Additionally, the callback is guaranteed to be called before the stage starts the initial scene
+         * running.
+         *
          * This is just a simple proxy for the Preloader.addSound() method which invokes Stage.addSound() for
          * you.
          *
          * @param filename the filename of the sound to load
+         * @param callback if given, this will be invoked when the sound has loaded (see above)
          * @returns {Sound} the preloaded sound object
          * @see Preloader.addSound
          * @see Stage.addSound
          */
-        preloadSound(filename: string): Sound;
+        preloadSound(filename: string, callback?: Preloader.SoundPreloadCallback): Sound;
         /**
          * Request that the stage preload a music file for later playback and also implicitly add it to the
          * list of known sounds for later sound manipulation with the stage sound API.
@@ -1845,15 +1886,25 @@ declare module nurdz.game {
          * Unlike images, requests for music preloads of the same music do not share the same tag so that
          * the playback properties of individual songs can be manipulated individually.
          *
+         * If a callback is provided (i.e. non-null) it specifies a function to invoke when the music is
+         * loaded. The actual sound object as returned from this method will be provided as an argument.
+         * Note that for sounds, the preload is considered finished when the browser decides that it has
+         * loaded enough of the sound that you can expect it to play through if you start it now, even if
+         * it is not fully loaded.
+         *
+         * Additionally, the callback is guaranteed to be called before the stage starts the initial scene
+         * running.
+         *
          * This is just a simple proxy for the Preloader.addMusic() method which invokes Stage.addSound()
          * for you.
          *
          * @param filename the filename of the music to load
+         * @param callback if given, this will be invoked when the sound has loaded (see above)
          * @returns {Sound} the preloaded sound object
          * @see Preloader.addMusic
          * @see Stage.addSound
          */
-        preloadMusic(filename: string): Sound;
+        preloadMusic(filename: string, callback?: Preloader.SoundPreloadCallback): Sound;
         /**
          * Add a sound object to the list of sound objects known by the stage. Only sound objects that the
          * stage knows about will be manipulated by the stage sound API functions.

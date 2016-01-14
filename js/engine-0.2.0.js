@@ -326,6 +326,31 @@ var nurdz;
                         tag.loop = false;
                     }
                 }
+                // Check now for preload callbacks the caller may have specified for this item.
+                //
+                // Multiple requests to preload the same image load it only once and share the same tag, so for
+                // images the callbacks are an array that contains the callback functions, although this array can
+                // be empty if nobody cared (the array is created when the tag is).
+                //
+                // For sound/music, requests do not share tags. As a result, for items of this type the callback
+                // property either does not exist or is the function to invoke.
+                //
+                // Image callbacks take the image element but sound/music callbacks take the Sound() instance that
+                // wraps the element. For this reason the audio elements are augmented not only with a callback
+                // but a reference to the owning Sound() instance.
+                if (isImage) {
+                    // If there are any callbacks on this element, invoke them now.
+                    if (tag["_ng_callback"].length != 0) {
+                        var list = tag["_ng_callback"];
+                        for (var i = 0; i < list.length; i++)
+                            list[i](tag);
+                    }
+                }
+                else {
+                    // If there is a callback, invoke it.
+                    if (tag["_ng_callback"] != null)
+                        tag["_ng_callback"](tag["_ng_sndObj"]);
+                }
                 // Now decrement the appropriate count.
                 if (isImage)
                     _imagesToLoad--;
@@ -342,14 +367,20 @@ var nurdz;
              * assumed to be a path that is relative to the page that the game is being served from and inside of
              * an "images/" sub-folder.
              *
+             * The (optional) callback function can be provided to let you know when the image is finally finished
+             * loading, in case you need that information (e.g. for getting the dimensions). The callback is
+             * guaranteed to be invoked before the callback that indicates that all preloads have completed.
+             *
              * The return value is an image tag that can be used to render the image once it is loaded.
              *
              * @param filename the filename of the image to load; assumed to be relative to a images/ folder in
              * the same path as the page is in.
+             * @param callback if non-null, this will be invoked when the image is fully loaded.
              * @returns {HTMLImageElement} the tag that the image will be loaded into.
              * @throws {Error} if an attempt is made to add an image to preload after preloading has already started
              */
-            function addImage(filename) {
+            function addImage(filename, callback) {
+                if (callback === void 0) { callback = null; }
                 // Make sure that preloading has not started.
                 if (_preloadStarted)
                     throw new Error("Cannot add images after preloading has already begun or started");
@@ -365,9 +396,15 @@ var nurdz;
                     tag.addEventListener("load", preloadCallbackEvent, false);
                     tag.addEventListener("error", preloadCallbackEvent, false);
                     _imagePreloadList[key] = tag;
+                    // Set in a new property in the tag that lists callbacks that might be registered for this
+                    // element.
+                    tag["_ng_callback"] = [];
                     // This counts as an image that we are going to preload.
                     _imagesToLoad++;
                 }
+                // If a callback has been provided, add it to the callback list.
+                if (callback != null)
+                    tag["_ng_callback"].push(callback);
                 // Return the tag back to the caller so that they know how to render later.
                 return tag;
             }
@@ -379,13 +416,17 @@ var nurdz;
              * This assumes that the filename is relative to a folder named subFolder inside the path that the game
              * page is in, and that it does not have an extension so that one can be properly selected.
              *
+             * The callback function can be provided to let you know when the sound is finally finished loading, in
+             * case you need that information.
+             *
              * @param subFolder the subFolder that the filename is assumed to be in
              * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
              * the same path as the page is in and to have no extension
+             * @param callback if non-null, this will be invoked when the sopund is fully loaded.
              * @returns {HTMLAudioElement} the sound object that will (eventually) play the requested audio
              * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
              */
-            var doAddSound = function (subFolder, filename) {
+            var doAddSound = function (subFolder, filename, callback) {
                 // Make sure that preloading has not started.
                 if (_preloadStarted)
                     throw new Error("Cannot add sounds after preloading has already begun or started");
@@ -398,6 +439,13 @@ var nurdz;
                 // then add it to the preload list.
                 preload.tag.addEventListener("canplaythrough", preloadCallbackEvent);
                 preload.tag.addEventListener("error", preloadCallbackEvent);
+                // Audio tags don't reuse a previous tag when a preload happens (so that playback can be controlled
+                // individually).
+                //
+                // For callbacks on loaded audio we just set the callback directly to the function if one is present.
+                // The absence of this property on the object means no callback.
+                if (callback != null)
+                    preload.tag["_ng_callback"] = callback;
                 // Insert it into the sound preload list and count it as a sound to be preloaded.
                 _soundPreloadList.push(preload);
                 _soundsToLoad++;
@@ -411,19 +459,33 @@ var nurdz;
              *
              * NOTE: Since different browsers support different file formats, you should provide both an MP3 and
              * an OGG version of the same file, and provide a filename that has no extension on it. The code in
-             * this method will apply the correct extension based on the browser in use and load the appropriate file.
+             * this method will apply the correct extension based on the browser in use and load the appropriate
+             * file.
+             *
+             * The (optional) callback function can be provided to let you know when the browser thinks that
+             * enough of the file has loaded that playing would play right through. The callback is guaranteed to be
+             * invoked before the callback that indicates that all preloads have completed.
              *
              * The return value is a sound object that can be used to play the sound once it's loaded.
              *
              * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
              * the same path as the page is in and to have no extension
+             * @param callback if non-null, this will be invoked with the sound object when the load is finished.
              * @returns {Sound} the sound object that will (eventually) play the requested audio
              * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
              * @see addMusic
              */
-            function addSound(filename) {
-                // Use our helper to actually get the audio tag, then wrap it in a sound.
-                return new game.Sound(doAddSound("sounds/", filename));
+            function addSound(filename, callback) {
+                if (callback === void 0) { callback = null; }
+                // Get the audio tag and wrap it in a sound object.
+                var audioTag = doAddSound("sounds/", filename, callback);
+                var snd = new game.Sound(audioTag);
+                // If there was a callback provided, we need to tell the audio tag what the sound object is so
+                // that it can be provided to the callback.
+                if (callback != null)
+                    audioTag["_ng_sndObj"] = snd;
+                // If there is a callback,
+                return snd;
             }
             Preloader.addSound = addSound;
             /**
@@ -435,17 +497,31 @@ var nurdz;
              * an OGG version of the same file, and provide a filename that has no extension on it. The code in
              * this method will apply the correct extension based on the browser in use and load the appropriate file.
              *
+             * The (optional) callback function can be provided to let you know when the browser thinks that
+             * enough of the file has loaded that playing would play right through. The callback is guaranteed to be
+             * invoked before the callback that indicates that all preloads have completed.
+             *
              * This works identically to addSound() except that the sound returned is set to play looped by
              * default.
              *
              * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
              * the same path as the page is in and to have no extension
+             * @param callback if non-null, this will be invoked with the sound object when the load is finished.
              * @returns {Sound} the sound object that will (eventually) play the requested audio
              * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
              * @see addSound
              */
-            function addMusic(filename) {
-                return new game.Sound(doAddSound("music/", filename), true);
+            function addMusic(filename, callback) {
+                if (callback === void 0) { callback = null; }
+                // Get the audio tag and wrap it in a sound object.
+                var audioTag = doAddSound("music/", filename, callback);
+                var snd = new game.Sound(audioTag, true);
+                // If there was a callback provided, we need to tell the audio tag what the sound object is so
+                // that it can be provided to the callback.
+                if (callback != null)
+                    audioTag["_ng_sndObj"] = snd;
+                // If there is a callback,
+                return snd;
             }
             Preloader.addMusic = addMusic;
             /**
@@ -2618,14 +2694,20 @@ var nurdz;
              * Requests for preloads of the same image multiple times cause the same image element to be
              * returned each time, since image drawing is non-destructive.
              *
+             * You may optionally provide a callback function to be invoked when the image has finished
+             * loading; the callback receives the actual loaded image. The callback is guaranteed to be
+             * invoked before the stage starts the initial scene running.
+             *
              * This is just a proxy for the Preloader.addImage() method, placed here for convenience.
              *
              * @param filename the filename of the image to load
+             * @param callback optional callback to be invoked when the image loads
              * @returns {HTMLImageElement} the image element that will contain the image once it is loaded
              * @see Preloader.addImage
              */
-            Stage.prototype.preloadImage = function (filename) {
-                return game.Preloader.addImage(filename);
+            Stage.prototype.preloadImage = function (filename, callback) {
+                if (callback === void 0) { callback = null; }
+                return game.Preloader.addImage(filename, callback);
             };
             /**
              * Request that the stage preload a sound file for later playback and also implicitly add it to the
@@ -2638,16 +2720,27 @@ var nurdz;
              * Unlike images, requests for sound preloads of the same sound do not share the same tag so that the
              * playback properties of individual sounds can be manipulated individually.
              *
+             * If a callback is provided (i.e. non-null) it specifies a function to invoke when the sound is
+             * loaded. The actual sound object as returned from this method will be provided as an argument.
+             * Note that for sounds, the preload is considered finished when the browser decides that it has
+             * loaded enough of the sound that you can expect it to play through if you start it now, even if
+             * it is not fully loaded.
+             *
+             * Additionally, the callback is guaranteed to be called before the stage starts the initial scene
+             * running.
+             *
              * This is just a simple proxy for the Preloader.addSound() method which invokes Stage.addSound() for
              * you.
              *
              * @param filename the filename of the sound to load
+             * @param callback if given, this will be invoked when the sound has loaded (see above)
              * @returns {Sound} the preloaded sound object
              * @see Preloader.addSound
              * @see Stage.addSound
              */
-            Stage.prototype.preloadSound = function (filename) {
-                return this.addSound(game.Preloader.addSound(filename));
+            Stage.prototype.preloadSound = function (filename, callback) {
+                if (callback === void 0) { callback = null; }
+                return this.addSound(game.Preloader.addSound(filename, callback));
             };
             /**
              * Request that the stage preload a music file for later playback and also implicitly add it to the
@@ -2662,16 +2755,27 @@ var nurdz;
              * Unlike images, requests for music preloads of the same music do not share the same tag so that
              * the playback properties of individual songs can be manipulated individually.
              *
+             * If a callback is provided (i.e. non-null) it specifies a function to invoke when the music is
+             * loaded. The actual sound object as returned from this method will be provided as an argument.
+             * Note that for sounds, the preload is considered finished when the browser decides that it has
+             * loaded enough of the sound that you can expect it to play through if you start it now, even if
+             * it is not fully loaded.
+             *
+             * Additionally, the callback is guaranteed to be called before the stage starts the initial scene
+             * running.
+             *
              * This is just a simple proxy for the Preloader.addMusic() method which invokes Stage.addSound()
              * for you.
              *
              * @param filename the filename of the music to load
+             * @param callback if given, this will be invoked when the sound has loaded (see above)
              * @returns {Sound} the preloaded sound object
              * @see Preloader.addMusic
              * @see Stage.addSound
              */
-            Stage.prototype.preloadMusic = function (filename) {
-                return this.addSound(game.Preloader.addMusic(filename));
+            Stage.prototype.preloadMusic = function (filename, callback) {
+                if (callback === void 0) { callback = null; }
+                return this.addSound(game.Preloader.addMusic(filename, callback));
             };
             /**
              * Add a sound object to the list of sound objects known by the stage. Only sound objects that the

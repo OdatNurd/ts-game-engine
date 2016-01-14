@@ -367,15 +367,20 @@ module nurdz.game
          * Requests for preloads of the same image multiple times cause the same image element to be
          * returned each time, since image drawing is non-destructive.
          *
+         * You may optionally provide a callback function to be invoked when the image has finished
+         * loading; the callback receives the actual loaded image. The callback is guaranteed to be
+         * invoked before the stage starts the initial scene running.
+         *
          * This is just a proxy for the Preloader.addImage() method, placed here for convenience.
          *
          * @param filename the filename of the image to load
+         * @param callback optional callback to be invoked when the image loads
          * @returns {HTMLImageElement} the image element that will contain the image once it is loaded
          * @see Preloader.addImage
          */
-        preloadImage (filename : string) : HTMLImageElement
+        preloadImage (filename : string, callback : Preloader.ImagePreloadCallback = null) : HTMLImageElement
         {
-            return Preloader.addImage (filename);
+            return Preloader.addImage (filename, callback);
         }
 
         /**
@@ -389,17 +394,27 @@ module nurdz.game
          * Unlike images, requests for sound preloads of the same sound do not share the same tag so that the
          * playback properties of individual sounds can be manipulated individually.
          *
+         * If a callback is provided (i.e. non-null) it specifies a function to invoke when the sound is
+         * loaded. The actual sound object as returned from this method will be provided as an argument.
+         * Note that for sounds, the preload is considered finished when the browser decides that it has
+         * loaded enough of the sound that you can expect it to play through if you start it now, even if
+         * it is not fully loaded.
+         *
+         * Additionally, the callback is guaranteed to be called before the stage starts the initial scene
+         * running.
+         *
          * This is just a simple proxy for the Preloader.addSound() method which invokes Stage.addSound() for
          * you.
          *
          * @param filename the filename of the sound to load
+         * @param callback if given, this will be invoked when the sound has loaded (see above)
          * @returns {Sound} the preloaded sound object
          * @see Preloader.addSound
          * @see Stage.addSound
          */
-        preloadSound (filename : string) : Sound
+        preloadSound (filename : string, callback : Preloader.SoundPreloadCallback = null) : Sound
         {
-            return this.addSound (Preloader.addSound (filename));
+            return this.addSound (Preloader.addSound (filename, callback));
         }
 
         /**
@@ -415,17 +430,27 @@ module nurdz.game
          * Unlike images, requests for music preloads of the same music do not share the same tag so that
          * the playback properties of individual songs can be manipulated individually.
          *
+         * If a callback is provided (i.e. non-null) it specifies a function to invoke when the music is
+         * loaded. The actual sound object as returned from this method will be provided as an argument.
+         * Note that for sounds, the preload is considered finished when the browser decides that it has
+         * loaded enough of the sound that you can expect it to play through if you start it now, even if
+         * it is not fully loaded.
+         *
+         * Additionally, the callback is guaranteed to be called before the stage starts the initial scene
+         * running.
+         *
          * This is just a simple proxy for the Preloader.addMusic() method which invokes Stage.addSound()
          * for you.
          *
          * @param filename the filename of the music to load
+         * @param callback if given, this will be invoked when the sound has loaded (see above)
          * @returns {Sound} the preloaded sound object
          * @see Preloader.addMusic
          * @see Stage.addSound
          */
-        preloadMusic (filename : string) : Sound
+        preloadMusic (filename : string, callback : Preloader.SoundPreloadCallback = null) : Sound
         {
-            return this.addSound (Preloader.addMusic (filename));
+            return this.addSound (Preloader.addMusic (filename, callback));
         }
 
         /**

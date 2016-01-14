@@ -7,6 +7,18 @@ module nurdz.game.Preloader
     export type DataPreloadCallback = () => void;
 
     /**
+     * The type of a callback function to invoke when an image preload is completed. The function is passed as
+     * an argument the handle to the loaded image element and returns no value.
+     */
+    export type ImagePreloadCallback = (HTMLImageElement) => void;
+
+    /**
+     * The type of a callback function to invoke when a sound preload is completed. The function is passed as
+     * an argument the handle to the loaded audio element and returns no value.
+     */
+    export type SoundPreloadCallback = (Sound) => void;
+
+    /**
      * This interface is used to shape entries in our preload list for images. It tells the TypeScript
      * compiler that objects of this type need to be indexed by a string and the result should be an HTML
      * image.
@@ -194,6 +206,35 @@ module nurdz.game.Preloader
             }
         }
 
+        // Check now for preload callbacks the caller may have specified for this item.
+        //
+        // Multiple requests to preload the same image load it only once and share the same tag, so for
+        // images the callbacks are an array that contains the callback functions, although this array can
+        // be empty if nobody cared (the array is created when the tag is).
+        //
+        // For sound/music, requests do not share tags. As a result, for items of this type the callback
+        // property either does not exist or is the function to invoke.
+        //
+        // Image callbacks take the image element but sound/music callbacks take the Sound() instance that
+        // wraps the element. For this reason the audio elements are augmented not only with a callback
+        // but a reference to the owning Sound() instance.
+        if (isImage)
+        {
+            // If there are any callbacks on this element, invoke them now.
+            if (tag["_ng_callback"].length != 0)
+            {
+                let list = tag["_ng_callback"];
+                for (let i = 0 ; i < list.length ; i++)
+                    list[i] (tag);
+            }
+        }
+        else
+        {
+            // If there is a callback, invoke it.
+            if (tag["_ng_callback"] != null)
+                tag["_ng_callback"] (tag["_ng_sndObj"]);
+        }
+
         // Now decrement the appropriate count.
         if (isImage)
             _imagesToLoad--;
@@ -212,14 +253,19 @@ module nurdz.game.Preloader
      * assumed to be a path that is relative to the page that the game is being served from and inside of
      * an "images/" sub-folder.
      *
+     * The (optional) callback function can be provided to let you know when the image is finally finished
+     * loading, in case you need that information (e.g. for getting the dimensions). The callback is
+     * guaranteed to be invoked before the callback that indicates that all preloads have completed.
+     *
      * The return value is an image tag that can be used to render the image once it is loaded.
      *
      * @param filename the filename of the image to load; assumed to be relative to a images/ folder in
      * the same path as the page is in.
+     * @param callback if non-null, this will be invoked when the image is fully loaded.
      * @returns {HTMLImageElement} the tag that the image will be loaded into.
      * @throws {Error} if an attempt is made to add an image to preload after preloading has already started
      */
-    export function addImage (filename : string) : HTMLImageElement
+    export function addImage (filename : string, callback : ImagePreloadCallback = null) : HTMLImageElement
     {
         // Make sure that preloading has not started.
         if (_preloadStarted)
@@ -240,9 +286,17 @@ module nurdz.game.Preloader
             tag.addEventListener ("error", preloadCallbackEvent, false);
             _imagePreloadList[key] = tag;
 
+            // Set in a new property in the tag that lists callbacks that might be registered for this
+            // element.
+            tag["_ng_callback"] = [];
+
             // This counts as an image that we are going to preload.
             _imagesToLoad++;
         }
+
+        // If a callback has been provided, add it to the callback list.
+        if (callback != null)
+            tag["_ng_callback"].push (callback);
 
         // Return the tag back to the caller so that they know how to render later.
         return tag;
@@ -255,13 +309,18 @@ module nurdz.game.Preloader
      * This assumes that the filename is relative to a folder named subFolder inside the path that the game
      * page is in, and that it does not have an extension so that one can be properly selected.
      *
+     * The callback function can be provided to let you know when the sound is finally finished loading, in
+     * case you need that information.
+     *
      * @param subFolder the subFolder that the filename is assumed to be in
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
+     * @param callback if non-null, this will be invoked when the sopund is fully loaded.
      * @returns {HTMLAudioElement} the sound object that will (eventually) play the requested audio
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
      */
-    var doAddSound = function (subFolder : string, filename : string) : HTMLAudioElement
+    var doAddSound = function (subFolder : string, filename : string,
+                               callback : SoundPreloadCallback) : HTMLAudioElement
     {
         // Make sure that preloading has not started.
         if (_preloadStarted)
@@ -279,6 +338,14 @@ module nurdz.game.Preloader
         preload.tag.addEventListener ("canplaythrough", preloadCallbackEvent);
         preload.tag.addEventListener ("error", preloadCallbackEvent);
 
+        // Audio tags don't reuse a previous tag when a preload happens (so that playback can be controlled
+        // individually).
+        //
+        // For callbacks on loaded audio we just set the callback directly to the function if one is present.
+        // The absence of this property on the object means no callback.
+        if (callback != null)
+            preload.tag["_ng_callback"] = callback;
+
         // Insert it into the sound preload list and count it as a sound to be preloaded.
         _soundPreloadList.push (preload);
         _soundsToLoad++;
@@ -294,20 +361,35 @@ module nurdz.game.Preloader
      *
      * NOTE: Since different browsers support different file formats, you should provide both an MP3 and
      * an OGG version of the same file, and provide a filename that has no extension on it. The code in
-     * this method will apply the correct extension based on the browser in use and load the appropriate file.
+     * this method will apply the correct extension based on the browser in use and load the appropriate
+     * file.
+     *
+     * The (optional) callback function can be provided to let you know when the browser thinks that
+     * enough of the file has loaded that playing would play right through. The callback is guaranteed to be
+     * invoked before the callback that indicates that all preloads have completed.
      *
      * The return value is a sound object that can be used to play the sound once it's loaded.
      *
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
+     * @param callback if non-null, this will be invoked with the sound object when the load is finished.
      * @returns {Sound} the sound object that will (eventually) play the requested audio
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
      * @see addMusic
      */
-    export function addSound (filename : string) : Sound
+    export function addSound (filename : string, callback : SoundPreloadCallback = null) : Sound
     {
-        // Use our helper to actually get the audio tag, then wrap it in a sound.
-        return new Sound (doAddSound ("sounds/", filename));
+        // Get the audio tag and wrap it in a sound object.
+        let audioTag = doAddSound ("sounds/", filename, callback);
+        let snd = new Sound (audioTag);
+
+        // If there was a callback provided, we need to tell the audio tag what the sound object is so
+        // that it can be provided to the callback.
+        if (callback != null)
+            audioTag["_ng_sndObj"] = snd;
+
+        // If there is a callback,
+        return snd;
     }
 
     /**
@@ -319,18 +401,33 @@ module nurdz.game.Preloader
      * an OGG version of the same file, and provide a filename that has no extension on it. The code in
      * this method will apply the correct extension based on the browser in use and load the appropriate file.
      *
+     * The (optional) callback function can be provided to let you know when the browser thinks that
+     * enough of the file has loaded that playing would play right through. The callback is guaranteed to be
+     * invoked before the callback that indicates that all preloads have completed.
+     *
      * This works identically to addSound() except that the sound returned is set to play looped by
      * default.
      *
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
+     * @param callback if non-null, this will be invoked with the sound object when the load is finished.
      * @returns {Sound} the sound object that will (eventually) play the requested audio
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
      * @see addSound
      */
-    export function addMusic (filename : string) : Sound
+    export function addMusic (filename : string, callback : SoundPreloadCallback = null) : Sound
     {
-        return new Sound (doAddSound ("music/", filename), true);
+        // Get the audio tag and wrap it in a sound object.
+        let audioTag = doAddSound ("music/", filename, callback);
+        let snd = new Sound (audioTag, true);
+
+        // If there was a callback provided, we need to tell the audio tag what the sound object is so
+        // that it can be provided to the callback.
+        if (callback != null)
+            audioTag["_ng_sndObj"] = snd;
+
+        // If there is a callback,
+        return snd;
     }
 
     /**
