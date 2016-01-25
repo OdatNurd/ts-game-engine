@@ -275,7 +275,10 @@ module nurdz.game
          * @param bitmap the bitmap to display
          * @param x X location to display the bitmap at
          * @param y Y location to display the bitmap at
+         * @see Stage.blitPart
          * @see Stage.blitCentered
+         * @see Stage.blitPartCentered
+         * @see Stage.blitPartCenteredRotated
          * @see Stage.blitCenteredRotated
          */
         blit (bitmap : HTMLImageElement, x : number, y : number) : void;
@@ -287,6 +290,9 @@ module nurdz.game
          * @param x X location to display the center of the bitmap at
          * @param y Y location to display the center of the bitmap at
          * @see Stage.blit
+         * @see Stage.blitPart
+         * @see Stage.blitPartCentered
+         * @see Stage.blitPartCenteredRotated
          * @see Stage.blitCenteredRotated
          */
         blitCentered (bitmap : HTMLImageElement, x : number, y : number) : void;
@@ -298,11 +304,78 @@ module nurdz.game
          * @param bitmap the bitmap to display
          * @param x X location to display the center of the bitmap at
          * @param y Y location to display the center of the bitmap at
-         * @param angle the angle to rotate the bitmap to (in radians)
-         * @see Render.blit
-         * @see Render.blitCentered
+         * @param angle the angle to rotate the bitmap to (in degrees)
+         * @see Stage.blit
+         * @see Stage.blitPart
+         * @see Stage.blitCentered
+         * @see Stage.blitPartCentered
+         * @see Stage.blitPartCenteredRotated
          */
         blitCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number) : void;
+
+        /**
+         * Acts as blit() does, but instead of rendering the entire image, only a portion is displayed.
+         * Specifically, an area of size width * height originating at offsX, offsY is displayed.
+         *
+         * @param bitmap the bitmap to display from
+         * @param x X location to display at
+         * @param y Y location to display at
+         * @param offsX X offset in bitmap of area to blit
+         * @param offsY Y offset in bitmap of area to blit
+         * @param width width of bitmap area to display
+         * @param height height of bitmap area to display
+         * @see Stage.blit
+         * @see Stage.blitCentered
+         * @see Stage.blitPartCentered
+         * @see Stage.blitPartCenteredRotated
+         * @see Stage.blitCenteredRotated
+         */
+        blitPart (bitmap : HTMLImageElement, x : number, y : number,
+                  offsX : number, offsY : number,
+                  width : number, height : number) : void;
+
+        /**
+         * Acts as blitCentered() does, but instead of rendering the entire image, only a portion is
+         * displayed. Specifically, an area of size width * height originating at offsX, offsY is displayed.
+         *
+         * @param bitmap the bitmap to display from
+         * @param x the center oX location to display at
+         * @param y the center Y location to display at
+         * @param offsX X offset in bitmap of area to blit
+         * @param offsY Y offset in bitmap of area to blit
+         * @param width width of bitmap area to display
+         * @param height height of bitmap area to display
+         * @see Stage.blit
+         * @see Stage.blitPart
+         * @see Stage.blitCentered
+         * @see Stage.blitPartCenteredRotated
+         * @see Stage.blitCenteredRotated
+         */
+        blitPartCentered (bitmap : HTMLImageElement, x : number, y : number,
+                          offsX : number, offsY : number,
+                          width : number, height : number) : void;
+
+        /**
+         * Acts as blitCenteredRotated() does, but instead of rendering the entire image, only a portion is
+         * displayed. Specifically, an area of size width * height originating at offsX, offsY is displayed.
+         *
+         * @param bitmap the bitmap to display from
+         * @param x the center oX location to display at
+         * @param y the center Y location to display at
+         * @param angle the angle to rotate the bitmap to (in degrees)
+         * @param offsX X offset in bitmap of area to blit
+         * @param offsY Y offset in bitmap of area to blit
+         * @param width width of bitmap area to display
+         * @param height height of bitmap area to display
+         * @see Stage.blit
+         * @see Stage.blitPart
+         * @see Stage.blitCentered
+         * @see Stage.blitPartCentered
+         * @see Stage.blitCenteredRotated
+         */
+        blitPartCenteredRotated (bitmap : HTMLImageElement, x : number, y : number, angle : number,
+                          offsX : number, offsY : number,
+                          width : number, height : number) : void;
 
         /**
          * Do an (optional) translation and (optional) rotation of the rendering area. You can perform one or
