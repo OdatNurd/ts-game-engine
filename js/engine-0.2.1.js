@@ -1063,6 +1063,164 @@ var nurdz;
     var game;
     (function (game) {
         /**
+         * This class represents the basics of a sprite sheet; this takes the URL to an image, and will
+         * preload that image and internally slice it into sprites at given size boundaries for later rendering.
+         *
+         * This version of the class requires all sprites in the same sprite sheet to have the same dimensions.
+         */
+        var SpriteSheet = (function () {
+            /**
+             * Construct a new sprite sheet by preloading the given image. Images are expected to be in a folder
+             * named "images/" inside of the folder that the game page is served from, so only a filename and
+             * extension is required.
+             *
+             * The constructor is passed two dimensions, an "across" and a "down", plus a boolean flag which
+             * is used to determine how the dimension parameters are interpreted.
+             *
+             * When asSprites is true (the default), the across and down are interpreted as the number of
+             * sprites across and down in the sprite sheet. In this case, the actual dimensions of the sprites
+             * are determined based on the size of the incoming image and the number of sprites in the sprite
+             * sheet is across x down.
+             *
+             * When asSprites is false, the across and down are interpreted as the pixel width and height of
+             * each individual sprite in the sprite sheet. In this case, the actual dimensions of the sprites
+             * is given directly and the number of total sprites is determined based on the size of the
+             * incoming image.
+             *
+             * @param stage the stage that will display this sprite sheet
+             * @param filename the filename of the image to use for this sprite sheet
+             * @param across number of sprites across (asSprites == true) or pixel width of each sprite
+             * @param down number of sprites down (asSprites == true) or pixel height of each sprite
+             * @param asSprites true if across/down specifies the size of the sprite sheet in sprites, or
+             * false if across/down is specifying the size of the sprites explicitly.
+             */
+            function SpriteSheet(stage, filename, across, down, asSprites) {
+                var _this = this;
+                if (down === void 0) { down = 1; }
+                if (asSprites === void 0) { asSprites = true; }
+                /**
+                 * This gets invoked when our image is fully loaded, which means its dimensions are known. This
+                 * kicks off setting up the rest of the information needed for this sprite sheet.
+                 *
+                 * @param image the image that was loaded.
+                 */
+                this.imageLoadComplete = function (image) {
+                    // Now calculate either the dimensions of our sprites or the number of sprites across and
+                    // down, depending on which way we were constructed; only one of those two values is currently
+                    // available.
+                    if (_this._spriteWidth == -1) {
+                        _this._spriteWidth = image.width / _this._spritesAcross;
+                        _this._spriteHeight = image.height / _this._spritesDown;
+                    }
+                    else {
+                        _this._spritesAcross = image.width / _this._spriteWidth;
+                        _this._spritesDown = image.height / _this._spriteHeight;
+                    }
+                    // Now calculate the total number of sprites in the sheet.
+                    _this._spriteCount = _this._spritesAcross * _this._spritesDown;
+                    // Set up the sprite position array.
+                    _this._spritePos = [];
+                    for (var spriteIndex = 0; spriteIndex < _this._spriteCount; spriteIndex++) {
+                        // Calculate the X and Y location that this sprite is positioned at, and then store it
+                        // into the position array.
+                        var x = (spriteIndex % _this._spritesAcross) * _this._spriteWidth;
+                        var y = Math.floor(spriteIndex / _this._spritesAcross) * _this._spriteHeight;
+                        _this._spritePos.push(new game.Point(x, y));
+                    }
+                };
+                // Set up either sprite width and height or sprites across and down, depending on our boolean
+                // flag.
+                this._spriteWidth = (asSprites ? -1 : across);
+                this._spriteHeight = (asSprites ? -1 : down);
+                this._spritesAcross = (asSprites ? across : -1);
+                this._spritesDown = (asSprites ? down : -1);
+                // Now preload the image and use the preload callback to set up the rest of the information
+                // when the image is fully loaded.
+                this._image = stage.preloadImage(filename, this.imageLoadComplete);
+            }
+            Object.defineProperty(SpriteSheet.prototype, "width", {
+                /**
+                 * Obtain the width of sprites that are present in this sprite sheet; this is not available until
+                 * the sprite sheet has finished loading the underlying image.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._spriteWidth; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SpriteSheet.prototype, "height", {
+                /**
+                 * Obtain the height of sprites that are present in this sprite sheet; this is not available until
+                 * the sprite sheet has finished loading the underlying image.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._spriteHeight; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(SpriteSheet.prototype, "count", {
+                /**
+                 * Obtain the total number of sprites available in this sprite sheet; this is not available until
+                 * the sprite sheet has finished loading the underlying image.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._spriteCount; },
+                enumerable: true,
+                configurable: true
+            });
+            /**
+             * Render a sprite from this sprite sheet at the provided location. The sprite will be positioned
+             * with its upper left corner at the provided location.
+             *
+             * @param sprite the sprite to render
+             * @param x the x location to render the actor at, in stage coordinates (NOT world)
+             * @param y the y location to render the actor at, in stage coordinates (NOT world)
+             * @param renderer the class to use to render the actor
+             */
+            SpriteSheet.prototype.blit = function (sprite, x, y, renderer) {
+                var position = this._spritePos[sprite];
+                renderer.blitPart(this._image, x, y, position.x, position.y, this._spriteWidth, this._spriteHeight);
+            };
+            /**
+             * Render a sprite from this sprite sheet at the provided location. The sprite will be positioned
+             * with its center at the provided location.
+             *
+             * @param sprite the sprite to render
+             * @param x the x location to render the actor at, in stage coordinates (NOT world)
+             * @param y the y location to render the actor at, in stage coordinates (NOT world)
+             * @param renderer the class to use to render the actor
+             */
+            SpriteSheet.prototype.blitCentered = function (sprite, x, y, renderer) {
+                var position = this._spritePos[sprite];
+                renderer.blitPartCentered(this._image, x, y, position.x, position.y, this._spriteWidth, this._spriteHeight);
+            };
+            /**
+             * Render a sprite from this sprite sheet at the provided location. The sprite will be positioned
+             * with its center at the provided location and will be rotated at the provided angle.
+             *
+             * @param sprite the sprite to render
+             * @param x the x location to render the actor at, in stage coordinates (NOT world)
+             * @param y the y location to render the actor at, in stage coordinates (NOT world)
+             * @param angle the angle to rotate the sprite by (in degrees)
+             * @param renderer the class to use to render the actor
+             */
+            SpriteSheet.prototype.blitCenteredRotated = function (sprite, x, y, angle, renderer) {
+                var position = this._spritePos[sprite];
+                renderer.blitPartCenteredRotated(this._image, x, y, angle, position.x, position.y, this._spriteWidth, this._spriteHeight);
+            };
+            return SpriteSheet;
+        })();
+        game.SpriteSheet = SpriteSheet;
+    })(game = nurdz.game || (nurdz.game = {}));
+})(nurdz || (nurdz = {}));
+var nurdz;
+(function (nurdz) {
+    var game;
+    (function (game) {
+        /**
          * This class represents the base class for any game object of any base type. This base class
          * implementation has a position and knows how to render itself.
          *

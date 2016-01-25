@@ -505,6 +505,130 @@ declare module nurdz.game {
 }
 declare module nurdz.game {
     /**
+     * This class represents the basics of a sprite sheet; this takes the URL to an image, and will
+     * preload that image and internally slice it into sprites at given size boundaries for later rendering.
+     *
+     * This version of the class requires all sprites in the same sprite sheet to have the same dimensions.
+     */
+    class SpriteSheet {
+        /**
+         * The image that underlies us; this is what holds all of our sprites.
+         */
+        protected _image: HTMLImageElement;
+        /**
+         * The width of each sprite in the sprite sheet, in pixels.
+         */
+        protected _spriteWidth: number;
+        /**
+         * The height of each sprite in the sprite sheet, in pixels.
+         */
+        protected _spriteHeight: number;
+        /**
+         * The number of sprites across in the sprite sheet.
+         */
+        protected _spritesAcross: number;
+        /**
+         * The number of sprites down in the sprite sheet.
+         */
+        protected _spritesDown: number;
+        /**
+         * The number of sprites total in this sprite sheet.
+         */
+        protected _spriteCount: number;
+        /**
+         * An array that contains the starting positions of all of the sprites in the sheet, so that they
+         * don't need to be calculated every time one is displayed.
+         */
+        protected _spritePos: Array<Point>;
+        /**
+         * Obtain the width of sprites that are present in this sprite sheet; this is not available until
+         * the sprite sheet has finished loading the underlying image.
+         *
+         * @returns {number}
+         */
+        width: number;
+        /**
+         * Obtain the height of sprites that are present in this sprite sheet; this is not available until
+         * the sprite sheet has finished loading the underlying image.
+         *
+         * @returns {number}
+         */
+        height: number;
+        /**
+         * Obtain the total number of sprites available in this sprite sheet; this is not available until
+         * the sprite sheet has finished loading the underlying image.
+         *
+         * @returns {number}
+         */
+        count: number;
+        /**
+         * Construct a new sprite sheet by preloading the given image. Images are expected to be in a folder
+         * named "images/" inside of the folder that the game page is served from, so only a filename and
+         * extension is required.
+         *
+         * The constructor is passed two dimensions, an "across" and a "down", plus a boolean flag which
+         * is used to determine how the dimension parameters are interpreted.
+         *
+         * When asSprites is true (the default), the across and down are interpreted as the number of
+         * sprites across and down in the sprite sheet. In this case, the actual dimensions of the sprites
+         * are determined based on the size of the incoming image and the number of sprites in the sprite
+         * sheet is across x down.
+         *
+         * When asSprites is false, the across and down are interpreted as the pixel width and height of
+         * each individual sprite in the sprite sheet. In this case, the actual dimensions of the sprites
+         * is given directly and the number of total sprites is determined based on the size of the
+         * incoming image.
+         *
+         * @param stage the stage that will display this sprite sheet
+         * @param filename the filename of the image to use for this sprite sheet
+         * @param across number of sprites across (asSprites == true) or pixel width of each sprite
+         * @param down number of sprites down (asSprites == true) or pixel height of each sprite
+         * @param asSprites true if across/down specifies the size of the sprite sheet in sprites, or
+         * false if across/down is specifying the size of the sprites explicitly.
+         */
+        constructor(stage: Stage, filename: string, across: number, down?: number, asSprites?: boolean);
+        /**
+         * This gets invoked when our image is fully loaded, which means its dimensions are known. This
+         * kicks off setting up the rest of the information needed for this sprite sheet.
+         *
+         * @param image the image that was loaded.
+         */
+        private imageLoadComplete;
+        /**
+         * Render a sprite from this sprite sheet at the provided location. The sprite will be positioned
+         * with its upper left corner at the provided location.
+         *
+         * @param sprite the sprite to render
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
+         * @param renderer the class to use to render the actor
+         */
+        blit(sprite: number, x: number, y: number, renderer: Renderer): void;
+        /**
+         * Render a sprite from this sprite sheet at the provided location. The sprite will be positioned
+         * with its center at the provided location.
+         *
+         * @param sprite the sprite to render
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
+         * @param renderer the class to use to render the actor
+         */
+        blitCentered(sprite: number, x: number, y: number, renderer: Renderer): void;
+        /**
+         * Render a sprite from this sprite sheet at the provided location. The sprite will be positioned
+         * with its center at the provided location and will be rotated at the provided angle.
+         *
+         * @param sprite the sprite to render
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
+         * @param angle the angle to rotate the sprite by (in degrees)
+         * @param renderer the class to use to render the actor
+         */
+        blitCenteredRotated(sprite: number, x: number, y: number, angle: number, renderer: Renderer): void;
+    }
+}
+declare module nurdz.game {
+    /**
      * This class represents the base class for any game object of any base type. This base class
      * implementation has a position and knows how to render itself.
      *

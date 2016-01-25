@@ -13,6 +13,7 @@
         "Preloader.ts",
         "Utils.ts",
         "Point.ts",
+        "SpriteSheet.ts",
         "Actor.ts",
         "Entity.ts",
         "Scene.ts",
