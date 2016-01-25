@@ -533,7 +533,7 @@ module nurdz.game
 
         /**
          * Display a bitmap to the rendering area such that its center is at the point provided. The bitmap is
-         * also rotated according to the rotation value, which is an angle in radians.
+         * also rotated according to the rotation value, which is an angle in degrees.
          *
          * @param bitmap the bitmap to display
          * @param x X location to display the center of the bitmap at
@@ -629,6 +629,54 @@ module nurdz.game
             this._canvasContext.drawImage (bitmap, offsX, offsY, width, height, -(width / 2), -(height / 2),
                                            width, height);
             this._canvasContext.restore ();
+        }
+
+        /**
+         * Displays a sprite to the rendering area such that its upper left corner is at the point provided.
+         *
+         * @param sheet the sprite sheet containing the sprite to display
+         * @param sprite the index of the sprite in the sprite sheet
+         * @param x X location to display the bitmap at
+         * @param y Y location to display the bitmap at
+         * @see Stage.blitSpriteCentered
+         * @see Stage.blitSpriteCenteredRotated
+         */
+        blitSprite (sheet : SpriteSheet, sprite : number, x : number, y : number) : void
+        {
+            sheet.blit (sprite, x, y, this);
+        }
+
+        /**
+         * Displays a sprite to the rendering area such that its center is at the point provided.
+         *
+         * @param sheet the sprite sheet containing the sprite to display
+         * @param sprite the index of the sprite in the sprite sheet
+         * @param x X location to display the center of the bitmap at
+         * @param y Y location to display the center of the bitmap at
+         * @see Stage.blitSprite
+         * @see Stage.blitSpriteCenteredRotated
+         */
+        blitSpriteCentered (sheet : SpriteSheet, sprite : number, x : number, y : number) : void
+        {
+            sheet.blitCentered (sprite, x, y, this);
+        }
+
+        /**
+         * Display a sprite to the rendering area such that its center is at the point provided. The sprite is
+         * also rotated according to the rotation value, which is an angle in degrees.
+         *
+         * @param sheet the sprite sheet containing the sprite to display
+         * @param sprite the index of the sprite in the sprite sheet
+         * @param x X location to display the center of the bitmap at
+         * @param y Y location to display the center of the bitmap at
+         * @param angle the angle to rotate the bitmap to (in degrees)
+         * @see Stage.blitSprite
+         * @see Stage.blitSpriteCenteredRotated
+         */
+        blitSpriteCenteredRotated (sheet : SpriteSheet, sprite : number, x : number, y : number,
+                                   angle : number) : void
+        {
+            sheet.blitCenteredRotated (sprite, x, y, angle, this);
         }
 
         /**
