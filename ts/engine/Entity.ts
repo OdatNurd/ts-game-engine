@@ -11,6 +11,15 @@ module nurdz.game
          * new unique value for this property.
          */
         id? : string;
+
+        /**
+         * Turn on debugging for this entity. This can do anything you want, but by default this causes
+         * the render method to render a bounding box that shows where the entity is currently positioned.
+         *
+         * To take advantage of this, you need to invoke the Entity render method from inside your derived
+         * class's render method.
+         */
+        debug? : boolean;
     }
 
     /**
@@ -205,6 +214,10 @@ module nurdz.game
             // correct so we don't have to do anything else.
             if (this._properties.id == null)
                 this._properties.id = Entity.createDefaultID ();
+
+            // If there is no debug field, set it to be false.
+            if (this._properties.debug == null)
+                this._properties.debug = false;
         }
 
         /**
@@ -251,6 +264,39 @@ module nurdz.game
         triggerTouch (activator : Actor) : void
         {
 
+        }
+
+        /**
+         * Render this entity using the renderer provided.  The position provided represents the actual
+         * position of the Entity as realized on the screen, which may be different from its actual position
+         * if scrolling or a viewport of some sort is in use.
+         *
+         * The position provided here is adjusted by the origin of the Entity so that the (x, y) provided
+         * always represent the upper left corner of the area in which to render this Actor.
+         *
+         * Inside the render method, to obtain the actual position where the origin is located, add the
+         * origin to the values provided.
+         *
+         * This default method does nothing unless debug mode is turned on for this entity, in which case
+         * the bounding box for the entity will be rendered, along with a dot that represents the origin
+         * location of the entity.
+         *
+         * You can take advantage of this behaviour if needed by invoking this from your own render
+         * method, presumably after you have done your own rendering (to ensure that the information is
+         * not overlaid).
+         *
+         * @param x the x location of the upper left position to render the entity at, in stage coordinates
+         * (NOT world), ignoring any origin that might be set
+         * @param y the y location of he upper left position to render the entity at, in stage coordinates
+         * (NOT
+         * world), ignoring any origin that might be set.
+         * @param renderer the class to use to render the actor
+         */
+        render (x : number, y : number, renderer : nurdz.game.Renderer) : void
+        {
+            // Invoke the super class method to render a bounding box if debug mode is turned on.
+            if (this._properties.debug)
+                super.render (x, y, renderer);
         }
 
         /**
