@@ -1252,6 +1252,8 @@ var nurdz;
                 // tile coordinates for the map position.
                 this._position = new game.Point(x, y);
                 this._mapPosition = this._position.copyReduced(game.TILE_SIZE);
+                // The origin defaults to 0, 0 (upper left corner).
+                this._origin = new game.Point(0, 0);
             }
             Object.defineProperty(Actor.prototype, "mapPosition", {
                 /**
@@ -1270,6 +1272,17 @@ var nurdz;
                  * @returns {Point}
                  */
                 get: function () { return this._position; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Actor.prototype, "origin", {
+                /**
+                 * Get the origin of this actor, which is the offset from its position that is used to determine
+                 * where it renders and its hit box is located.
+                 *
+                 * @returns {Point}
+                 */
+                get: function () { return this._origin; },
                 enumerable: true,
                 configurable: true
             });
@@ -1332,16 +1345,29 @@ var nurdz;
             Actor.prototype.update = function (stage, tick) {
             };
             /**
-             * Render this actor to the stage provided. The default implementation renders a positioning box
-             * for this actor using its position and size using the debug color set at construction time.
+             * Render this actor using the renderer provided. The position provided represents the actual position
+             * of the Actor as realized on the screen, which may be different from its actual position if
+             * scrolling or a viewport of some sort is in use.
              *
-             * @param x the x location to render the actor at, in stage coordinates (NOT world)
-             * @param y the y location to render the actor at, in stage coordinates (NOT world)
+             * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
+             * always represent the upper left corner of the area in which to render this Actor.
+             *
+             * Inside the render method, to obtain the actual position where the origin is located, add the
+             * origin to the values provided.
+             *
+             * This default method renders a bounding box with a dot that represents the position of the origin.
+             *
+             * @param x the x location of the upper left position to render the actor at, in stage coordinates
+             * (NOT world), ignoring any origin that might be set
+             * @param y the y location of he upper left position to render the actor at, in stage coordinates (NOT
+             * world), ignoring any origin that might be set.
              * @param renderer the class to use to render the actor
              */
             Actor.prototype.render = function (x, y, renderer) {
                 // Draw a filled rectangle for actor using the debug color.
                 renderer.strokeRect(x, y, this._width, this._height, this._debugColor, 1);
+                // Now render the origin, which is an offset from where we have actually rendered.
+                renderer.fillCircle(x + this._origin.x, y + this._origin.y, 4, this._debugColor);
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The
@@ -1680,8 +1706,11 @@ var nurdz;
              */
             Scene.prototype.render = function () {
                 for (var i = 0; i < this._actorList.length; i++) {
+                    // Invoke the render method for all of the actors registered, ensuring that the origin is
+                    // taken into account so that the render method gets invoked with the upper left location
+                    // always.
                     var actor = this._actorList[i];
-                    actor.render(actor.position.x, actor.position.y, this._renderer);
+                    actor.render(actor.position.x - actor.origin.x, actor.position.y - actor.origin.y, this._renderer);
                 }
             };
             /**

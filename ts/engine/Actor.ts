@@ -36,14 +36,29 @@ module nurdz.game
         protected _mapPosition : Point;
 
         /**
-         * The width of this actor, in pixels.
+         * The origin of this Actor for rendering and collision detection purposes. The X and Y values
+         * here are subtracted from the position when this entity is rendered or when it is considered for
+         * any collision detection.
+         *
+         * A value of (0, 0) means that the position is relative to the top left corner, (width, height)
+         * is the bottom right corner, and (width / 2, height / 2) represents the center.
+         *
+         * You can use larger or smaller values to position the sprite outside of its location if desired.
+         *
+         * In use, the values here should be subtracted from the position given in the render call in
+         * order to render with the origin in the appropriate location.
+         */
+        protected _origin : Point;
+
+        /**
+         * The width of this actor, in pixels. This represents the bounding box.
          *
          * @type {number}
          */
         protected _width : number;
 
         /**
-         * The height of this actor, in pixels.
+         * The height of this actor, in pixels. This represents the bounding box.
          *
          * @type {number}
          */
@@ -79,6 +94,15 @@ module nurdz.game
          */
         get position () : Point
         { return this._position; }
+
+        /**
+         * Get the origin of this actor, which is the offset from its position that is used to determine
+         * where it renders and its hit box is located.
+         *
+         * @returns {Point}
+         */
+        get origin () : Point
+        { return this._origin; }
 
         /**
          * Get the width of this actor, in pixels.
@@ -151,6 +175,9 @@ module nurdz.game
             // tile coordinates for the map position.
             this._position = new Point (x, y);
             this._mapPosition = this._position.copyReduced (TILE_SIZE);
+
+            // The origin defaults to 0, 0 (upper left corner).
+            this._origin = new Point (0, 0);
         }
 
         /**
@@ -165,17 +192,31 @@ module nurdz.game
         }
 
         /**
-         * Render this actor to the stage provided. The default implementation renders a positioning box
-         * for this actor using its position and size using the debug color set at construction time.
+         * Render this actor using the renderer provided. The position provided represents the actual position
+         * of the Actor as realized on the screen, which may be different from its actual position if
+         * scrolling or a viewport of some sort is in use.
          *
-         * @param x the x location to render the actor at, in stage coordinates (NOT world)
-         * @param y the y location to render the actor at, in stage coordinates (NOT world)
+         * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
+         * always represent the upper left corner of the area in which to render this Actor.
+         *
+         * Inside the render method, to obtain the actual position where the origin is located, add the
+         * origin to the values provided.
+         *
+         * This default method renders a bounding box with a dot that represents the position of the origin.
+         *
+         * @param x the x location of the upper left position to render the actor at, in stage coordinates
+         * (NOT world), ignoring any origin that might be set
+         * @param y the y location of he upper left position to render the actor at, in stage coordinates (NOT
+         * world), ignoring any origin that might be set.
          * @param renderer the class to use to render the actor
          */
         render (x : number, y : number, renderer : Renderer) : void
         {
             // Draw a filled rectangle for actor using the debug color.
             renderer.strokeRect (x, y, this._width, this._height, this._debugColor, 1);
+
+            // Now render the origin, which is an offset from where we have actually rendered.
+            renderer.fillCircle (x + this._origin.x, y + this._origin.y, 4, this._debugColor);
         }
 
         /**
