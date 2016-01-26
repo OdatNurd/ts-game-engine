@@ -1659,8 +1659,7 @@ var nurdz;
              * @param x the x location of the upper left position to render the entity at, in stage coordinates
              * (NOT world), ignoring any origin that might be set
              * @param y the y location of he upper left position to render the entity at, in stage coordinates
-             * (NOT
-             * world), ignoring any origin that might be set.
+             * (NOT world), ignoring any origin that might be set.
              * @param renderer the class to use to render the actor
              */
             Entity.prototype.render = function (x, y, renderer) {

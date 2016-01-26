@@ -71,10 +71,12 @@ var nurdz;
                 _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1, properties, {
                     xSpeed: nurdz.game.Utils.randomIntInRange(-5, 5),
                     ySpeed: nurdz.game.Utils.randomIntInRange(-5, 5),
-                });
+                }, 'red');
                 // Our radius is half our width because our position is registered via the center of our own
                 // bounds.
                 this._radius = this._width / 2;
+                // Set our origin to be the center of ourselves.
+                this._origin.setToXY(this._width / 2, this._height / 2);
                 // Save the image and sound we were given.
                 this._image = image;
                 this._sound = sound;
@@ -135,12 +137,16 @@ var nurdz;
             /**
              * Render ourselves to the stage.
              *
-             * @param x the x location to render the actor at, in stage coordinates (NOT world)
-             * @param y the y location to render the actor at, in stage coordinates (NOT world)
+             * @param x the x location of the upper left position to render the entity at, in stage coordinates
+             * (NOT world), ignoring any origin that might be set
+             * @param y the y location of he upper left position to render the entity at, in stage coordinates
+             * (NOT world), ignoring any origin that might be set.
              * @param renderer the renderer to render with
              */
             Dot.prototype.render = function (x, y, renderer) {
-                renderer.blitCentered(this._image, x, y);
+                // Render ourselves and then invoke the super class, in case debug mode is turned on.
+                renderer.blit(this._image, x, y);
+                _super.prototype.render.call(this, x, y, renderer);
             };
             return Dot;
         })(nurdz.game.Entity);
@@ -190,8 +196,8 @@ var nurdz;
                 this._music = stage.preloadMusic("WhoLikesToParty", this.soundLoadComplete);
                 // Create two actors and add them to ourselves. These use the images and sounds we said we
                 // want to preload.
-                this.addActor(new Dot(stage, ball1, bounce));
-                this.addActor(new Dot(stage, ball2, bounce));
+                this.addActor(new Dot(stage, ball1, bounce, { debug: true }));
+                this.addActor(new Dot(stage, ball2, bounce, { debug: false }));
             }
             /**
              * Render the scene.
