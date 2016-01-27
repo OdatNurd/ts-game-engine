@@ -1442,24 +1442,26 @@ var nurdz;
              * of the Actor as realized on the screen, which may be different from its actual position if
              * scrolling or a viewport of some sort is in use.
              *
-             * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
-             * always represent the upper left corner of the area in which to render this Actor.
+             * The position provided here does not take the origin of the actor into account and is just a
+             * representation of its actual position; thus your render code needs to take the origin into
+             * account.
              *
-             * Inside the render method, to obtain the actual position where the origin is located, add the
-             * origin to the values provided.
+             * Inside the render method, to get the adjusted position you can subtract the origin offset from
+             * the values provided.
              *
-             * This default method renders a bounding box with a dot that represents the position of the origin.
+             * This default method renders the current sprite in the attached sprite sheet if those values are
+             * set and valid, or a bounding box with a dot that represents the origin offset if that is not
+             * the case. This ensures that no matter what, the actor renders its position accurately on the
+             * stage.
              *
-             * @param x the x location of the upper left position to render the actor at, in stage coordinates
-             * (NOT world), ignoring any origin that might be set
-             * @param y the y location of he upper left position to render the actor at, in stage coordinates (NOT
-             * world), ignoring any origin that might be set.
+             * @param x the x location to render the actor at, in stage coordinates (NOT world)
+             * @param y the y location to render the actor at, in stage coordinates (NOT world)
              * @param renderer the class to use to render the actor
              */
             Actor.prototype.render = function (x, y, renderer) {
                 // Translate the canvas to be where our origin point is (which is an offset from the location
                 // that we were given) and then rotate the canvas to the appropriate angle.
-                renderer.translateAndRotate(x + this._origin.x, y + this._origin.y, this._angle);
+                renderer.translateAndRotate(x, y, this._angle);
                 // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
                 // not, we render our bounds instead. In both cases, we need to offset our rendering by our
                 // origin point so that we render at the location that we expect to.
@@ -1739,24 +1741,23 @@ var nurdz;
             Entity.prototype.triggerTouch = function (activator) {
             };
             /**
-             * Render this entity using the renderer provided.  The position provided represents the actual
-             * position of the Entity as realized on the screen, which may be different from its actual position
-             * if scrolling or a viewport of some sort is in use.
+             * Render this actor using the renderer provided. The position provided represents the actual position
+             * of the Actor as realized on the screen, which may be different from its actual position if
+             * scrolling or a viewport of some sort is in use.
              *
-             * The position provided here is adjusted by the origin of the Entity so that the (x, y) provided
-             * always represent the upper left corner of the area in which to render this Actor.
+             * The position provided here does not take the origin of the actor into account and is just a
+             * representation of its actual position; thus your render code needs to take the origin into
+             * account.
              *
-             * Inside the render method, to obtain the actual position where the origin is located, add the
-             * origin to the values provided.
+             * Inside the render method, to get the adjusted position you can subtract the origin offset from
+             * the values provided.
              *
              * This default method will do what Actor does and render the current sprite of the current sprite
-             * sheet, if it can. Additionally, if the debug property is set to true OR it is not but there is
-             * no sprite sheet assigned, the bounding information and origin is rendered for this entity.
+             * sheet, if it can. Additionally, if the debug property is set to true, the bounding information
+             * and origin is rendered for this entity overlapping the sprite.
              *
-             * @param x the x location of the upper left position to render the entity at, in stage coordinates
-             * (NOT world), ignoring any origin that might be set
-             * @param y the y location of he upper left position to render the entity at, in stage coordinates
-             * (NOT world), ignoring any origin that might be set.
+             * @param x the x location to render the actor at, in stage coordinates (NOT world)
+             * @param y the y location to render the actor at, in stage coordinates (NOT world)
              * @param renderer the class to use to render the actor
              */
             Entity.prototype.render = function (x, y, renderer) {
@@ -1772,7 +1773,7 @@ var nurdz;
                 if (this._properties.debug &&
                     (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)) {
                     // Translate to our render location, rotate, render bounds, and then restore the context.
-                    renderer.translateAndRotate(x + this._origin.x, y + this._origin.y, this._angle);
+                    renderer.translateAndRotate(x, y, this._angle);
                     this.renderBounds(-this._origin.x, -this._origin.y, renderer);
                     renderer.restore();
                 }
@@ -1849,11 +1850,10 @@ var nurdz;
              */
             Scene.prototype.render = function () {
                 for (var i = 0; i < this._actorList.length; i++) {
-                    // Invoke the render method for all of the actors registered, ensuring that the origin is
-                    // taken into account so that the render method gets invoked with the upper left location
-                    // always.
+                    // Invoke the render method for all of the actors registered. The render method gets the
+                    // current position attribute and must take the origin into account on its own.
                     var actor = this._actorList[i];
-                    actor.render(actor.position.x - actor.origin.x, actor.position.y - actor.origin.y, this._renderer);
+                    actor.render(actor.position.x, actor.position.y, this._renderer);
                 }
             };
             /**

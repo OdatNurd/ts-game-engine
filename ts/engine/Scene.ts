@@ -88,12 +88,10 @@ module nurdz.game
         {
             for (var i = 0 ; i < this._actorList.length ; i++)
             {
-                // Invoke the render method for all of the actors registered, ensuring that the origin is
-                // taken into account so that the render method gets invoked with the upper left location
-                // always.
+                // Invoke the render method for all of the actors registered. The render method gets the
+                // current position attribute and must take the origin into account on its own.
                 var actor : Actor = this._actorList[i];
-                actor.render (actor.position.x - actor.origin.x, actor.position.y - actor.origin.y,
-                              this._renderer);
+                actor.render (actor.position.x, actor.position.y, this._renderer);
             }
         }
 

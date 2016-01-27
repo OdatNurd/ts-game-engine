@@ -315,25 +315,27 @@ module nurdz.game
          * of the Actor as realized on the screen, which may be different from its actual position if
          * scrolling or a viewport of some sort is in use.
          *
-         * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
-         * always represent the upper left corner of the area in which to render this Actor.
+         * The position provided here does not take the origin of the actor into account and is just a
+         * representation of its actual position; thus your render code needs to take the origin into
+         * account.
          *
-         * Inside the render method, to obtain the actual position where the origin is located, add the
-         * origin to the values provided.
+         * Inside the render method, to get the adjusted position you can subtract the origin offset from
+         * the values provided.
          *
-         * This default method renders a bounding box with a dot that represents the position of the origin.
+         * This default method renders the current sprite in the attached sprite sheet if those values are
+         * set and valid, or a bounding box with a dot that represents the origin offset if that is not
+         * the case. This ensures that no matter what, the actor renders its position accurately on the
+         * stage.
          *
-         * @param x the x location of the upper left position to render the actor at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set
-         * @param y the y location of he upper left position to render the actor at, in stage coordinates (NOT
-         * world), ignoring any origin that might be set.
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
          * @param renderer the class to use to render the actor
          */
         render (x : number, y : number, renderer : Renderer) : void
         {
             // Translate the canvas to be where our origin point is (which is an offset from the location
             // that we were given) and then rotate the canvas to the appropriate angle.
-            renderer.translateAndRotate (x + this._origin.x, y + this._origin.y, this._angle);
+            renderer.translateAndRotate (x, y, this._angle);
 
             // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
             // not, we render our bounds instead. In both cases, we need to offset our rendering by our

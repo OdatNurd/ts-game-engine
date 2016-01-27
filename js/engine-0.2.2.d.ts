@@ -857,18 +857,20 @@ declare module nurdz.game {
          * of the Actor as realized on the screen, which may be different from its actual position if
          * scrolling or a viewport of some sort is in use.
          *
-         * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
-         * always represent the upper left corner of the area in which to render this Actor.
+         * The position provided here does not take the origin of the actor into account and is just a
+         * representation of its actual position; thus your render code needs to take the origin into
+         * account.
          *
-         * Inside the render method, to obtain the actual position where the origin is located, add the
-         * origin to the values provided.
+         * Inside the render method, to get the adjusted position you can subtract the origin offset from
+         * the values provided.
          *
-         * This default method renders a bounding box with a dot that represents the position of the origin.
+         * This default method renders the current sprite in the attached sprite sheet if those values are
+         * set and valid, or a bounding box with a dot that represents the origin offset if that is not
+         * the case. This ensures that no matter what, the actor renders its position accurately on the
+         * stage.
          *
-         * @param x the x location of the upper left position to render the actor at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set
-         * @param y the y location of he upper left position to render the actor at, in stage coordinates (NOT
-         * world), ignoring any origin that might be set.
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
          * @param renderer the class to use to render the actor
          */
         render(x: number, y: number, renderer: Renderer): void;
@@ -1092,24 +1094,23 @@ declare module nurdz.game {
          */
         triggerTouch(activator: Actor): void;
         /**
-         * Render this entity using the renderer provided.  The position provided represents the actual
-         * position of the Entity as realized on the screen, which may be different from its actual position
-         * if scrolling or a viewport of some sort is in use.
+         * Render this actor using the renderer provided. The position provided represents the actual position
+         * of the Actor as realized on the screen, which may be different from its actual position if
+         * scrolling or a viewport of some sort is in use.
          *
-         * The position provided here is adjusted by the origin of the Entity so that the (x, y) provided
-         * always represent the upper left corner of the area in which to render this Actor.
+         * The position provided here does not take the origin of the actor into account and is just a
+         * representation of its actual position; thus your render code needs to take the origin into
+         * account.
          *
-         * Inside the render method, to obtain the actual position where the origin is located, add the
-         * origin to the values provided.
+         * Inside the render method, to get the adjusted position you can subtract the origin offset from
+         * the values provided.
          *
          * This default method will do what Actor does and render the current sprite of the current sprite
-         * sheet, if it can. Additionally, if the debug property is set to true OR it is not but there is
-         * no sprite sheet assigned, the bounding information and origin is rendered for this entity.
+         * sheet, if it can. Additionally, if the debug property is set to true, the bounding information
+         * and origin is rendered for this entity overlapping the sprite.
          *
-         * @param x the x location of the upper left position to render the entity at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set
-         * @param y the y location of he upper left position to render the entity at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set.
+         * @param x the x location to render the actor at, in stage coordinates (NOT world)
+         * @param y the y location to render the actor at, in stage coordinates (NOT world)
          * @param renderer the class to use to render the actor
          */
         render(x: number, y: number, renderer: nurdz.game.Renderer): void;
