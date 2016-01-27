@@ -5,7 +5,7 @@
         "noImplicitAny": false,
         "declaration": true,
         "sourceMap": false,
-        "outFile": "../../js/engine-0.2.1.js"
+        "outFile": "../../js/engine-0.2.2.js"
     },
     "files": [
         "nurdz.ts",
