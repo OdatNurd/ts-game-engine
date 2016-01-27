@@ -1248,6 +1248,9 @@ var nurdz;
                 this._height = height;
                 this._zOrder = zOrder;
                 this._debugColor = debugColor;
+                // Default to the first sprite of a nonexistent sprite sheet.
+                this._sheet = null;
+                this._sprite = 0;
                 // For position we save the passed in position and then make a reduced copy to turn it into
                 // tile coordinates for the map position.
                 this._position = new game.Point(x, y);
@@ -1336,6 +1339,43 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Actor.prototype, "sheet", {
+                /**
+                 * The sprite sheet that is attached to this actor, or null if there is no sprite sheet currently
+                 * attached.
+                 *
+                 * @returns {SpriteSheet}
+                 */
+                get: function () { return this._sheet; },
+                /**
+                 * Change the sprite sheet associated with this actor to the sheet passed in. Setting the sheet to
+                 * null turns off the sprite sheet for this actor.
+                 *
+                 * @param newSheet
+                 */
+                set: function (newSheet) { this._sheet = newSheet; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Actor.prototype, "sprite", {
+                /**
+                 * Get the sprite index of the sprite in the attached sprite sheet that this actor uses to render
+                 * itself. This value has no meaning if no sprite sheet is currently attached to this actor.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._sprite; },
+                /**
+                 * Change the sprite index of the sprite in the attached sprite sheet that this actor uses to
+                 * render itself. If there is no sprite sheet currently attached to this actor, or if the sprite
+                 * index is not valid, this has no effect.
+                 *
+                 * @param newSprite
+                 */
+                set: function (newSprite) { this._sprite = newSprite; },
+                enumerable: true,
+                configurable: true
+            });
             /**
              * Update internal stage for this actor. The default implementation does nothing.
              *
@@ -1390,8 +1430,12 @@ var nurdz;
              * @param renderer the class to use to render the actor
              */
             Actor.prototype.render = function (x, y, renderer) {
-                // By default, render our bounds.
-                this.renderBounds(x, y, renderer);
+                // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
+                // not, we render our bounds instead.
+                if (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)
+                    this._sheet.blit(this._sprite, x, y, renderer);
+                else
+                    this.renderBounds(x, y, renderer);
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The
@@ -1672,13 +1716,9 @@ var nurdz;
              * Inside the render method, to obtain the actual position where the origin is located, add the
              * origin to the values provided.
              *
-             * This default method does nothing unless debug mode is turned on for this entity, in which case
-             * the bounding box for the entity will be rendered, along with a dot that represents the origin
-             * location of the entity.
-             *
-             * You can take advantage of this behaviour if needed by invoking this from your own render
-             * method, presumably after you have done your own rendering (to ensure that the information is
-             * not overlaid).
+             * This default method will do what Actor does and render the current sprite of the current sprite
+             * sheet, if it can. Additionally, if the debug property is set to true OR it is not but there is
+             * no sprite sheet assigned, the bounding information and origin is rendered for this entity.
              *
              * @param x the x location of the upper left position to render the entity at, in stage coordinates
              * (NOT world), ignoring any origin that might be set
@@ -1687,9 +1727,18 @@ var nurdz;
              * @param renderer the class to use to render the actor
              */
             Entity.prototype.render = function (x, y, renderer) {
-                // Invoke the super class method to render a bounding box if debug mode is turned on.
-                if (this._properties.debug)
-                    _super.prototype.render.call(this, x, y, renderer);
+                // First, let the super do what it wants to do. This will render our current sprite (if there
+                // is one to display), or it will render our bounds if there is not a sprite.
+                _super.prototype.render.call(this, x, y, renderer);
+                // If we're supposed to render debug information AND the super has not already rendered it,
+                // then render our bounds now.
+                //
+                // The super class only renders bounds when there is no sprite sheet to display or the sprite
+                // in it is invalid. Thus, if there is a sprite sheet and the sprite is valid, we don't need
+                // to do this.
+                if (this._properties.debug &&
+                    (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count))
+                    this.renderBounds(x, y, renderer);
             };
             /**
              * Return a string representation of the object, for debugging purposes.

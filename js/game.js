@@ -61,11 +61,10 @@ var nurdz;
              * Construct an instance; it needs to know how it will be rendered.
              *
              * @param stage the stage that owns this actor.
-             * @param image the image to render ourselves with
              * @param sound the sound to play when we bounce off the sides of the screen
              * @param properties the properties to apply to this entity
              */
-            function Dot(stage, image, sound, properties) {
+            function Dot(stage, sound, properties) {
                 if (properties === void 0) { properties = {}; }
                 // Invoke the super to construct us. We position ourselves in the center of the stage.
                 _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1, properties, {
@@ -77,8 +76,7 @@ var nurdz;
                 this._radius = this._width / 2;
                 // Set our origin to be the center of ourselves.
                 this._origin.setToXY(this._width / 2, this._height / 2);
-                // Save the image and sound we were given.
-                this._image = image;
+                // Save the sound we were given.
                 this._sound = sound;
                 // Show what we did in the console.
                 console.log("Dot entity created with properties: ", this._properties);
@@ -134,20 +132,6 @@ var nurdz;
                     this._sound.play();
                 }
             };
-            /**
-             * Render ourselves to the stage.
-             *
-             * @param x the x location of the upper left position to render the entity at, in stage coordinates
-             * (NOT world), ignoring any origin that might be set
-             * @param y the y location of he upper left position to render the entity at, in stage coordinates
-             * (NOT world), ignoring any origin that might be set.
-             * @param renderer the renderer to render with
-             */
-            Dot.prototype.render = function (x, y, renderer) {
-                // Render ourselves and then invoke the super class, in case debug mode is turned on.
-                renderer.blit(this._image, x, y);
-                _super.prototype.render.call(this, x, y, renderer);
-            };
             return Dot;
         })(nurdz.game.Entity);
         /**
@@ -187,17 +171,19 @@ var nurdz;
                 // By default, we're playing music and sounds.
                 this._playMusic = true;
                 this._playSounds = true;
-                // Preload some images.
-                var ball1 = stage.preloadImage("ball_blue.png", this.imageLoadComplete);
-                var ball2 = stage.preloadImage("ball_yellow.png", this.imageLoadComplete);
                 // Preload a bounce sound
                 var bounce = stage.preloadSound("bounce_wall", this.soundLoadComplete);
                 // Preload some music.
                 this._music = stage.preloadMusic("WhoLikesToParty", this.soundLoadComplete);
-                // Create two actors and add them to ourselves. These use the images and sounds we said we
-                // want to preload.
-                this.addActor(new Dot(stage, ball1, bounce, { debug: true }));
-                this.addActor(new Dot(stage, ball2, bounce, { debug: false }));
+                // Create some dot entities.
+                var dot1 = new Dot(stage, bounce, { debug: true });
+                var dot2 = new Dot(stage, bounce, { debug: false });
+                // Give the dots sprite sheets.
+                dot1.sheet = new nurdz.game.SpriteSheet(stage, "ball_blue.png", 1);
+                dot2.sheet = new nurdz.game.SpriteSheet(stage, "ball_yellow.png", 1);
+                // Now add the dots entities to ourselves so that they get updated and rendered.
+                this.addActor(dot1);
+                this.addActor(dot2);
             }
             /**
              * Render the scene.

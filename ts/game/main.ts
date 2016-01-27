@@ -88,13 +88,6 @@ module nurdz.main
         private _radius : number;
 
         /**
-         * The image that we use to render ourselves.
-         *
-         * @type {HTMLImageElement}
-         */
-        private _image : HTMLImageElement;
-
-        /**
          * The sound to play whenever we bounce off of the sides of the screen.
          */
         private _sound : game.Sound;
@@ -121,12 +114,10 @@ module nurdz.main
          * Construct an instance; it needs to know how it will be rendered.
          *
          * @param stage the stage that owns this actor.
-         * @param image the image to render ourselves with
          * @param sound the sound to play when we bounce off the sides of the screen
          * @param properties the properties to apply to this entity
          */
-        constructor (stage : game.Stage, image : HTMLImageElement, sound : game.Sound,
-                     properties : DotProperties = {})
+        constructor (stage : game.Stage, sound : game.Sound, properties : DotProperties = {})
         {
             // Invoke the super to construct us. We position ourselves in the center of the stage.
             super ("A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1,
@@ -142,8 +133,7 @@ module nurdz.main
             // Set our origin to be the center of ourselves.
             this._origin.setToXY (this._width / 2, this._height / 2);
 
-            // Save the image and sound we were given.
-            this._image = image;
+            // Save the sound we were given.
             this._sound = sound;
 
             // Show what we did in the console.
@@ -201,22 +191,6 @@ module nurdz.main
                 this._sound.play ();
             }
         }
-
-        /**
-         * Render ourselves to the stage.
-         *
-         * @param x the x location of the upper left position to render the entity at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set
-         * @param y the y location of he upper left position to render the entity at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set.
-         * @param renderer the renderer to render with
-         */
-        render (x : number, y : number, renderer : game.Renderer)
-        {
-            // Render ourselves and then invoke the super class, in case debug mode is turned on.
-            renderer.blit (this._image, x, y);
-            super.render (x, y, renderer);
-        }
     }
 
     /**
@@ -256,20 +230,23 @@ module nurdz.main
             this._playMusic = true;
             this._playSounds = true;
 
-            // Preload some images.
-            let ball1 = stage.preloadImage ("ball_blue.png", this.imageLoadComplete);
-            let ball2 = stage.preloadImage ("ball_yellow.png", this.imageLoadComplete);
-
             // Preload a bounce sound
             let bounce = stage.preloadSound ("bounce_wall", this.soundLoadComplete);
 
             // Preload some music.
             this._music = stage.preloadMusic ("WhoLikesToParty", this.soundLoadComplete);
 
-            // Create two actors and add them to ourselves. These use the images and sounds we said we
-            // want to preload.
-            this.addActor (new Dot (stage, ball1, bounce, {debug : true}));
-            this.addActor (new Dot (stage, ball2, bounce, {debug : false}));
+            // Create some dot entities.
+            let dot1 = new Dot (stage, bounce, {debug: true});
+            let dot2 = new Dot (stage, bounce, {debug: false});
+
+            // Give the dots sprite sheets.
+            dot1.sheet = new game.SpriteSheet (stage, "ball_blue.png", 1);
+            dot2.sheet = new game.SpriteSheet (stage, "ball_yellow.png", 1);
+
+            // Now add the dots entities to ourselves so that they get updated and rendered.
+            this.addActor (dot1);
+            this.addActor (dot2);
         }
 
         /**

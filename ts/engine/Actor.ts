@@ -36,6 +36,19 @@ module nurdz.game
         protected _mapPosition : Point;
 
         /**
+         * The sprite sheet associated with this actor; this defaults to null. If this is set, a
+         * combination of this and _sprite is used in the rendering method to render this actor.
+         */
+        protected _sheet : SpriteSheet;
+
+        /**
+         * The sprite in the attached sprite sheet to use to render this actor in the render method. If
+         * there is no sprite sheet attached, or this value is out of bounds for the given sheet, nothing
+         * happens.
+         */
+        protected  _sprite : number;
+
+        /**
          * The origin of this Actor for rendering and collision detection purposes. The X and Y values
          * here are subtracted from the position when this entity is rendered or when it is considered for
          * any collision detection.
@@ -149,6 +162,43 @@ module nurdz.game
         { return this._stage; }
 
         /**
+         * The sprite sheet that is attached to this actor, or null if there is no sprite sheet currently
+         * attached.
+         *
+         * @returns {SpriteSheet}
+         */
+        get sheet () : SpriteSheet
+        { return this._sheet; }
+
+        /**
+         * Change the sprite sheet associated with this actor to the sheet passed in. Setting the sheet to
+         * null turns off the sprite sheet for this actor.
+         *
+         * @param newSheet
+         */
+        set sheet (newSheet : SpriteSheet)
+        { this._sheet = newSheet; }
+
+        /**
+         * Get the sprite index of the sprite in the attached sprite sheet that this actor uses to render
+         * itself. This value has no meaning if no sprite sheet is currently attached to this actor.
+         *
+         * @returns {number}
+         */
+        get sprite () : number
+        { return this._sprite; }
+
+        /**
+         * Change the sprite index of the sprite in the attached sprite sheet that this actor uses to
+         * render itself. If there is no sprite sheet currently attached to this actor, or if the sprite
+         * index is not valid, this has no effect.
+         *
+         * @param newSprite
+         */
+        set sprite (newSprite : number)
+        { this._sprite = newSprite; }
+
+        /**
          *
          * @param name the internal name for this actor instance, for debugging
          * @param stage the stage that will be used to display this actor
@@ -170,6 +220,10 @@ module nurdz.game
             this._height = height;
             this._zOrder = zOrder;
             this._debugColor = debugColor;
+
+            // Default to the first sprite of a nonexistent sprite sheet.
+            this._sheet = null;
+            this._sprite = 0;
 
             // For position we save the passed in position and then make a reduced copy to turn it into
             // tile coordinates for the map position.
@@ -241,8 +295,12 @@ module nurdz.game
          */
         render (x : number, y : number, renderer : Renderer) : void
         {
-            // By default, render our bounds.
-            this.renderBounds (x, y, renderer);
+            // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
+            // not, we render our bounds instead.
+            if (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)
+                this._sheet.blit (this._sprite, x, y, renderer);
+            else
+                this.renderBounds (x, y, renderer);
         }
 
         /**

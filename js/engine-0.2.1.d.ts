@@ -659,6 +659,17 @@ declare module nurdz.game {
          */
         protected _mapPosition: Point;
         /**
+         * The sprite sheet associated with this actor; this defaults to null. If this is set, a
+         * combination of this and _sprite is used in the rendering method to render this actor.
+         */
+        protected _sheet: SpriteSheet;
+        /**
+         * The sprite in the attached sprite sheet to use to render this actor in the render method. If
+         * there is no sprite sheet attached, or this value is out of bounds for the given sheet, nothing
+         * happens.
+         */
+        protected _sprite: number;
+        /**
          * The origin of this Actor for rendering and collision detection purposes. The X and Y values
          * here are subtracted from the position when this entity is rendered or when it is considered for
          * any collision detection.
@@ -749,6 +760,33 @@ declare module nurdz.game {
          * @returns {Stage}
          */
         stage: Stage;
+        /**
+         * The sprite sheet that is attached to this actor, or null if there is no sprite sheet currently
+         * attached.
+         *
+         * @returns {SpriteSheet}
+         */
+        /**
+         * Change the sprite sheet associated with this actor to the sheet passed in. Setting the sheet to
+         * null turns off the sprite sheet for this actor.
+         *
+         * @param newSheet
+         */
+        sheet: SpriteSheet;
+        /**
+         * Get the sprite index of the sprite in the attached sprite sheet that this actor uses to render
+         * itself. This value has no meaning if no sprite sheet is currently attached to this actor.
+         *
+         * @returns {number}
+         */
+        /**
+         * Change the sprite index of the sprite in the attached sprite sheet that this actor uses to
+         * render itself. If there is no sprite sheet currently attached to this actor, or if the sprite
+         * index is not valid, this has no effect.
+         *
+         * @param newSprite
+         */
+        sprite: number;
         /**
          *
          * @param name the internal name for this actor instance, for debugging
@@ -1040,13 +1078,9 @@ declare module nurdz.game {
          * Inside the render method, to obtain the actual position where the origin is located, add the
          * origin to the values provided.
          *
-         * This default method does nothing unless debug mode is turned on for this entity, in which case
-         * the bounding box for the entity will be rendered, along with a dot that represents the origin
-         * location of the entity.
-         *
-         * You can take advantage of this behaviour if needed by invoking this from your own render
-         * method, presumably after you have done your own rendering (to ensure that the information is
-         * not overlaid).
+         * This default method will do what Actor does and render the current sprite of the current sprite
+         * sheet, if it can. Additionally, if the debug property is set to true OR it is not but there is
+         * no sprite sheet assigned, the bounding information and origin is rendered for this entity.
          *
          * @param x the x location of the upper left position to render the entity at, in stage coordinates
          * (NOT world), ignoring any origin that might be set

@@ -277,13 +277,9 @@ module nurdz.game
          * Inside the render method, to obtain the actual position where the origin is located, add the
          * origin to the values provided.
          *
-         * This default method does nothing unless debug mode is turned on for this entity, in which case
-         * the bounding box for the entity will be rendered, along with a dot that represents the origin
-         * location of the entity.
-         *
-         * You can take advantage of this behaviour if needed by invoking this from your own render
-         * method, presumably after you have done your own rendering (to ensure that the information is
-         * not overlaid).
+         * This default method will do what Actor does and render the current sprite of the current sprite
+         * sheet, if it can. Additionally, if the debug property is set to true OR it is not but there is
+         * no sprite sheet assigned, the bounding information and origin is rendered for this entity.
          *
          * @param x the x location of the upper left position to render the entity at, in stage coordinates
          * (NOT world), ignoring any origin that might be set
@@ -293,9 +289,19 @@ module nurdz.game
          */
         render (x : number, y : number, renderer : nurdz.game.Renderer) : void
         {
-            // Invoke the super class method to render a bounding box if debug mode is turned on.
-            if (this._properties.debug)
-                super.render (x, y, renderer);
+            // First, let the super do what it wants to do. This will render our current sprite (if there
+            // is one to display), or it will render our bounds if there is not a sprite.
+            super.render (x, y, renderer);
+
+            // If we're supposed to render debug information AND the super has not already rendered it,
+            // then render our bounds now.
+            //
+            // The super class only renders bounds when there is no sprite sheet to display or the sprite
+            // in it is invalid. Thus, if there is a sprite sheet and the sprite is valid, we don't need
+            // to do this.
+            if (this._properties.debug &&
+                (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count))
+                this.renderBounds (x, y, renderer);
         }
 
         /**
