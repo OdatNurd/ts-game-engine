@@ -1345,6 +1345,32 @@ var nurdz;
             Actor.prototype.update = function (stage, tick) {
             };
             /**
+             * Render the bounding box and origin of this actor using the renderer provided. As in the render
+             * method, the position provided represents the actual position of the Actor as realized on the
+             * screen, which may be different from its actual position if scrolling or a viewport of some sort is
+             * in use.
+             *
+             * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
+             * always represent the upper left corner of the area in which to render this Actor.
+             *
+             * This will render the bounding box of this actor by rendering a rectangle of the proper width
+             * and height located at the provided location, and a dot representing the Actor origin point.
+             *
+             * @param x the x location of the upper left position to render the actor at, in stage coordinates
+             * (NOT world), ignoring any origin that might be set
+             * @param y the y location of he upper left position to render the actor at, in stage coordinates
+             *     (NOT
+             * world), ignoring any origin that might be set.
+             * @param renderer the class to use to render the actor
+             * @see Actor.render
+             */
+            Actor.prototype.renderBounds = function (x, y, renderer) {
+                // Draw a filled rectangle for actor using the debug color.
+                renderer.strokeRect(x, y, this._width, this._height, this._debugColor, 1);
+                // Now render the origin, which is an offset from where we have actually rendered.
+                renderer.fillCircle(x + this._origin.x, y + this._origin.y, 4, this._debugColor);
+            };
+            /**
              * Render this actor using the renderer provided. The position provided represents the actual position
              * of the Actor as realized on the screen, which may be different from its actual position if
              * scrolling or a viewport of some sort is in use.
@@ -1364,10 +1390,8 @@ var nurdz;
              * @param renderer the class to use to render the actor
              */
             Actor.prototype.render = function (x, y, renderer) {
-                // Draw a filled rectangle for actor using the debug color.
-                renderer.strokeRect(x, y, this._width, this._height, this._debugColor, 1);
-                // Now render the origin, which is an offset from where we have actually rendered.
-                renderer.fillCircle(x + this._origin.x, y + this._origin.y, 4, this._debugColor);
+                // By default, render our bounds.
+                this.renderBounds(x, y, renderer);
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The

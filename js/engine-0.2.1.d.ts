@@ -770,6 +770,27 @@ declare module nurdz.game {
          */
         update(stage: Stage, tick: number): void;
         /**
+         * Render the bounding box and origin of this actor using the renderer provided. As in the render
+         * method, the position provided represents the actual position of the Actor as realized on the
+         * screen, which may be different from its actual position if scrolling or a viewport of some sort is
+         * in use.
+         *
+         * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
+         * always represent the upper left corner of the area in which to render this Actor.
+         *
+         * This will render the bounding box of this actor by rendering a rectangle of the proper width
+         * and height located at the provided location, and a dot representing the Actor origin point.
+         *
+         * @param x the x location of the upper left position to render the actor at, in stage coordinates
+         * (NOT world), ignoring any origin that might be set
+         * @param y the y location of he upper left position to render the actor at, in stage coordinates
+         *     (NOT
+         * world), ignoring any origin that might be set.
+         * @param renderer the class to use to render the actor
+         * @see Actor.render
+         */
+        renderBounds(x: number, y: number, renderer: Renderer): void;
+        /**
          * Render this actor using the renderer provided. The position provided represents the actual position
          * of the Actor as realized on the screen, which may be different from its actual position if
          * scrolling or a viewport of some sort is in use.
