@@ -74,6 +74,44 @@ module nurdz.main
     }
 
     /**
+     * This simple class just displays an image and slowly rotates in place.
+     */
+    class Star extends nurdz.game.Entity
+    {
+        /**
+         * Construct an instance; it needs to know how it will be rendered.
+         *
+         * @param stage the stage that owns this actor.
+         */
+        constructor (stage : game.Stage)
+        {
+            // Invoke the super.
+            super ("A star", stage, stage.width / 2, stage.height / 2, 64, 64, 1, {}, {}, 'green');
+
+            // Give ourselves a sprite sheet.
+            this._sheet = new game.SpriteSheet (stage, "star_green.png", 1);
+
+            // Turn on our debug property so our bounds get rendered too.
+            this._properties.debug = true;
+
+            // Set our origin to be somewhere interesting.
+            this.origin.setToXY (64 / 3, 64 / 3);
+        }
+
+        /**
+         * In our simple update method, we just rotate slowly around.
+         *
+         * @param stage the stage that owns us
+         * @param tick the current game tick
+         */
+        update (stage : nurdz.game.Stage, tick : number) : void
+        {
+            // Advance our angle by 5 degrees. The angle is normalized for us.
+            this.angle = this.angle + 5;
+        }
+    }
+
+    /**
      * This simple class represents a Dot on the screen. It starts in the center of the screen and bounces
      * around.
      */
@@ -244,7 +282,8 @@ module nurdz.main
             dot1.sheet = new game.SpriteSheet (stage, "ball_blue.png", 1);
             dot2.sheet = new game.SpriteSheet (stage, "ball_yellow.png", 1);
 
-            // Now add the dots entities to ourselves so that they get updated and rendered.
+            // Now add the dots entities and a star entity to ourselves so that they get updated and rendered.
+            this.addActor (new Star (stage));
             this.addActor (dot1);
             this.addActor (dot2);
         }
@@ -261,7 +300,7 @@ module nurdz.main
 
         /**
          * This is invoked every time one of our sounds preloads; we get the sound object, from which we
-         * can get the tag and also a determination on wether or not it is music or a sound effect.
+         * can get the tag and also a determination on whether or not it is music or a sound effect.
          *
          * @param sound the sound (or music) that loaded
          */
@@ -280,6 +319,7 @@ module nurdz.main
             this._stage.renderer.clear ("black");
             super.render ();
             this._stage.renderer.drawTxt (`FPS: ${this._stage.fps}`, 16, 16, 'white');
+            this._stage.renderer.fillCircle (400, 300, 2, 'red');
         }
 
         /**
@@ -341,7 +381,7 @@ module nurdz.main
         }
     }
 
-// Once the DOM is loaded, set things up.
+    // Once the DOM is loaded, set things up.
     nurdz.contentLoaded (window, function ()
     {
         try

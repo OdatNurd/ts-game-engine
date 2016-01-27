@@ -49,6 +49,15 @@ module nurdz.game
         protected  _sprite : number;
 
         /**
+         * The angle that the entity is rendered at. This is measured in degrees with 0 being to the
+         * right, 90 degrees being downward and 270 being upward (due to the Y axis increasing in a
+         * downward fashion).
+         *
+         * Note that the angle of an entity does not affect its collisions, currently.
+         */
+        protected _angle : number;
+
+        /**
          * The origin of this Actor for rendering and collision detection purposes. The X and Y values
          * here are subtracted from the position when this entity is rendered or when it is considered for
          * any collision detection.
@@ -148,7 +157,7 @@ module nurdz.game
          * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
          * by type.
          *
-         * @returns {number}
+         * @param newZOrder the new zOrder value
          */
         set zOrder (newZOrder : number)
         { this._zOrder = newZOrder; }
@@ -174,7 +183,7 @@ module nurdz.game
          * Change the sprite sheet associated with this actor to the sheet passed in. Setting the sheet to
          * null turns off the sprite sheet for this actor.
          *
-         * @param newSheet
+         * @param newSheet the new sprite sheet to attach or null to remove the current sprite sheet
          */
         set sheet (newSheet : SpriteSheet)
         { this._sheet = newSheet; }
@@ -193,10 +202,36 @@ module nurdz.game
          * render itself. If there is no sprite sheet currently attached to this actor, or if the sprite
          * index is not valid, this has no effect.
          *
-         * @param newSprite
+         * @param newSprite the new sprite value to use from the given sprite sheet.
          */
         set sprite (newSprite : number)
         { this._sprite = newSprite; }
+
+        /**
+         * Get the rotation angle that this Actor renders at (in degrees); 0 is to the right, 90 is
+         * downward and 270 is upward (because the Y axis increases downward). This only affects rendering,
+         * currently.
+         *
+         * @returns {number}
+         */
+        get angle () : number
+        { return this._angle; }
+
+        /**
+         * Set the rotation angle that this Actor renders at (in degrees, does not affect collision
+         * detection).
+         *
+         * The value is normalized to the range 0-359.
+         *
+         * @param newAngle the new angle to render at
+         */
+        set angle (newAngle : number)
+        {
+            newAngle %= 360;
+            if (newAngle < 0)
+                newAngle += 360;
+            this._angle = newAngle % 360;
+        }
 
         /**
          *
@@ -221,9 +256,10 @@ module nurdz.game
             this._zOrder = zOrder;
             this._debugColor = debugColor;
 
-            // Default to the first sprite of a nonexistent sprite sheet.
+            // Default to the first sprite of a nonexistent sprite sheet and a rotation of 0.
             this._sheet = null;
             this._sprite = 0;
+            this._angle = 0;
 
             // For position we save the passed in position and then make a reduced copy to turn it into
             // tile coordinates for the map position.
@@ -295,12 +331,20 @@ module nurdz.game
          */
         render (x : number, y : number, renderer : Renderer) : void
         {
+            // Translate the canvas to be where our origin point is (which is an offset from the location
+            // that we were given) and then rotate the canvas to the appropriate angle.
+            renderer.translateAndRotate (x + this._origin.x, y + this._origin.y, this._angle);
+
             // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
-            // not, we render our bounds instead.
+            // not, we render our bounds instead. In both cases, we need to offset our rendering by our
+            // origin point so that we render at the location that we expect to.
             if (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)
-                this._sheet.blit (this._sprite, x, y, renderer);
+                this._sheet.blit (this._sprite, -this._origin.x, -this._origin.y, renderer);
             else
-                this.renderBounds (x, y, renderer);
+                this.renderBounds (-this._origin.x, -this._origin.y, renderer);
+
+            // Restore the context now.
+            renderer.restore ();
         }
 
         /**

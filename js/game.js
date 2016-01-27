@@ -52,6 +52,38 @@ var nurdz;
             });
         }
         /**
+         * This simple class just displays an image and slowly rotates in place.
+         */
+        var Star = (function (_super) {
+            __extends(Star, _super);
+            /**
+             * Construct an instance; it needs to know how it will be rendered.
+             *
+             * @param stage the stage that owns this actor.
+             */
+            function Star(stage) {
+                // Invoke the super.
+                _super.call(this, "A star", stage, stage.width / 2, stage.height / 2, 64, 64, 1, {}, {}, 'green');
+                // Give ourselves a sprite sheet.
+                this._sheet = new nurdz.game.SpriteSheet(stage, "star_green.png", 1);
+                // Turn on our debug property so our bounds get rendered too.
+                this._properties.debug = true;
+                // Set our origin to be somewhere interesting.
+                this.origin.setToXY(64 / 3, 64 / 3);
+            }
+            /**
+             * In our simple update method, we just rotate slowly around.
+             *
+             * @param stage the stage that owns us
+             * @param tick the current game tick
+             */
+            Star.prototype.update = function (stage, tick) {
+                // Advance our angle by 5 degrees. The angle is normalized for us.
+                this.angle = this.angle + 5;
+            };
+            return Star;
+        })(nurdz.game.Entity);
+        /**
          * This simple class represents a Dot on the screen. It starts in the center of the screen and bounces
          * around.
          */
@@ -161,7 +193,7 @@ var nurdz;
                 };
                 /**
                  * This is invoked every time one of our sounds preloads; we get the sound object, from which we
-                 * can get the tag and also a determination on wether or not it is music or a sound effect.
+                 * can get the tag and also a determination on whether or not it is music or a sound effect.
                  *
                  * @param sound the sound (or music) that loaded
                  */
@@ -181,7 +213,8 @@ var nurdz;
                 // Give the dots sprite sheets.
                 dot1.sheet = new nurdz.game.SpriteSheet(stage, "ball_blue.png", 1);
                 dot2.sheet = new nurdz.game.SpriteSheet(stage, "ball_yellow.png", 1);
-                // Now add the dots entities to ourselves so that they get updated and rendered.
+                // Now add the dots entities and a star entity to ourselves so that they get updated and rendered.
+                this.addActor(new Star(stage));
                 this.addActor(dot1);
                 this.addActor(dot2);
             }
@@ -194,6 +227,7 @@ var nurdz;
                 this._stage.renderer.clear("black");
                 _super.prototype.render.call(this);
                 this._stage.renderer.drawTxt("FPS: " + this._stage.fps, 16, 16, 'white');
+                this._stage.renderer.fillCircle(400, 300, 2, 'red');
             };
             /**
              * Invoked when we become the active scene

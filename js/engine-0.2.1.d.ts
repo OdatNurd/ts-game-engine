@@ -670,6 +670,14 @@ declare module nurdz.game {
          */
         protected _sprite: number;
         /**
+         * The angle that the entity is rendered at. This is measured in degrees with 0 being to the
+         * right, 90 degrees being downward and 270 being upward (due to the Y axis increasing in a
+         * downward fashion).
+         *
+         * Note that the angle of an entity does not affect its collisions, currently.
+         */
+        protected _angle: number;
+        /**
          * The origin of this Actor for rendering and collision detection purposes. The X and Y values
          * here are subtracted from the position when this entity is rendered or when it is considered for
          * any collision detection.
@@ -751,7 +759,7 @@ declare module nurdz.game {
          * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
          * by type.
          *
-         * @returns {number}
+         * @param newZOrder the new zOrder value
          */
         zOrder: number;
         /**
@@ -770,7 +778,7 @@ declare module nurdz.game {
          * Change the sprite sheet associated with this actor to the sheet passed in. Setting the sheet to
          * null turns off the sprite sheet for this actor.
          *
-         * @param newSheet
+         * @param newSheet the new sprite sheet to attach or null to remove the current sprite sheet
          */
         sheet: SpriteSheet;
         /**
@@ -784,9 +792,25 @@ declare module nurdz.game {
          * render itself. If there is no sprite sheet currently attached to this actor, or if the sprite
          * index is not valid, this has no effect.
          *
-         * @param newSprite
+         * @param newSprite the new sprite value to use from the given sprite sheet.
          */
         sprite: number;
+        /**
+         * Get the rotation angle that this Actor renders at (in degrees); 0 is to the right, 90 is
+         * downward and 270 is upward (because the Y axis increases downward). This only affects rendering,
+         * currently.
+         *
+         * @returns {number}
+         */
+        /**
+         * Set the rotation angle that this Actor renders at (in degrees, does not affect collision
+         * detection).
+         *
+         * The value is normalized to the range 0-359.
+         *
+         * @param newAngle the new angle to render at
+         */
+        angle: number;
         /**
          *
          * @param name the internal name for this actor instance, for debugging

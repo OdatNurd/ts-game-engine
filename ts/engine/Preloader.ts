@@ -315,7 +315,7 @@ module nurdz.game.Preloader
      * @param subFolder the subFolder that the filename is assumed to be in
      * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
      * the same path as the page is in and to have no extension
-     * @param callback if non-null, this will be invoked when the sopund is fully loaded.
+     * @param callback if non-null, this will be invoked when the sound is fully loaded.
      * @returns {HTMLAudioElement} the sound object that will (eventually) play the requested audio
      * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
      */

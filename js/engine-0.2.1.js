@@ -422,7 +422,7 @@ var nurdz;
              * @param subFolder the subFolder that the filename is assumed to be in
              * @param filename the filename of the sound to load; assumed to be relative to a sounds/ folder in
              * the same path as the page is in and to have no extension
-             * @param callback if non-null, this will be invoked when the sopund is fully loaded.
+             * @param callback if non-null, this will be invoked when the sound is fully loaded.
              * @returns {HTMLAudioElement} the sound object that will (eventually) play the requested audio
              * @throws {Error} if an attempt is made to add a sound to preload after preloading has already started
              */
@@ -1248,9 +1248,10 @@ var nurdz;
                 this._height = height;
                 this._zOrder = zOrder;
                 this._debugColor = debugColor;
-                // Default to the first sprite of a nonexistent sprite sheet.
+                // Default to the first sprite of a nonexistent sprite sheet and a rotation of 0.
                 this._sheet = null;
                 this._sprite = 0;
+                this._angle = 0;
                 // For position we save the passed in position and then make a reduced copy to turn it into
                 // tile coordinates for the map position.
                 this._position = new game.Point(x, y);
@@ -1323,7 +1324,7 @@ var nurdz;
                  * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
                  * by type.
                  *
-                 * @returns {number}
+                 * @param newZOrder the new zOrder value
                  */
                 set: function (newZOrder) { this._zOrder = newZOrder; },
                 enumerable: true,
@@ -1351,7 +1352,7 @@ var nurdz;
                  * Change the sprite sheet associated with this actor to the sheet passed in. Setting the sheet to
                  * null turns off the sprite sheet for this actor.
                  *
-                 * @param newSheet
+                 * @param newSheet the new sprite sheet to attach or null to remove the current sprite sheet
                  */
                 set: function (newSheet) { this._sheet = newSheet; },
                 enumerable: true,
@@ -1370,9 +1371,35 @@ var nurdz;
                  * render itself. If there is no sprite sheet currently attached to this actor, or if the sprite
                  * index is not valid, this has no effect.
                  *
-                 * @param newSprite
+                 * @param newSprite the new sprite value to use from the given sprite sheet.
                  */
                 set: function (newSprite) { this._sprite = newSprite; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Actor.prototype, "angle", {
+                /**
+                 * Get the rotation angle that this Actor renders at (in degrees); 0 is to the right, 90 is
+                 * downward and 270 is upward (because the Y axis increases downward). This only affects rendering,
+                 * currently.
+                 *
+                 * @returns {number}
+                 */
+                get: function () { return this._angle; },
+                /**
+                 * Set the rotation angle that this Actor renders at (in degrees, does not affect collision
+                 * detection).
+                 *
+                 * The value is normalized to the range 0-359.
+                 *
+                 * @param newAngle the new angle to render at
+                 */
+                set: function (newAngle) {
+                    newAngle %= 360;
+                    if (newAngle < 0)
+                        newAngle += 360;
+                    this._angle = newAngle % 360;
+                },
                 enumerable: true,
                 configurable: true
             });
@@ -1430,12 +1457,18 @@ var nurdz;
              * @param renderer the class to use to render the actor
              */
             Actor.prototype.render = function (x, y, renderer) {
+                // Translate the canvas to be where our origin point is (which is an offset from the location
+                // that we were given) and then rotate the canvas to the appropriate angle.
+                renderer.translateAndRotate(x + this._origin.x, y + this._origin.y, this._angle);
                 // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
-                // not, we render our bounds instead.
+                // not, we render our bounds instead. In both cases, we need to offset our rendering by our
+                // origin point so that we render at the location that we expect to.
                 if (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)
-                    this._sheet.blit(this._sprite, x, y, renderer);
+                    this._sheet.blit(this._sprite, -this._origin.x, -this._origin.y, renderer);
                 else
-                    this.renderBounds(x, y, renderer);
+                    this.renderBounds(-this._origin.x, -this._origin.y, renderer);
+                // Restore the context now.
+                renderer.restore();
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The
@@ -1737,8 +1770,12 @@ var nurdz;
                 // in it is invalid. Thus, if there is a sprite sheet and the sprite is valid, we don't need
                 // to do this.
                 if (this._properties.debug &&
-                    (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count))
-                    this.renderBounds(x, y, renderer);
+                    (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)) {
+                    // Translate to our render location, rotate, render bounds, and then restore the context.
+                    renderer.translateAndRotate(x + this._origin.x, y + this._origin.y, this._angle);
+                    this.renderBounds(-this._origin.x, -this._origin.y, renderer);
+                    renderer.restore();
+                }
             };
             /**
              * Return a string representation of the object, for debugging purposes.
