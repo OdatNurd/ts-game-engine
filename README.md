@@ -2,7 +2,7 @@ This is a simple game "engine" (I use that term loosely) written in TypeScript
 for creating game prototypes.
 
 This code is in no way meant for production type games; rather, I use it in my
-game development explorations. Although I could in fact prototpye games a lot
+game development explorations. Although I could in fact prototype games a lot
 faster with things like Unity or GameMaker: Studio, this is meant more for
 getting the hang of all of the parts that those game engines do for you, for a
 learning experience.
