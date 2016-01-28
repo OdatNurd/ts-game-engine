@@ -2232,6 +2232,23 @@ declare module nurdz.game {
          */
         fps: number;
         /**
+         * When the game is running (i.e. the run() method has been invoked), this indicates the tick
+         * speed of the update loop, which is the parameter given to the run() method.
+         *
+         * While the game is not running, this returns 0 to indicate that the update loop is not being
+         * called at all. THIS INCLUDES WHILE THE GAME IS STILL SETTING ITSELF UP PRIOR TO THE RUN METHOD
+         * AND PRELOAD BEING COMPLETED! This means that you can only rely on this value while the game is
+         * running and not during setup.
+         *
+         * This value is essentially the number of ticks per second that the update() method is invoked at.
+         *
+         * NOTE:
+         *
+         * @returns {number}
+         * @see Stage.run
+         */
+        tickSpeed: number;
+        /**
          * Determine what scene is the current scene on this stage.
          *
          * @returns {Scene}

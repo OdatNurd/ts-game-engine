@@ -2815,6 +2815,15 @@ var nurdz;
          */
         var _gameTimerID = null;
         /**
+         * When the engine is running, this is the frames per second that was requested of the run() method.
+         * This can be queried at run time to determine how many ticks per second the update() method will be
+         * called.
+         *
+         * @type {number}
+         * @private
+         */
+        var _ticksPerSec = 0;
+        /**
          * The number of update ticks that have occurred so far. This gets incremented every time the game
          * loop executes.
          *
@@ -3038,6 +3047,27 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Stage.prototype, "tickSpeed", {
+                /**
+                 * When the game is running (i.e. the run() method has been invoked), this indicates the tick
+                 * speed of the update loop, which is the parameter given to the run() method.
+                 *
+                 * While the game is not running, this returns 0 to indicate that the update loop is not being
+                 * called at all. THIS INCLUDES WHILE THE GAME IS STILL SETTING ITSELF UP PRIOR TO THE RUN METHOD
+                 * AND PRELOAD BEING COMPLETED! This means that you can only rely on this value while the game is
+                 * running and not during setup.
+                 *
+                 * This value is essentially the number of ticks per second that the update() method is invoked at.
+                 *
+                 * NOTE:
+                 *
+                 * @returns {number}
+                 * @see Stage.run
+                 */
+                get: function () { return _ticksPerSec; },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Stage.prototype, "currentScene", {
                 /**
                  * Determine what scene is the current scene on this stage.
@@ -3096,6 +3126,8 @@ var nurdz;
                     // Reset the variables we use for frame counts.
                     _startTime = 0;
                     _frameNumber = 0;
+                    // Save the number of frames per second requested.
+                    _ticksPerSec = fps;
                     // Fire off a timer to invoke our scene loop using an appropriate interval.
                     _gameTimerID = setInterval(_this.sceneLoop, 1000 / fps);
                     // Turn on input events.
@@ -3126,6 +3158,8 @@ var nurdz;
                 // Stop it.
                 clearInterval(_gameTimerID);
                 _gameTimerID = null;
+                // Reset the ticks per second; it's not valid any longer.
+                _ticksPerSec = 0;
                 // Turn off input events.
                 this.disableInputEvents(this._canvas);
             };
