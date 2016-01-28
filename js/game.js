@@ -77,7 +77,7 @@ var nurdz;
              */
             GreyGuy.prototype.toggleAnimation = function () {
                 // Play the animation that is not currently playing.
-                this.playAnimation(this.currentAnimation == "idle" ? "walk" : "idle");
+                this.playAnimation(this._animations.current == "idle" ? "walk" : "idle");
             };
             return GreyGuy;
         })(nurdz.game.Entity);

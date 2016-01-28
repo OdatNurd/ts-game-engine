@@ -1626,34 +1626,20 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(Actor.prototype, "currentAnimation", {
+            Object.defineProperty(Actor.prototype, "animations", {
                 /**
-                 * Get the name of the animation that is currently playing on this sprite list (or selected to
-                 * play). The value is null if no animation is selected
+                 * Get the animation list for this actor. This does not exist until the first time you query this
+                 * property.
                  *
-                 * @returns {string}
+                 * In order for animations to play, they must be added and a sprite sheet must be set as well.
+                 *
+                 * @returns {AnimationList}
                  */
                 get: function () {
-                    if (this._animations)
-                        return this._animations.current;
-                    else
-                        return null;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Actor.prototype, "isAnimationPlaying", {
-                /**
-                 * Determine if the current animation is playing or not. The return value is always false if there
-                 * is no current animation.
-                 *
-                 * @returns {boolean}
-                 */
-                get: function () {
-                    if (this._animations)
-                        return this._animations.isPlaying;
-                    else
-                        return false;
+                    // Create the animation list if it doesn't exist.
+                    if (this._animations == null)
+                        this._animations = new game.AnimationList();
+                    return this._animations;
                 },
                 enumerable: true,
                 configurable: true
@@ -1756,52 +1742,6 @@ var nurdz;
             Actor.prototype.playAnimation = function (name) {
                 if (this._animations)
                     this._animations.play(name);
-            };
-            /**
-             * Turn looping for an animation on or off. When an animation is looped, the last frame is followed
-             * by the first frame; when not looping the animation freezes at the last frame.
-             *
-             * @param name the name of the animation to modify
-             * @param shouldLoop true to set this animation to loop, false to turn off looping
-             */
-            Actor.prototype.setAnimationLoop = function (name, shouldLoop) {
-                if (this._animations)
-                    this._animations.setLoop(name, shouldLoop);
-            };
-            /**
-             * Allows you to check if an animation is set to loop or not.
-             *
-             * @param name the name of the animation to query
-             * @returns {boolean} true if this animation is set to loop, or false otherwise
-             */
-            Actor.prototype.animationLoops = function (name) {
-                if (this._animations)
-                    return this._animations.loops(name);
-                return false;
-            };
-            /**
-             * Turn ping ponging for this animation on or off; animations are created to not ping pong by
-             * default. When an animation is ping ponged, once the animation gets to the end of the frame
-             * list, it goes back towards the front of the list again.
-             *
-             * @param name the name of the animation to modify
-             * @param shouldPingPong true to turn on pingPong for this animation, false to turn it off
-             */
-            Actor.prototype.setAnimationPingPong = function (name, shouldPingPong) {
-                if (this._animations)
-                    this._animations.setPingPong(name, shouldPingPong);
-            };
-            /**
-             * Allows you to check if an animation is set to ping pong or not. Animations are created to not
-             * ping pong by default.
-             *
-             * @param name the name of the animation to query
-             * @returns {boolean} true if this animation is set to ping pong, or false otherwise
-             */
-            Actor.prototype.animationPingPongs = function (name) {
-                if (this._animations)
-                    return this._animations.pingPongs(name);
-                return false;
             };
             /**
              * Update internal stage for this actor. The default implementation makes sure that any currently

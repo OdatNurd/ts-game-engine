@@ -106,7 +106,7 @@ module nurdz.main
         toggleAnimation () : void
         {
             // Play the animation that is not currently playing.
-            this.playAnimation (this.currentAnimation == "idle" ? "walk" : "idle");
+            this.playAnimation (this._animations.current == "idle" ? "walk" : "idle");
         }
 
     }
