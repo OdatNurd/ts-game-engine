@@ -265,6 +265,19 @@ declare module nurdz.game.Utils {
      * @returns {number} the normalized angle; it is always in the range of 0 to 359 degrees, inclusive
      */
     function normalizeDegrees(degrees: number): number;
+    /**
+     * Create and return an array that contains all numbers in the requested range, inclusive, using the
+     * provided step.
+     *
+     * This works with both a positive and negative step, although if you pass a negative step you need to
+     * pass from and to in the opposite order.
+     *
+     * @param from the starting value of the range
+     * @param to the ending value of the range
+     * @param step the step to go by
+     * @returns {Array} the array with the generated values
+     */
+    function range(from: number, to: number, step?: number): Array<number>;
 }
 declare module nurdz.game {
     /**

@@ -735,6 +735,32 @@ var nurdz;
                 return degrees % 360;
             }
             Utils.normalizeDegrees = normalizeDegrees;
+            /**
+             * Create and return an array that contains all numbers in the requested range, inclusive, using the
+             * provided step.
+             *
+             * This works with both a positive and negative step, although if you pass a negative step you need to
+             * pass from and to in the opposite order.
+             *
+             * @param from the starting value of the range
+             * @param to the ending value of the range
+             * @param step the step to go by
+             * @returns {Array} the array with the generated values
+             */
+            function range(from, to, step) {
+                if (step === void 0) { step = 1; }
+                var retVal = [];
+                if (step > 0) {
+                    for (var i = from; i <= to; i += step)
+                        retVal.push(i);
+                }
+                else if (step < 0) {
+                    for (var i = from; i >= to; i += step)
+                        retVal.push(i);
+                }
+                return retVal;
+            }
+            Utils.range = range;
         })(Utils = game.Utils || (game.Utils = {}));
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));

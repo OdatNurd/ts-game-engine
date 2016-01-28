@@ -68,4 +68,33 @@ module nurdz.game.Utils
             degrees += 360;
         return degrees % 360;
     }
+
+    /**
+     * Create and return an array that contains all numbers in the requested range, inclusive, using the
+     * provided step.
+     *
+     * This works with both a positive and negative step, although if you pass a negative step you need to
+     * pass from and to in the opposite order.
+     *
+     * @param from the starting value of the range
+     * @param to the ending value of the range
+     * @param step the step to go by
+     * @returns {Array} the array with the generated values
+     */
+    export function range (from : number, to : number, step : number = 1) : Array<number>
+    {
+        let retVal = [];
+
+        if (step > 0)
+        {
+            for (let i = from ; i <= to ; i += step)
+                retVal.push (i);
+        }
+        else if (step < 0)
+        {
+            for (let i = from ; i >= to ; i += step)
+                retVal.push (i);
+        }
+        return retVal;
+    }
 }
