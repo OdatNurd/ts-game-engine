@@ -240,9 +240,8 @@ module nurdz.game
         }
 
         /**
-         * Turn looping for this animation on or off; animations are created looping by default. When an
-         * animation is looped, the last frame is followed by the first frame; when not looping the
-         * animation freezes at the last frame.
+         * Turn looping for this animation on or off. When an animation is looped, the last frame is followed
+         * by the first frame; when not looping the animation freezes at the last frame.
          *
          * @param name the name of the animation to modify
          * @param shouldLoop true to set this animation to loop, false to turn off looping
@@ -259,8 +258,7 @@ module nurdz.game
         }
 
         /**
-         * Allows you to check if an animation is set to loop or not. Animations are created to loop by
-         * default.
+         * Allows you to check if an animation is set to loop or not.
          *
          * @param name the name of the animation to query
          * @returns {boolean} true if this animation is set to loop, or false otherwise
@@ -270,7 +268,7 @@ module nurdz.game
             // Get the animation to query; leave if not found.
             let animation = this.fetchAnimation (name, "query loop state");
             if (animation == null)
-                return true;
+                return false;
 
             // Query
             return animation.loop;
