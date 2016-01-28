@@ -1698,12 +1698,7 @@ var nurdz;
                  *
                  * @param newAngle the new angle to render at
                  */
-                set: function (newAngle) {
-                    newAngle %= 360;
-                    if (newAngle < 0)
-                        newAngle += 360;
-                    this._angle = newAngle % 360;
-                },
+                set: function (newAngle) { this._angle = game.Utils.normalizeDegrees(newAngle); },
                 enumerable: true,
                 configurable: true
             });

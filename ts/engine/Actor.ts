@@ -249,12 +249,7 @@ module nurdz.game
          * @param newAngle the new angle to render at
          */
         set angle (newAngle : number)
-        {
-            newAngle %= 360;
-            if (newAngle < 0)
-                newAngle += 360;
-            this._angle = newAngle % 360;
-        }
+        { this._angle = Utils.normalizeDegrees (newAngle); }
 
         /**
          *
