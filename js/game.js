@@ -7,6 +7,7 @@ var nurdz;
 (function (nurdz) {
     var main;
     (function (main) {
+        // Import the key codes module so that we can easily get at the pressed key
         var KeyCodes = nurdz.game.KeyCodes;
         /**
          * Set up the button on the page to toggle the state of the game.
@@ -51,6 +52,35 @@ var nurdz;
                 }
             });
         }
+        /**
+         * A simple entity that represents a sprite idling and then running.
+         */
+        var GreyGuy = (function (_super) {
+            __extends(GreyGuy, _super);
+            /**
+             * Create a new guy that will render on the current stage.
+             * @param stage
+             */
+            function GreyGuy(stage) {
+                _super.call(this, "A grey guy", stage, stage.width / 2, stage.height - 64, 64, 96, 1, {}, {});
+                // Set up a sprite sheet and turn on debugging
+                this._sheet = new nurdz.game.SpriteSheet(stage, "sprite_animation.png", 10, 2);
+                this._properties.debug = true;
+                // Change our origin.
+                this._origin.setToXY(this._width / 2, this._height - 1);
+                // Set animations up. The first animation becomes active automatically.
+                this.addAnimation("idle", 5, true, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                this.addAnimation("walk", 15, true, [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+            }
+            /**
+             * Toggle between our animations whenever we are invoked.
+             */
+            GreyGuy.prototype.toggleAnimation = function () {
+                // Play the animation that is not currently playing.
+                this.playAnimation(this.currentAnimation == "idle" ? "walk" : "idle");
+            };
+            return GreyGuy;
+        })(nurdz.game.Entity);
         /**
          * This simple class just displays an image and slowly rotates in place.
          */
@@ -213,8 +243,11 @@ var nurdz;
                 // Give the dots sprite sheets.
                 dot1.sheet = new nurdz.game.SpriteSheet(stage, "ball_blue.png", 1);
                 dot2.sheet = new nurdz.game.SpriteSheet(stage, "ball_yellow.png", 1);
+                // Create the grey guy; he will set up his own sprite sheet.
+                this._guy = new GreyGuy(stage);
                 // Now add the dots entities and a star entity to ourselves so that they get updated and rendered.
                 this.addActor(new Star(stage));
+                this.addActor(this._guy);
                 this.addActor(dot1);
                 this.addActor(dot2);
             }
@@ -270,6 +303,10 @@ var nurdz;
                     case KeyCodes.KEY_S:
                         this._playSounds = !this._playSounds;
                         this._stage.muteSounds(!this._playSounds);
+                        return true;
+                    // Toggle the animation of the guy.
+                    case KeyCodes.KEY_SPACEBAR:
+                        this._guy.toggleAnimation();
                         return true;
                     default:
                         // Let the super do what super does. This allows screen shots to still work as expected.
