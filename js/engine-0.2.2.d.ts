@@ -629,6 +629,135 @@ declare module nurdz.game {
 }
 declare module nurdz.game {
     /**
+     * This class represents a list of animations, which are represented by a list of frames by numeric
+     * ID. Generally this would be associated with a sprite sheet of some king.
+     */
+    class AnimationList {
+        /**
+         * The list of all animations known in this animation list.
+         */
+        private _animations;
+        /**
+         * The animation that is currently playing (if any).
+         */
+        private _current;
+        /**
+         * Get the name of the animation that is currently playing on this animation list (or selected to
+         * play). The value is null if no animation is selected.
+         *
+         * @returns {string}
+         */
+        current: string;
+        /**
+         * Determine if the current animation is playing or not. The return value is always false if there
+         * is no current animation.
+         *
+         * @returns {boolean}
+         */
+        isPlaying: boolean;
+        /**
+         * Construct a new animation list
+         */
+        constructor();
+        /**
+         * Given a frame rate and a frame list, create and return a newly initialized animation
+         * information structure.
+         *
+         * @param name the name of the animation to create
+         * @param fps the frames per second that this animation should run at
+         * @param loop true to loop the animation when it is played back or false to play it once and then
+         * stop
+         * @param frameList the list of frames that make up this animation.
+         */
+        private createAnimation(name, fps, loop, frameList);
+        /**
+         * Add a new animation with a textual name, which will run at the frames per second provided. The
+         * animation can be set to loop or not as desired.
+         *
+         * The animation is made up of a list of frames to play in order from some sprite sheet.
+         *
+         * The first animation that is added is the one that the class plays by default. This can be
+         * overridden by explicitely requesting playback of a null animation.
+         *
+         * @param name textual name for this animation, which should be unique amongst all registered
+         * animations
+         * @param fps the frames per second to run the animation at
+         * @param loop true to loop the animation when it is played back or false for one shot playback
+         * @param frameList the list of frames that make up the animation
+         * @see AnimationList.setLoop
+         * @see AnimationList.setPingPong
+         * @see AnimationList.play
+         */
+        add(name: string, fps: number, loop: boolean, frameList: Array<number>): void;
+        /**
+         * Fetch an animation by name from our internal animation list, specifying what is to be done with
+         * it. If there is no such animation, null is returned and an error message is generated to the
+         * console.
+         *
+         * @param name the name of the animation to fetch
+         * @param purpose what is to be done with the animation; used in the log message
+         * @returns {AnimationInformation} the animation information for the named animation, or null if
+         * not found
+         */
+        private fetchAnimation(name, purpose);
+        /**
+         * Start playing the provided animation; this will take effect on the next call to the update method.
+         *
+         * @param name the name of the animation to play or null to stop all animations
+         * @see Animation.update
+         */
+        play(name: string): void;
+        /**
+         * Turn looping for this animation on or off; animations are created looping by default. When an
+         * animation is looped, the last frame is followed by the first frame; when not looping the
+         * animation freezes at the last frame.
+         *
+         * @param name the name of the animation to modify
+         * @param shouldLoop true to set this animation to loop, false to turn off looping
+         */
+        setLoop(name: string, shouldLoop: boolean): void;
+        /**
+         * Allows you to check if an animation is set to loop or not. Animations are created to loop by
+         * default.
+         *
+         * @param name the name of the animation to query
+         * @returns {boolean} true if this animation is set to loop, or false otherwise
+         */
+        loops(name: string): boolean;
+        /**
+         * Turn ping ponging for this animation on or off; animations are created to not ping pong by
+         * default. When an animation is ping ponged, once the animation gets to the end of the frame
+         * list, it goes back towards the front of the list again.
+         *
+         * @param name the name of the animation to modify
+         * @param shouldPingPong true to turn on pingPong for this animation, false to turn it off
+         */
+        setPingPong(name: string, shouldPingPong: boolean): void;
+        /**
+         * Allows you to check if an animation is set to ping pong or not. Animations are created to not
+         * ping pong by default.
+         *
+         * @param name the name of the animation to query
+         * @returns {boolean} true if this animation is set to ping pong, or false otherwise
+         */
+        pingPongs(name: string): boolean;
+        /**
+         * This method drives the animation; This should be invoked once per game tick that this animation
+         * is supposed to be played. The return value is the frame of the animation that should be played
+         * next.
+         *
+         * This controls animation looping and ping ponging by updating internal state as needed; when an
+         * animation stops looping, this keeps returning the last frame that was played.
+         *
+         * The return value is always 0 if there is no current animation playing.
+         *
+         * @returns {number} the next frame to play in the current animation
+         */
+        update(): number;
+    }
+}
+declare module nurdz.game {
+    /**
      * This class represents the base class for any game object of any base type. This base class
      * implementation has a position and knows how to render itself.
      *
