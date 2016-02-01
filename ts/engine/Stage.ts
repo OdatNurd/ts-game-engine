@@ -746,7 +746,7 @@ module nurdz.game
         };
 
         /**
-         * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
+         * Handler for mouse click events. This gets triggered whenever the game is running and the mouse
          * is clicked over the canvas.
          *
          * @param evt the event object for this event
@@ -754,6 +754,30 @@ module nurdz.game
         private mouseClickEvent = (evt : MouseEvent) : void =>
         {
             if (this._sceneManager.currentScene.inputMouseClick (evt))
+                evt.preventDefault ();
+        };
+
+        /**
+         * Handler for mouse double click events. This gets triggered whenever the game is running and the
+         * mouse is double clicked over the canvas.
+         *
+         * @param evt the event object for this event
+         */
+        private mouseDblClickEvent = (evt : MouseEvent) : void =>
+        {
+            if (this._sceneManager.currentScene.inputMouseDblClick (evt))
+                evt.preventDefault ();
+        };
+
+        /**
+         * Handler for mouse wheel events. This gets triggered whenever the game is running and the mouse
+         * wheel is scrolled over the canvas.
+         *
+         * @param evt the event object for this event.
+         */
+        private mouseWheelEvent = (evt : MouseWheelEvent) : void =>
+        {
+            if (this._sceneManager.currentScene.inputMouseWheel (evt))
                 evt.preventDefault ();
         };
 
@@ -768,6 +792,8 @@ module nurdz.game
             // Mouse events are specific to the canvas.
             canvas.addEventListener ('mousemove', this.mouseMoveEvent);
             canvas.addEventListener ('mousedown', this.mouseClickEvent);
+            canvas.addEventListener ('dblclick', this.mouseDblClickEvent);
+            canvas.addEventListener ('wheel', this.mouseWheelEvent);
 
             // Keyboard events are document wide because a canvas can't hold the input focus.
             document.addEventListener ('keydown', this.keyDownEvent);
@@ -782,6 +808,8 @@ module nurdz.game
         {
             canvas.removeEventListener ('mousemove', this.mouseMoveEvent);
             canvas.removeEventListener ('mousedown', this.mouseClickEvent);
+            canvas.removeEventListener ('dblclick', this.mouseDblClickEvent);
+            canvas.removeEventListener ('wheel', this.mouseWheelEvent);
             document.removeEventListener ('keydown', this.keyDownEvent);
             document.removeEventListener ('keyup', this.keyUpEvent);
         };

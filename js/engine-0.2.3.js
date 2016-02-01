@@ -2397,6 +2397,7 @@ var nurdz;
              * will prevent the default handling for all mouse events that are handled.
              *
              * @param eventObj the event object
+             * @returns {boolean} true if the mouse event was handled, false otherwise
              * @see Stage.calculateMousePos
              */
             Scene.prototype.inputMouseMove = function (eventObj) {
@@ -2410,9 +2411,47 @@ var nurdz;
              * will prevent the default handling for all mouse events that are handled.
              *
              * @param eventObj the event object
+             * @returns {boolean} true if the mouse event was handled, false otherwise
              * @see Stage.calculateMousePos
              */
             Scene.prototype.inputMouseClick = function (eventObj) {
+                return false;
+            };
+            /**
+             * This gets triggered while the game is running, this scene is the current scene, and the mouse
+             * is double clicked on the stage.
+             *
+             * NOTE: As the browser does not know if a click is a single or double click, this event, when
+             * delivered, is followed by two back to back single click events. Thus if you wish to handle
+             * single and double clicks your code needs to take care. In this case you may want to do your own
+             * double click handling.
+             *
+             * The method should return true if the mouse event was handled or false if it was not. The Stage
+             * will prevent the default handling for all mouse events that are handled.
+             *
+             * @param eventObj the event object
+             * @returns {boolean} true if the mouse event was handled, false otherwise
+             * @see Stage.calculateMousePos
+             */
+            Scene.prototype.inputMouseDblClick = function (eventObj) {
+                return false;
+            };
+            /**
+             * This gets triggered while the game is running, this scene is the current scene, and the mouse
+             * wheel is rolled while the mouse is over the stage.
+             *
+             * NOTE: Older browsers may not support this event (e.g. older versions of Chrome); it's also not
+             * portable to mobile, if that matters.
+             *
+             * The method should return true if the mouse event was handled or falss if it was not. The Stage
+             * will prevent the default handling for all mouse events that are handled.
+             *
+             * @param eventObj the event object
+             * @returns {boolean} true if the mouse event was handled, false otherwise
+    
+             * @returns {boolean}
+             */
+            Scene.prototype.inputMouseWheel = function (eventObj) {
                 return false;
             };
             /**
@@ -3300,13 +3339,33 @@ var nurdz;
                         evt.preventDefault();
                 };
                 /**
-                 * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
+                 * Handler for mouse click events. This gets triggered whenever the game is running and the mouse
                  * is clicked over the canvas.
                  *
                  * @param evt the event object for this event
                  */
                 this.mouseClickEvent = function (evt) {
                     if (_this._sceneManager.currentScene.inputMouseClick(evt))
+                        evt.preventDefault();
+                };
+                /**
+                 * Handler for mouse double click events. This gets triggered whenever the game is running and the
+                 * mouse is double clicked over the canvas.
+                 *
+                 * @param evt the event object for this event
+                 */
+                this.mouseDblClickEvent = function (evt) {
+                    if (_this._sceneManager.currentScene.inputMouseDblClick(evt))
+                        evt.preventDefault();
+                };
+                /**
+                 * Handler for mouse wheel events. This gets triggered whenever the game is running and the mouse
+                 * wheel is scrolled over the canvas.
+                 *
+                 * @param evt the event object for this event.
+                 */
+                this.mouseWheelEvent = function (evt) {
+                    if (_this._sceneManager.currentScene.inputMouseWheel(evt))
                         evt.preventDefault();
                 };
                 /**
@@ -3319,6 +3378,8 @@ var nurdz;
                     // Mouse events are specific to the canvas.
                     canvas.addEventListener('mousemove', _this.mouseMoveEvent);
                     canvas.addEventListener('mousedown', _this.mouseClickEvent);
+                    canvas.addEventListener('dblclick', _this.mouseDblClickEvent);
+                    canvas.addEventListener('wheel', _this.mouseWheelEvent);
                     // Keyboard events are document wide because a canvas can't hold the input focus.
                     document.addEventListener('keydown', _this.keyDownEvent);
                     document.addEventListener('keyup', _this.keyUpEvent);
@@ -3330,6 +3391,8 @@ var nurdz;
                 this.disableInputEvents = function (canvas) {
                     canvas.removeEventListener('mousemove', _this.mouseMoveEvent);
                     canvas.removeEventListener('mousedown', _this.mouseClickEvent);
+                    canvas.removeEventListener('dblclick', _this.mouseDblClickEvent);
+                    canvas.removeEventListener('wheel', _this.mouseWheelEvent);
                     document.removeEventListener('keydown', _this.keyDownEvent);
                     document.removeEventListener('keyup', _this.keyUpEvent);
                 };

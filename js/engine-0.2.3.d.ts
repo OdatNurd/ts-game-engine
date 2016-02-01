@@ -1506,6 +1506,7 @@ declare module nurdz.game {
          * will prevent the default handling for all mouse events that are handled.
          *
          * @param eventObj the event object
+         * @returns {boolean} true if the mouse event was handled, false otherwise
          * @see Stage.calculateMousePos
          */
         inputMouseMove(eventObj: MouseEvent): boolean;
@@ -1517,9 +1518,43 @@ declare module nurdz.game {
          * will prevent the default handling for all mouse events that are handled.
          *
          * @param eventObj the event object
+         * @returns {boolean} true if the mouse event was handled, false otherwise
          * @see Stage.calculateMousePos
          */
         inputMouseClick(eventObj: MouseEvent): boolean;
+        /**
+         * This gets triggered while the game is running, this scene is the current scene, and the mouse
+         * is double clicked on the stage.
+         *
+         * NOTE: As the browser does not know if a click is a single or double click, this event, when
+         * delivered, is followed by two back to back single click events. Thus if you wish to handle
+         * single and double clicks your code needs to take care. In this case you may want to do your own
+         * double click handling.
+         *
+         * The method should return true if the mouse event was handled or false if it was not. The Stage
+         * will prevent the default handling for all mouse events that are handled.
+         *
+         * @param eventObj the event object
+         * @returns {boolean} true if the mouse event was handled, false otherwise
+         * @see Stage.calculateMousePos
+         */
+        inputMouseDblClick(eventObj: MouseEvent): boolean;
+        /**
+         * This gets triggered while the game is running, this scene is the current scene, and the mouse
+         * wheel is rolled while the mouse is over the stage.
+         *
+         * NOTE: Older browsers may not support this event (e.g. older versions of Chrome); it's also not
+         * portable to mobile, if that matters.
+         *
+         * The method should return true if the mouse event was handled or falss if it was not. The Stage
+         * will prevent the default handling for all mouse events that are handled.
+         *
+         * @param eventObj the event object
+         * @returns {boolean} true if the mouse event was handled, false otherwise
+
+         * @returns {boolean}
+         */
+        inputMouseWheel(eventObj: MouseWheelEvent): boolean;
         /**
          * Return a string representation of the object, for debugging purposes.
          *
@@ -2717,12 +2752,26 @@ declare module nurdz.game {
          */
         private mouseMoveEvent;
         /**
-         * Handler for mouse movement events. This gets triggered whenever the game is running and the mouse
+         * Handler for mouse click events. This gets triggered whenever the game is running and the mouse
          * is clicked over the canvas.
          *
          * @param evt the event object for this event
          */
         private mouseClickEvent;
+        /**
+         * Handler for mouse double click events. This gets triggered whenever the game is running and the
+         * mouse is double clicked over the canvas.
+         *
+         * @param evt the event object for this event
+         */
+        private mouseDblClickEvent;
+        /**
+         * Handler for mouse wheel events. This gets triggered whenever the game is running and the mouse
+         * wheel is scrolled over the canvas.
+         *
+         * @param evt the event object for this event.
+         */
+        private mouseWheelEvent;
         /**
          * Turn on input handling for the game. This will capture keyboard events from the document and mouse
          * events for the canvas provided.
