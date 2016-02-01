@@ -677,10 +677,17 @@ module nurdz.game
          * is actually at relative to the top left of the stage. This is needed because the position of mouse
          * events is normally relative to the document itself, which may be larger than the actual window.
          *
+         * When a point parameter is provided, its value is modified to be the mouse location, and this
+         * point is also returned.
+         *
+         * If no point parameter is provided, a new point is created and returned instead.
+         *
          * @param mouseEvent the mouse movement or click event
-         * @returns {Point} the point of the mouse click/pointer position on the stage
+         * @param point the point to store the location into, or null to create and return a new point
+         * @returns {Point} the point of the mouse click/pointer position on the stage; either newly
+         * created or the one provided
          */
-        calculateMousePos (mouseEvent : MouseEvent) : Point
+        calculateMousePos (mouseEvent : MouseEvent, point : Point = null) : Point
         {
             // Some math has to be done because the mouse position is relative to document, which may have
             // dimensions larger than the current viewable area of the browser window.
@@ -692,7 +699,14 @@ module nurdz.game
             var mouseX = mouseEvent.clientX - rect.left - root.scrollLeft;
             var mouseY = mouseEvent.clientY - rect.top - root.scrollTop;
 
-            return new Point (mouseX, mouseY);
+            // Create a new point or reuse the existing one, as desired.
+            if (point == null)
+                return new Point (mouseX, mouseY);
+            else
+            {
+                point.setToXY (mouseX, mouseY);
+                return point;
+            }
         }
 
         /**
