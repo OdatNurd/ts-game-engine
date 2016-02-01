@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": false,
+        "declaration": false,
+        "sourceMap": false,
+        "outFile": "../../js/collide-test.js"
+    },
+    "files": [
+        "../../js/engine-0.2.3.d.ts",
+        "main.ts"
+    ]
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Test code for collisions in ts-game-engine">
+    <meta name="author" content="Terence Martin">
+    <title>Collision Testing</title>
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="default.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <!--suppress ALL -->
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <!--suppress ALL -->
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="http://gamedev.nurdz.com/">#GameDev by @OdatNurd</a>
+                <p class="navbar-text"><strong>Collision Test</strong></p>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a data-target="#helpAbout" data-toggle="modal" href="#helpAbout">About</a>
+                    </li>
+                    <li>
+                        <a data-target="#controlsModal" data-toggle="modal" href="#controlsModal">Controls</a>
+                    </li>
+                    <li>
+                        <button id="controlBtn" class="btn navbar-btn btn-default">Stop Game</button>
+                    </li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </nav>
+    <div id="gameContent" class="container">
+    </div>
+    <footer class="footer" data-pg-collapsed>
+        <div class="container">
+            <p class="text-muted">Collision Test Copyright&copy; 2016 Terence Martin</p>
+        </div>
+    </footer>
+    <div class="modal fade pg-show-modal" id="helpAbout" tabindex="-1" role="dialog" aria-hidden="true"
+         data-pg-collapsed>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">About Collision-Test</h4>
+                </div>
+                <div class="modal-body">
+                    <p>This is test code for checking out new collision code in ts-game-engine</p>
+                    <p>The scene is made up of a series of collision shapes with their origins at various
+                        locations. A collision shape (or point) follows the mouse, and collision checks
+                        are done based on that shape/point.</p>
+                    <p>When a collision is detected, the shape renders as red to indicate this.</p>
+                    <p>Additionally, two line segments are displayed, which can be moved around by
+                        dragging their endpoints. The intersection point of the two lines is visualized,
+                        assuming that there is one and that it falls on the stage.</p>
+                    <p>Line intersection of the lines renders in one of two colors; If the intersection
+                        of the two lines falls where both segments physically intersect, the dot is green.</p>
+                    <p>If instead the intersection falls on the projection of one or both lines, the dot is
+                        red.</p>
+                    <p>This allows for simultaneous testing of line segment as well as line intersections.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade pg-show-modal" id="controlsModal" tabindex="-1" role="dialog" aria-hidden="true"
+         data-pg-collapsed>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">Collision Test Controls</h4>
+                </div>
+                <div class="modal-body">
+                    <dl>
+                        <dt>P</dt>
+                        <dd>Change collision type to 'POINT'</dd>
+                        <dt>R</dt>
+                        <dd>Change collision type to 'RECTANGLE'</dd>
+                        <dt>C</dt>
+                        <dd>Change collision type to 'CIRCLE'</dd>
+                        <dt>1-5</dt>
+                        <dd>In CIRCLE/RECTANGLE mode, change the origin point of the collision shape</dd>
+                        <dt>Mouse</dt>
+                        <dd>Control collision shape/point; drag line points to show line intersections</dd>
+                    </dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="bootstrap/assets/js/jquery.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="bootstrap/assets/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="js/engine-0.2.3.js"></script>
+    <script src="js/collide-test.js"></script>
+</body>
+</html>
