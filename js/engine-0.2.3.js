@@ -1969,6 +1969,13 @@ var nurdz;
         var Actor = (function (_super) {
             __extends(Actor, _super);
             /**
+             * Construct a new actor instance at the given position with the provided width and height.
+             *
+             * This defaults the Actor object to a rectangular bounding region for collisions (the most common)
+             * with the width and height as provided and an origin in the upper left corner.
+             *
+             * If desired, the makeCircle method can be used to convert the actor to a circular bounding region
+             * for collisions.
              *
              * @param name the internal name for this actor instance, for debugging
              * @param stage the stage that will be used to display this actor
@@ -1979,6 +1986,8 @@ var nurdz;
              * @param zOrder the Z-order of this actor when rendered (smaller numbers render before larger ones)
              * @param debugColor the color specification to use in debug rendering for this actor
              * @constructor
+             * @see Actor.makeRectangle
+             * @see Actor.makeCircle
              */
             function Actor(name, stage, x, y, width, height, zOrder, debugColor) {
                 if (zOrder === void 0) { zOrder = 1; }
@@ -2152,6 +2161,53 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Convert this actor to use a rectangular collision boundary with the given width and height as the
+             * dimensions of the collider. If desired, this can also reset the origin to be the upper left corner
+             * (the default for rectangular colliders).
+             *
+             * Actors are created as rectangles, so this is generally not needed unless you want to swap an
+             * actor between circular and rectangular collision boundaries.
+             *
+             * @param width the width of the collision bounding box
+             * @param height the height of the collision bounding box
+             * @param resetOrigin if true, reset the origin to be (0, 0) (the upper left corner). When false, the
+             *     origin is left as it currently is.
+             * @see Actor.makeCircle
+             */
+            Actor.prototype.makeRectangle = function (width, height, resetOrigin) {
+                if (resetOrigin === void 0) { resetOrigin = false; }
+                // Set the collision type to rectangle and set up the bounds
+                this._type = game.ColliderType.RECTANGLE;
+                this._width = width;
+                this._height = height;
+                // If asked, make the origin be the upper left corner (default for rectangle colliders).
+                if (resetOrigin)
+                    this._origin.setToXY(0, 0);
+            };
+            /**
+             * Convert this actor to use a circular collision boundary with the given radius as the dimensions.
+             * If desired, this can also reset the origin to be the center of the circle (the default for
+             * circular colliders).
+             *
+             * Actors are created as rectangles, so this can be used to convert them to circles if desired.
+             *
+             * @param radius the radius of the circular collider
+             * @param resetOrigin if true, reset the origin point to be the center of the circle. WHen false, the
+             *     origin is left as it currently is.
+             * @see Actor.makeCircle
+             */
+            Actor.prototype.makeCircle = function (radius, resetOrigin) {
+                if (resetOrigin === void 0) { resetOrigin = false; }
+                // Set the collision type to circle and set up the bounds. For a circle, the radius is kept in
+                // the width and the height is the diameter
+                this._type = game.ColliderType.CIRCLE;
+                this._width = radius;
+                this._height = radius * 2;
+                // If asked, make the origin be the center (default for circle colliders)
+                if (resetOrigin)
+                    this._origin.setToXY(radius, radius);
+            };
             /**
              * Add a new animation with a textual name, which will run at the frames per second provided. The
              * animation can be set to loop or not as desired.

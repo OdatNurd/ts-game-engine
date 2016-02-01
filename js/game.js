@@ -129,19 +129,12 @@ var nurdz;
             function Dot(stage, sound, properties) {
                 if (properties === void 0) { properties = {}; }
                 // Invoke the super to construct us. We position ourselves in the center of the stage.
-                _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, 20, 20, 1, properties, {
+                _super.call(this, "A dot", stage, stage.width / 2, stage.height / 2, 0, 0, 1, properties, {
                     xSpeed: nurdz.game.Utils.randomIntInRange(-5, 5),
                     ySpeed: nurdz.game.Utils.randomIntInRange(-5, 5),
                 }, 'red');
-                // Set our origin to be the center of ourselves. We do this before the type switch below so
-                // that our origin is properly at our center.
-                this._origin.setToXY(this._width / 2, this._height / 2);
-                // Now we change the collider type from a rectangle to a circle; this also requires setting up
-                // our width to be our radius. We were constructed as a square with the appropriate dimension
-                // as a diameter, so we just need to diddle our width here. Our height should be our radius,
-                // and it already is. yay!
-                this._type = nurdz.game.ColliderType.CIRCLE;
-                this._width /= 2;
+                // Convert to a circular bounding box with a radius of 10.
+                this.makeCircle(10, true);
                 // Save the sound we were given.
                 this._sound = sound;
                 // Show what we did in the console.
