@@ -1511,8 +1511,46 @@ declare module nurdz.game {
          */
         inputMouseMove(eventObj: MouseEvent): boolean;
         /**
-         * This gets triggered while the game is running, this scene is the current scene, and the mouse
-         * is clicked on the stage.
+         * This gets triggered while the game is running, this scene is the current scene, and a mouse button
+         * is clicked on the stage. This triggers after the mouse has been pressed and then released, two
+         * events you can capture separately if desired.
+         *
+         * The method should return true if the mouse event was handled or false if it was not. The Stage
+         * will prevent the default handling for all mouse events that are handled.
+         *
+         * @param eventObj the event object
+         * @returns {boolean} true if the mouse event was handled, false otherwise
+         * @see Stage.calculateMousePos
+         * @see Stage.inputMouseDown
+         * @see Stage.inputMouseUp
+         */
+        inputMouseClick(eventObj: MouseEvent): boolean;
+        /**
+         * This gets triggered while the game is running, this scene is the current scene, and a mouse button
+         * is pressed on the stage. This will only trigger once, to let you know that the mouse button was
+         * depressed. There is a separate event to track when the mouse button is released or clicked.
+         *
+         * The method should return true if the mouse event was handled or false if it was not. The Stage
+         * will prevent the default handling for all mouse events that are handled.
+         *
+         * @param eventObj the event object
+         * @returns {boolean} true if the mouse event was handled, false otherwise
+         * @see Stage.calculateMousePos
+         * @see Stage.inputMouseUp
+         * @see Stage.inputMouseClick
+         */
+        inputMouseDown(eventObj: MouseEvent): boolean;
+        /**
+         * This gets triggered while the game is running, this scene is the current scene, and a mouse button
+         * is released.
+         *
+         * Unlike the other mouse events, this gets triggered even if the mouse cursor is not currently
+         * over the stage. This allows you to detect when a mouse button is released after it was pressed
+         * even if the mouse exits the stage in the interim.
+         *
+         * As a result of the above, when calculating the mouse position, the position reported is outside
+         * of the bounds of the stage if the mouse was outside the stage at the time; either negative or
+         * larger than the extends, depending on the relative position.
          *
          * The method should return true if the mouse event was handled or false if it was not. The Stage
          * will prevent the default handling for all mouse events that are handled.
@@ -1521,7 +1559,7 @@ declare module nurdz.game {
          * @returns {boolean} true if the mouse event was handled, false otherwise
          * @see Stage.calculateMousePos
          */
-        inputMouseClick(eventObj: MouseEvent): boolean;
+        inputMouseUp(eventObj: MouseEvent): boolean;
         /**
          * This gets triggered while the game is running, this scene is the current scene, and the mouse
          * is double clicked on the stage.
@@ -2751,6 +2789,20 @@ declare module nurdz.game {
          * @param evt the event object for this event
          */
         private mouseMoveEvent;
+        /**
+         * Handle for mouse down events. This gets triggered whenever the game is running and a mouse
+         * button is actively being held down
+         *
+         * @param evt the event object for this event.
+         */
+        private mouseDownEvent;
+        /**
+         * Handle for mouse up events. This gets triggered whenever the game is running and a mouse
+         * button is released
+         *
+         * @param evt the event object for this event.
+         */
+        private mouseUpEvent;
         /**
          * Handler for mouse click events. This gets triggered whenever the game is running and the mouse
          * is clicked over the canvas.

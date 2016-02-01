@@ -2404,8 +2404,50 @@ var nurdz;
                 return false;
             };
             /**
-             * This gets triggered while the game is running, this scene is the current scene, and the mouse
-             * is clicked on the stage.
+             * This gets triggered while the game is running, this scene is the current scene, and a mouse button
+             * is clicked on the stage. This triggers after the mouse has been pressed and then released, two
+             * events you can capture separately if desired.
+             *
+             * The method should return true if the mouse event was handled or false if it was not. The Stage
+             * will prevent the default handling for all mouse events that are handled.
+             *
+             * @param eventObj the event object
+             * @returns {boolean} true if the mouse event was handled, false otherwise
+             * @see Stage.calculateMousePos
+             * @see Stage.inputMouseDown
+             * @see Stage.inputMouseUp
+             */
+            Scene.prototype.inputMouseClick = function (eventObj) {
+                return false;
+            };
+            /**
+             * This gets triggered while the game is running, this scene is the current scene, and a mouse button
+             * is pressed on the stage. This will only trigger once, to let you know that the mouse button was
+             * depressed. There is a separate event to track when the mouse button is released or clicked.
+             *
+             * The method should return true if the mouse event was handled or false if it was not. The Stage
+             * will prevent the default handling for all mouse events that are handled.
+             *
+             * @param eventObj the event object
+             * @returns {boolean} true if the mouse event was handled, false otherwise
+             * @see Stage.calculateMousePos
+             * @see Stage.inputMouseUp
+             * @see Stage.inputMouseClick
+             */
+            Scene.prototype.inputMouseDown = function (eventObj) {
+                return false;
+            };
+            /**
+             * This gets triggered while the game is running, this scene is the current scene, and a mouse button
+             * is released.
+             *
+             * Unlike the other mouse events, this gets triggered even if the mouse cursor is not currently
+             * over the stage. This allows you to detect when a mouse button is released after it was pressed
+             * even if the mouse exits the stage in the interim.
+             *
+             * As a result of the above, when calculating the mouse position, the position reported is outside
+             * of the bounds of the stage if the mouse was outside the stage at the time; either negative or
+             * larger than the extends, depending on the relative position.
              *
              * The method should return true if the mouse event was handled or false if it was not. The Stage
              * will prevent the default handling for all mouse events that are handled.
@@ -2414,7 +2456,7 @@ var nurdz;
              * @returns {boolean} true if the mouse event was handled, false otherwise
              * @see Stage.calculateMousePos
              */
-            Scene.prototype.inputMouseClick = function (eventObj) {
+            Scene.prototype.inputMouseUp = function (eventObj) {
                 return false;
             };
             /**
@@ -3339,6 +3381,26 @@ var nurdz;
                         evt.preventDefault();
                 };
                 /**
+                 * Handle for mouse down events. This gets triggered whenever the game is running and a mouse
+                 * button is actively being held down
+                 *
+                 * @param evt the event object for this event.
+                 */
+                this.mouseDownEvent = function (evt) {
+                    if (_this._sceneManager.currentScene.inputMouseDown(evt))
+                        evt.preventDefault();
+                };
+                /**
+                 * Handle for mouse up events. This gets triggered whenever the game is running and a mouse
+                 * button is released
+                 *
+                 * @param evt the event object for this event.
+                 */
+                this.mouseUpEvent = function (evt) {
+                    if (_this._sceneManager.currentScene.inputMouseUp(evt))
+                        evt.preventDefault();
+                };
+                /**
                  * Handler for mouse click events. This gets triggered whenever the game is running and the mouse
                  * is clicked over the canvas.
                  *
@@ -3377,9 +3439,13 @@ var nurdz;
                 this.enableInputEvents = function (canvas) {
                     // Mouse events are specific to the canvas.
                     canvas.addEventListener('mousemove', _this.mouseMoveEvent);
-                    canvas.addEventListener('mousedown', _this.mouseClickEvent);
+                    canvas.addEventListener('mousedown', _this.mouseDownEvent);
+                    canvas.addEventListener('click', _this.mouseClickEvent);
                     canvas.addEventListener('dblclick', _this.mouseDblClickEvent);
                     canvas.addEventListener('wheel', _this.mouseWheelEvent);
+                    // This one has to be on the document, or else pressing the mouse and moving outside of the
+                    // canvas and letting go of the button will not be captured.
+                    document.addEventListener('mouseup', _this.mouseUpEvent);
                     // Keyboard events are document wide because a canvas can't hold the input focus.
                     document.addEventListener('keydown', _this.keyDownEvent);
                     document.addEventListener('keyup', _this.keyUpEvent);
@@ -3390,9 +3456,11 @@ var nurdz;
                  */
                 this.disableInputEvents = function (canvas) {
                     canvas.removeEventListener('mousemove', _this.mouseMoveEvent);
-                    canvas.removeEventListener('mousedown', _this.mouseClickEvent);
+                    canvas.addEventListener('mousedown', _this.mouseDownEvent);
+                    canvas.removeEventListener('click', _this.mouseClickEvent);
                     canvas.removeEventListener('dblclick', _this.mouseDblClickEvent);
                     canvas.removeEventListener('wheel', _this.mouseWheelEvent);
+                    document.addEventListener('mouseup', _this.mouseUpEvent);
                     document.removeEventListener('keydown', _this.keyDownEvent);
                     document.removeEventListener('keyup', _this.keyUpEvent);
                 };
