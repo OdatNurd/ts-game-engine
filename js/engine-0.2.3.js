@@ -1952,6 +1952,11 @@ var nurdz;
         game.Collider = Collider;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var nurdz;
 (function (nurdz) {
     var game;
@@ -1961,7 +1966,8 @@ var nurdz;
          * implementation has a position and knows how to render itself.
          *
          */
-        var Actor = (function () {
+        var Actor = (function (_super) {
+            __extends(Actor, _super);
             /**
              *
              * @param name the internal name for this actor instance, for debugging
@@ -1977,23 +1983,17 @@ var nurdz;
             function Actor(name, stage, x, y, width, height, zOrder, debugColor) {
                 if (zOrder === void 0) { zOrder = 1; }
                 if (debugColor === void 0) { debugColor = 'white'; }
-                // Save the passed in values.
+                // Invoke the super to set things up.
+                _super.call(this, stage, game.ColliderType.RECTANGLE, x, y, width, height);
+                // Save the other passed in values.
                 this._name = name;
-                this._stage = stage;
-                this._width = width;
-                this._height = height;
                 this._zOrder = zOrder;
                 this._debugColor = debugColor;
-                // Default to the first sprite of a nonexistent sprite sheet and a rotation of 0.
+                // Default to the first sprite of a nonexistent sprite sheet
                 this._sheet = null;
                 this._sprite = 0;
-                this._angle = 0;
-                // For position we save the passed in position and then make a reduced copy to turn it into
-                // tile coordinates for the map position.
-                this._position = new game.Point(x, y);
+                // Make a reduced copy of the given position to give this actor's map position.
                 this._mapPosition = this._position.copyReduced(game.TILE_SIZE);
-                // The origin defaults to 0, 0 (upper left corner).
-                this._origin = new game.Point(0, 0);
             }
             Object.defineProperty(Actor.prototype, "mapPosition", {
                 /**
@@ -2201,32 +2201,6 @@ var nurdz;
                     this._sprite = this._animations.update();
             };
             /**
-             * Render the bounding box and origin of this actor using the renderer provided. As in the render
-             * method, the position provided represents the actual position of the Actor as realized on the
-             * screen, which may be different from its actual position if scrolling or a viewport of some sort is
-             * in use.
-             *
-             * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
-             * always represent the upper left corner of the area in which to render this Actor.
-             *
-             * This will render the bounding box of this actor by rendering a rectangle of the proper width
-             * and height located at the provided location, and a dot representing the Actor origin point.
-             *
-             * @param x the x location of the upper left position to render the actor at, in stage coordinates
-             * (NOT world), ignoring any origin that might be set
-             * @param y the y location of he upper left position to render the actor at, in stage coordinates
-             *     (NOT
-             * world), ignoring any origin that might be set.
-             * @param renderer the class to use to render the actor
-             * @see Actor.render
-             */
-            Actor.prototype.renderBounds = function (x, y, renderer) {
-                // Draw a filled rectangle for actor using the debug color.
-                renderer.strokeRect(x, y, this._width, this._height, this._debugColor, 1);
-                // Now render the origin, which is an offset from where we have actually rendered.
-                renderer.fillCircle(x + this._origin.x, y + this._origin.y, 4, this._debugColor);
-            };
-            /**
              * Render this actor using the renderer provided. The position provided represents the actual position
              * of the Actor as realized on the screen, which may be different from its actual position if
              * scrolling or a viewport of some sort is in use.
@@ -2248,18 +2222,18 @@ var nurdz;
              * @param renderer the class to use to render the actor
              */
             Actor.prototype.render = function (x, y, renderer) {
-                // Translate the canvas to be where our origin point is (which is an offset from the location
-                // that we were given) and then rotate the canvas to the appropriate angle.
-                renderer.translateAndRotate(x, y, this._angle);
-                // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
-                // not, we render our bounds instead. In both cases, we need to offset our rendering by our
-                // origin point so that we render at the location that we expect to.
-                if (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)
+                // If there os a sprite sheet attached AND the sprite index is value for it, then render it.
+                //
+                // Failing that, render our bounds by invoke the super's renderVolume method.
+                if (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count) {
+                    // Translate the canvas to be where our origin point is (which is an offset from the location
+                    // that we were given) and then rotate the canvas to the appropriate angle.
+                    renderer.translateAndRotate(x, y, this._angle);
                     this._sheet.blit(this._sprite, -this._origin.x, -this._origin.y, renderer);
+                    renderer.restore();
+                }
                 else
-                    this.renderBounds(-this._origin.x, -this._origin.y, renderer);
-                // Restore the context now.
-                renderer.restore();
+                    this.renderVolume(x, y, this._debugColor, renderer);
             };
             /**
              * Set the position of this actor by setting its position on the stage in world coordinates. The
@@ -2311,15 +2285,10 @@ var nurdz;
                 return String.format("[Actor name={0}]", this._name);
             };
             return Actor;
-        })();
+        })(game.Collider);
         game.Actor = Actor;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 var nurdz;
 (function (nurdz) {
     var game;
@@ -2561,10 +2530,7 @@ var nurdz;
                 // to do this.
                 if (this._properties.debug &&
                     (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)) {
-                    // Translate to our render location, rotate, render bounds, and then restore the context.
-                    renderer.translateAndRotate(x, y, this._angle);
-                    this.renderBounds(-this._origin.x, -this._origin.y, renderer);
-                    renderer.restore();
+                    this.renderVolume(x, y, this._debugColor, renderer);
                 }
             };
             /**

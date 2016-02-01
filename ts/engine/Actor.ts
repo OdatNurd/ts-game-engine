@@ -5,7 +5,7 @@ module nurdz.game
      * implementation has a position and knows how to render itself.
      *
      */
-    export class Actor
+    export class Actor extends Collider
     {
         /**
          * The name of this actor type, for debugging purposes. There may be many actors with the same name.
@@ -13,20 +13,6 @@ module nurdz.game
          * @type {string}
          */
         protected _name : string;
-
-        /**
-         * The stage that this actor is displayed on. This is used for rendering.
-         *
-         * @type {Stage}
-         */
-        protected _stage : Stage;
-
-        /**
-         * The position of this actor in the world. These coordinates are in pixel coordinates.
-         *
-         * @type {Point}
-         */
-        protected _position : Point;
 
         /**
          * The position of this actor in the tile map. These coordinates are in tiles.
@@ -53,44 +39,6 @@ module nurdz.game
          * happens.
          */
         protected  _sprite : number;
-
-        /**
-         * The angle that the entity is rendered at. This is measured in degrees with 0 being to the
-         * right, 90 degrees being downward and 270 being upward (due to the Y axis increasing in a
-         * downward fashion).
-         *
-         * Note that the angle of an entity does not affect its collisions, currently.
-         */
-        protected _angle : number;
-
-        /**
-         * The origin of this Actor for rendering and collision detection purposes. The X and Y values
-         * here are subtracted from the position when this entity is rendered or when it is considered for
-         * any collision detection.
-         *
-         * A value of (0, 0) means that the position is relative to the top left corner, (width, height)
-         * is the bottom right corner, and (width / 2, height / 2) represents the center.
-         *
-         * You can use larger or smaller values to position the sprite outside of its location if desired.
-         *
-         * In use, the values here should be subtracted from the position given in the render call in
-         * order to render with the origin in the appropriate location.
-         */
-        protected _origin : Point;
-
-        /**
-         * The width of this actor, in pixels. This represents the bounding box.
-         *
-         * @type {number}
-         */
-        protected _width : number;
-
-        /**
-         * The height of this actor, in pixels. This represents the bounding box.
-         *
-         * @type {number}
-         */
-        protected _height : number;
 
         /**
          * The Z-ordering (layer) for this entity. When rendered, actors with a lower Z-Order are rendered
@@ -266,26 +214,20 @@ module nurdz.game
         constructor (name : string, stage : Stage, x : number, y : number, width : number, height : number,
                      zOrder : number = 1, debugColor : string = 'white')
         {
-            // Save the passed in values.
+            // Invoke the super to set things up.
+            super (stage, ColliderType.RECTANGLE, x, y, width, height);
+
+            // Save the other passed in values.
             this._name = name;
-            this._stage = stage;
-            this._width = width;
-            this._height = height;
             this._zOrder = zOrder;
             this._debugColor = debugColor;
 
-            // Default to the first sprite of a nonexistent sprite sheet and a rotation of 0.
+            // Default to the first sprite of a nonexistent sprite sheet
             this._sheet = null;
             this._sprite = 0;
-            this._angle = 0;
 
-            // For position we save the passed in position and then make a reduced copy to turn it into
-            // tile coordinates for the map position.
-            this._position = new Point (x, y);
+            // Make a reduced copy of the given position to give this actor's map position.
             this._mapPosition = this._position.copyReduced (TILE_SIZE);
-
-            // The origin defaults to 0, 0 (upper left corner).
-            this._origin = new Point (0, 0);
         }
 
         /**
@@ -344,35 +286,6 @@ module nurdz.game
         }
 
         /**
-         * Render the bounding box and origin of this actor using the renderer provided. As in the render
-         * method, the position provided represents the actual position of the Actor as realized on the
-         * screen, which may be different from its actual position if scrolling or a viewport of some sort is
-         * in use.
-         *
-         * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
-         * always represent the upper left corner of the area in which to render this Actor.
-         *
-         * This will render the bounding box of this actor by rendering a rectangle of the proper width
-         * and height located at the provided location, and a dot representing the Actor origin point.
-         *
-         * @param x the x location of the upper left position to render the actor at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set
-         * @param y the y location of he upper left position to render the actor at, in stage coordinates
-         *     (NOT
-         * world), ignoring any origin that might be set.
-         * @param renderer the class to use to render the actor
-         * @see Actor.render
-         */
-        renderBounds (x : number, y : number, renderer : Renderer) : void
-        {
-            // Draw a filled rectangle for actor using the debug color.
-            renderer.strokeRect (x, y, this._width, this._height, this._debugColor, 1);
-
-            // Now render the origin, which is an offset from where we have actually rendered.
-            renderer.fillCircle (x + this._origin.x, y + this._origin.y, 4, this._debugColor);
-        }
-
-        /**
          * Render this actor using the renderer provided. The position provided represents the actual position
          * of the Actor as realized on the screen, which may be different from its actual position if
          * scrolling or a viewport of some sort is in use.
@@ -395,20 +308,19 @@ module nurdz.game
          */
         render (x : number, y : number, renderer : Renderer) : void
         {
-            // Translate the canvas to be where our origin point is (which is an offset from the location
-            // that we were given) and then rotate the canvas to the appropriate angle.
-            renderer.translateAndRotate (x, y, this._angle);
-
-            // If there is a sprite sheet attached AND the sprite index is valid for it, render it. If
-            // not, we render our bounds instead. In both cases, we need to offset our rendering by our
-            // origin point so that we render at the location that we expect to.
+            // If there os a sprite sheet attached AND the sprite index is value for it, then render it.
+            //
+            // Failing that, render our bounds by invoke the super's renderVolume method.
             if (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count)
+            {
+                // Translate the canvas to be where our origin point is (which is an offset from the location
+                // that we were given) and then rotate the canvas to the appropriate angle.
+                renderer.translateAndRotate (x, y, this._angle);
                 this._sheet.blit (this._sprite, -this._origin.x, -this._origin.y, renderer);
+                renderer.restore ();
+            }
             else
-                this.renderBounds (-this._origin.x, -this._origin.y, renderer);
-
-            // Restore the context now.
-            renderer.restore ();
+                this.renderVolume (x, y, this._debugColor, renderer);
         }
 
         /**

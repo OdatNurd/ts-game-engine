@@ -301,10 +301,7 @@ module nurdz.game
             if (this._properties.debug &&
                 (this._sheet != null && this._sprite >= 0 && this._sprite < this._sheet.count))
             {
-                // Translate to our render location, rotate, render bounds, and then restore the context.
-                renderer.translateAndRotate (x, y, this._angle);
-                this.renderBounds (-this._origin.x, -this._origin.y, renderer);
-                renderer.restore ();
+                this.renderVolume (x, y, this._debugColor, renderer);
             }
         }
 

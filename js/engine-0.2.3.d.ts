@@ -1068,25 +1068,13 @@ declare module nurdz.game {
      * implementation has a position and knows how to render itself.
      *
      */
-    class Actor {
+    class Actor extends Collider {
         /**
          * The name of this actor type, for debugging purposes. There may be many actors with the same name.
          *
          * @type {string}
          */
         protected _name: string;
-        /**
-         * The stage that this actor is displayed on. This is used for rendering.
-         *
-         * @type {Stage}
-         */
-        protected _stage: Stage;
-        /**
-         * The position of this actor in the world. These coordinates are in pixel coordinates.
-         *
-         * @type {Point}
-         */
-        protected _position: Point;
         /**
          * The position of this actor in the tile map. These coordinates are in tiles.
          *
@@ -1109,40 +1097,6 @@ declare module nurdz.game {
          * happens.
          */
         protected _sprite: number;
-        /**
-         * The angle that the entity is rendered at. This is measured in degrees with 0 being to the
-         * right, 90 degrees being downward and 270 being upward (due to the Y axis increasing in a
-         * downward fashion).
-         *
-         * Note that the angle of an entity does not affect its collisions, currently.
-         */
-        protected _angle: number;
-        /**
-         * The origin of this Actor for rendering and collision detection purposes. The X and Y values
-         * here are subtracted from the position when this entity is rendered or when it is considered for
-         * any collision detection.
-         *
-         * A value of (0, 0) means that the position is relative to the top left corner, (width, height)
-         * is the bottom right corner, and (width / 2, height / 2) represents the center.
-         *
-         * You can use larger or smaller values to position the sprite outside of its location if desired.
-         *
-         * In use, the values here should be subtracted from the position given in the render call in
-         * order to render with the origin in the appropriate location.
-         */
-        protected _origin: Point;
-        /**
-         * The width of this actor, in pixels. This represents the bounding box.
-         *
-         * @type {number}
-         */
-        protected _width: number;
-        /**
-         * The height of this actor, in pixels. This represents the bounding box.
-         *
-         * @type {number}
-         */
-        protected _height: number;
         /**
          * The Z-ordering (layer) for this entity. When rendered, actors with a lower Z-Order are rendered
          * before actors with a higher Z-Order, allowing some to appear over others.
@@ -1308,27 +1262,6 @@ declare module nurdz.game {
          * @param tick the game tick; this is a count of how many times the game loop has executed
          */
         update(stage: Stage, tick: number): void;
-        /**
-         * Render the bounding box and origin of this actor using the renderer provided. As in the render
-         * method, the position provided represents the actual position of the Actor as realized on the
-         * screen, which may be different from its actual position if scrolling or a viewport of some sort is
-         * in use.
-         *
-         * The position provided here is adjusted by the origin of the actor so that the (x, y) provided
-         * always represent the upper left corner of the area in which to render this Actor.
-         *
-         * This will render the bounding box of this actor by rendering a rectangle of the proper width
-         * and height located at the provided location, and a dot representing the Actor origin point.
-         *
-         * @param x the x location of the upper left position to render the actor at, in stage coordinates
-         * (NOT world), ignoring any origin that might be set
-         * @param y the y location of he upper left position to render the actor at, in stage coordinates
-         *     (NOT
-         * world), ignoring any origin that might be set.
-         * @param renderer the class to use to render the actor
-         * @see Actor.render
-         */
-        renderBounds(x: number, y: number, renderer: Renderer): void;
         /**
          * Render this actor using the renderer provided. The position provided represents the actual position
          * of the Actor as realized on the screen, which may be different from its actual position if
