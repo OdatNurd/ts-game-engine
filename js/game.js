@@ -69,8 +69,8 @@ var nurdz;
                 // Change our origin.
                 this._origin.setToXY(this._width / 2, this._height - 1);
                 // Set animations up. The first animation becomes active automatically.
-                this.addAnimation("idle", 5, true, nurdz.game.Utils.range(0, 9));
-                this.addAnimation("walk", 15, true, nurdz.game.Utils.range(10, 19));
+                this.addAnimation("idle", 5, true, nurdz.game.Utils.createRange(0, 9));
+                this.addAnimation("walk", 15, true, nurdz.game.Utils.createRange(10, 19));
             }
             /**
              * Toggle between our animations whenever we are invoked.

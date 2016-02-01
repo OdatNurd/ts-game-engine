@@ -96,8 +96,8 @@ module nurdz.main
             this._origin.setToXY (this._width / 2, this._height - 1);
 
             // Set animations up. The first animation becomes active automatically.
-            this.addAnimation ("idle", 5, true, game.Utils.range (0, 9));
-            this.addAnimation ("walk", 15, true, game.Utils.range (10, 19));
+            this.addAnimation ("idle", 5, true, game.Utils.createRange (0, 9));
+            this.addAnimation ("walk", 15, true, game.Utils.createRange (10, 19));
         }
 
         /**

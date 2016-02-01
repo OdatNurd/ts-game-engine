@@ -277,7 +277,58 @@ declare module nurdz.game.Utils {
      * @param step the step to go by
      * @returns {Array} the array with the generated values
      */
-    function range(from: number, to: number, step?: number): Array<number>;
+    function createRange(from: number, to: number, step?: number): Array<number>;
+    /**
+     * Determine if a numeric value falls inside of a certain range, with the endpoints being inclusive.
+     * This is smart enough to allow for the min and max to be "reversed", such that min is larger than
+     * max (for example, if the values are negative).
+     *
+     * @param value the value to compare
+     * @param min the lower end of the range to check
+     * @param max the higher end of the range to check
+     * @returns {boolean} true if the value falls within the range given, or false otherwise
+     */
+    function numberInRange(value: number, min: number, max: number): boolean;
+    /**
+     * Take a value and a range of numbers and clamp the value so that it fits into the range; when the
+     * value falls outside of the range, the value becomes the respective range endpoint.
+     *
+     * @param value the value to clamp
+     * @param min the minimum acceptable value
+     * @param max the maximum acceptable value
+     * @returns {number} the clamped value, which is either the value directly, min or max, depending on
+     * the value.
+     */
+    function clampToRange(value: number, min: number, max: number): number;
+    /**
+     * Given two ranges of numbers that range from min to max inclusive, determine if those two ranges
+     * overlap each other.
+     *
+     * @param min1 the minimum value of the first range
+     * @param max1 the maximum value of the first range
+     * @param min2 the minimum value of the second range
+     * @param max2 the maximum value of the second range
+     * @returns {boolean} true if the two ranges intersect, or false if they don't.
+     */
+    function rangeInRange(min1: number, max1: number, min2: number, max2: number): boolean;
+    /**
+     * Calculate the distance between the two points provided.
+     *
+     * @param point1 the first point
+     * @param point2 the second point
+     * @returns {number} the distance between the two points
+     */
+    function distanceBetween(point1: Point, point2: Point): number;
+    /**
+     * Calculate the distance between the two points provided.
+     *
+     * @param x1 X coordinate of first point
+     * @param y1 Y coordinate of first point
+     * @param x2 X coordinate of second point
+     * @param y2 Y coordinate of second point
+     * @returns {number} the distance between the two points
+     */
+    function distanceBetweenXY(x1: number, y1: number, x2: number, y2: number): number;
 }
 declare module nurdz.game {
     /**
@@ -1303,6 +1354,197 @@ declare module nurdz.game {
          */
         toString(): string;
     }
+}
+/**
+ * This module exports various routines for the purpose of doing collision detection.
+ */
+declare module nurdz.game.Collision {
+    /**
+     * Determine if a point provided falls within the rectangle made up of the corner point with the width
+     * and height provided.
+     *
+     * @param pX the X coordinate of the point to test
+     * @param pY the Y coordinate of the point to test
+     * @param rectX the X coordinate of a corner of the rectangle
+     * @param rectY the Y coordinate of a corner of the rectangle
+     * @param width the width of the rectangle
+     * @param height the height of the rectangle
+     * @returns {boolean} true if the point falls within the rectangle, or false otherwise
+     */
+    function pointInRect(pX: number, pY: number, rectX: number, rectY: number, width: number, height: number): boolean;
+    /**
+     * Determine if a point provided falls within the circle described by the given radius and centered at
+     * the provided location.
+     *
+     * @param pX the X coordinate of the point to test
+     * @param pY the Y coordinate of the point to test
+     * @param circleX the X coordinate of the center of the circle
+     * @param circleY the Y coordinate of the center of the circle
+     * @param circleR the radius of the circle
+     * @returns {boolean} true if the point falls within the circle, or false otherwise
+     */
+    function pointInCircle(pX: number, pY: number, circleX: number, circleY: number, circleR: number): boolean;
+    /**
+     * Determine if two rectangles intersect each other. Each rectangle is described by the position of
+     * the upper left corner along with a width and a height.
+     *
+     * @param rect1X the X coordinate of the upper left corner of the first rectangle
+     * @param rect1Y the Y coordinate of the upper left corner of the first rectangle
+     * @param rect1W the width of the first rectangle
+     * @param rect1H the height of the first rectangle
+     * @param rect2X the X coordinate of the upper left corner of the second rectangle
+     * @param rect2Y the Y coordinate of the upper left corner of the second rectangle
+     * @param rect2W the width of the second rectangle
+     * @param rect2H the height of the second rectangle
+     * @returns {boolean} true if both rectangles intersect or false otherwise
+     */
+    function rectInRect(rect1X: number, rect1Y: number, rect1W: number, rect1H: number, rect2X: number, rect2Y: number, rect2W: number, rect2H: number): boolean;
+    /**
+     * Determine if two circles intersect each other. Each circle is described by a point that represents
+     * its center and a radius value.
+     *
+     * @param circle1X the X coordinate of the center of the first circle
+     * @param circle1Y the Y coordinate of the center of the first circle
+     * @param circle1R the radius of the first circle
+     * @param circle2X the X coordinate of the center of the second circle
+     * @param circle2Y the Y coordinate of the center of the second circle
+     * @param circle2R the radius of the second circle
+     * @returns {boolean} true if the two circles intersect or false otherwise
+     */
+    function circleInCircle(circle1X: number, circle1Y: number, circle1R: number, circle2X: number, circle2Y: number, circle2R: number): boolean;
+    /**
+     * Determine if the rectangle and circle provided intersect each other. The rectangle is described by
+     * the position of its upper left corner and its dimensions while the circle is described by its
+     * center point and radius.
+     *
+     * @param rectX the X coordinate of the upper left corner of the rectangle
+     * @param rectY the Y coordinate of the upper left corner of the rectangle
+     * @param rectW the width of the rectangle
+     * @param rectH the height of the rectangle
+     * @param circleX the X coordinate of the center of the circle
+     * @param circleY the Y coordinate of the center of the circle
+     * @param circleR the radius of the circle
+     * @returns {boolean} true if the rectangle and circle intersect or false otherwise
+     */
+    function rectInCircle(rectX: number, rectY: number, rectW: number, rectH: number, circleX: number, circleY: number, circleR: number): boolean;
+    /**
+     * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * both lines are collinear, there are an infinite number of intersection points.
+     *
+     * If result is non-null, the collision point is put into that point before it is returned. Otherwise
+     * a new point is created if needed
+     *
+     * The function returns a point that represents the intersection point, or null if there is no
+     * intersection available. When result is specified, the return value is that point if there is an
+     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     *
+     * Note that this method returns the intersection of the two lines as if they were infinitely
+     * projected in both directions; to determine if the intersection is on the line segments as
+     * specified, use the other method.
+     *
+     * @param p0 the first point of the first line
+     * @param p1 the second point of the first line
+     * @param p2 the first point of the second line
+     * @param p3 the second point of the second line
+     * @param result if non-null and there is an intersection, this point will contain the intersection
+     * and becomes the return value; left untouched if provided and there is no intersection
+     * @returns {Point} the point at which the two lines intersect, or null if there is no intersection
+     * @see Collision.lineIntersectionXY
+     * @see Collision.segmentIntersection
+     * @see Collision.segmentIntersectionXY
+     */
+    function lineIntersection(p0: Point, p1: Point, p2: Point, p3: Point, result?: Point): Point;
+    /**
+     * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * both lines are collinear, there are an infinite number of intersection points.
+     *
+     * If result is non-null, the collision point is put into that point before it is returned. Otherwise
+     * a new point is created if needed
+     *
+     * The function returns a point that represents the intersection point, or null if there is no
+     * intersection available. When result is specified, the return value is that point if there is an
+     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     *
+     * Note that this method returns the intersection of the two lines as if they were infinitely
+     * projected in both directions; to determine if the intersection is on the line segments as
+     * specified, use the other method.
+     *
+     * @param x0 the X coordinate of the first point of the first line
+     * @param y0 the Y coordinate of the first point of the first line
+     * @param x1 the X coordinate of the second point of the first line
+     * @param y1 the Y coordinate of the second point of the first line
+     * @param x2 the X coordinate of the first point of the second line
+     * @param y2 the Y coordinate of the first point of the second line
+     * @param x3 the X coordinate of the second point of the second line
+     * @param y3 the Y coordinate of the second point of the second line
+     * @param result if non-null and there is an intersection, this point will contain the intersection
+     * and becomes the return value; left untouched if provided and there is no intersection
+     * @returns {Point} the point at which the two lines intersect, or null if there is no intersection
+     * @see Collision.lineIntersection
+     * @see Collision.segmentIntersection
+     * @see Collision.segmentIntersectionXY
+     */
+    function lineIntersectionXY(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, result?: Point): Point;
+    /**
+     * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * both lines are collinear, there are an infinite number of intersection points.
+     *
+     * If result is non-null, the collision point is put into that point before it is returned. Otherwise
+     * a new point is created if needed
+     *
+     * The function returns a point that represents the intersection point, or null if there is no
+     * intersection available. When result is specified, the return value is that point if there is an
+     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     *
+     * This method, unlike the other method, returns the intersection of the two line segments directly;
+     * if the two line segments do not directly intersect, null is returned.
+     *
+     * @param p0 the first point of the first line
+     * @param p1 the second point of the first line
+     * @param p2 the first point of the second line
+     * @param p3 the second point of the second line
+     * @param result if non-null and there is an intersection, this point will contain the intersection
+     * and becomes the return value; left untouched if provided and there is no intersection
+     * @returns {Point} the point at which the two lines intersect, or null if there is no intersection
+     * @see Collision.lineIntersection
+     * @see Collision.lineIntersectionXY
+     * @see Collision.segmentIntersectionXY
+     */
+    function segmentIntersection(p0: Point, p1: Point, p2: Point, p3: Point, result?: Point): Point;
+    /**
+     * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * both lines are collinear, there are an infinite number of intersection points.
+     *
+     * If result is non-null, the collision point is put into that point before it is returned. Otherwise
+     * a new point is created if needed
+     *
+     * The function returns a point that represents the intersection point, or null if there is no
+     * intersection available. When result is specified, the return value is that point if there is an
+     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     *
+     * This method, unlike the other method, returns the intersection of the two line segments directly;
+     * if the two line segments do not directly intersect, null is returned.
+     *
+     * @param x0 the X coordinate of the first point of the first line
+     * @param y0 the Y coordinate of the first point of the first line
+     * @param x1 the X coordinate of the second point of the first line
+     * @param y1 the Y coordinate of the second point of the first line
+     * @param x2 the X coordinate of the first point of the second line
+     * @param y2 the Y coordinate of the first point of the second line
+     * @param x3 the X coordinate of the second point of the second line
+     * @param y3 the Y coordinate of the second point of the second line
+     * @param result if non-null and there is an intersection, this point will contain the intersection
+     * and becomes the return value; left untouched if provided and there is no intersection
+     * @returns {Point} the point at which the two lines intersect, or null if there is no intersection
+     * @see Collision.lineIntersection
+     * @see Collision.lineIntersectionXY
+     * @see Collision.segmentIntersection
+     */
+    function segmentIntersectionXY(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, result?: Point): Point;
 }
 declare module nurdz.game {
     /**

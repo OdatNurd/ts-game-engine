@@ -17,6 +17,7 @@
         "AnimationList.ts",
         "Actor.ts",
         "Entity.ts",
+        "Collision.ts",
         "Scene.ts",
         "Renderer.ts",
         "CanvasRenderer.ts",

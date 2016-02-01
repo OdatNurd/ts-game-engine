@@ -81,7 +81,7 @@ module nurdz.game.Utils
      * @param step the step to go by
      * @returns {Array} the array with the generated values
      */
-    export function range (from : number, to : number, step : number = 1) : Array<number>
+    export function createRange (from : number, to : number, step : number = 1) : Array<number>
     {
         let retVal = [];
 
@@ -96,5 +96,95 @@ module nurdz.game.Utils
                 retVal.push (i);
         }
         return retVal;
+    }
+
+    /**
+     * Determine if a numeric value falls inside of a certain range, with the endpoints being inclusive.
+     * This is smart enough to allow for the min and max to be "reversed", such that min is larger than
+     * max (for example, if the values are negative).
+     *
+     * @param value the value to compare
+     * @param min the lower end of the range to check
+     * @param max the higher end of the range to check
+     * @returns {boolean} true if the value falls within the range given, or false otherwise
+     */
+    export function numberInRange (value : number, min : number, max : number) : boolean
+    {
+        // Ensure that the value falls within the range, even if the values provided are in the wrong order.
+        return value >= Math.min (min, max) && value <= Math.max (min, max);
+    }
+
+    /**
+     * Take a value and a range of numbers and clamp the value so that it fits into the range; when the
+     * value falls outside of the range, the value becomes the respective range endpoint.
+     *
+     * @param value the value to clamp
+     * @param min the minimum acceptable value
+     * @param max the maximum acceptable value
+     * @returns {number} the clamped value, which is either the value directly, min or max, depending on
+     * the value.
+     */
+    export function clampToRange (value : number, min : number, max : number) : number
+    {
+        // This does the following:
+        //   1) Find the smaller of the two values given as the range
+        //   2) Find the larger of the value and the result from step #1
+        //   3) Find the larger of the two values given as the range
+        //   4) Find the smaller of the numbers from step 2 and 4 and return that
+        //
+        // This code appears semi-complicated because it allows for min and max to be passed in the wrong
+        // order and still work.
+        return Math.min (Math.max (value, Math.min (min, max)), Math.max (min, max));
+    }
+
+    /**
+     * Given two ranges of numbers that range from min to max inclusive, determine if those two ranges
+     * overlap each other.
+     *
+     * @param min1 the minimum value of the first range
+     * @param max1 the maximum value of the first range
+     * @param min2 the minimum value of the second range
+     * @param max2 the maximum value of the second range
+     * @returns {boolean} true if the two ranges intersect, or false if they don't.
+     */
+    export function rangeInRange (min1 : number, max1 : number, min2 : number, max2 : number) : boolean
+    {
+        // For the ranges to intersect each other, the largest value in the first range has to be larger
+        // than the smallest value in the second range AND the smallest value in the first range needs to
+        // be smaller than the larger value in the second range.
+        return Math.max (min1, max1) >= Math.min (min2, max2) &&
+            Math.min (min1, max1) <= Math.max (min2, max2);
+    }
+
+    /**
+     * Calculate the distance between the two points provided.
+     *
+     * @param point1 the first point
+     * @param point2 the second point
+     * @returns {number} the distance between the two points
+     */
+    export function distanceBetween (point1 : Point, point2 : Point) : number
+    {
+        // Use the other function
+        return this.distanceBetweenXY (point1.x, point1.y, point2.x, point2.y);
+    }
+
+    /**
+     * Calculate the distance between the two points provided.
+     *
+     * @param x1 X coordinate of first point
+     * @param y1 Y coordinate of first point
+     * @param x2 X coordinate of second point
+     * @param y2 Y coordinate of second point
+     * @returns {number} the distance between the two points
+     */
+    export function distanceBetweenXY (x1 : number, y1 : number, x2 : number, y2 : number) : number
+    {
+        // Get the delta values between the two points.
+        let dX = x2 - x1;
+        let dY = y2 - y1;
+
+        // Do that thing we all know what it does.
+        return Math.sqrt ((dX * dX) + (dY * dY));
     }
 }
