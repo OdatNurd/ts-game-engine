@@ -15,6 +15,7 @@
         "Point.ts",
         "SpriteSheet.ts",
         "AnimationList.ts",
+        "Collider.ts",
         "Actor.ts",
         "Entity.ts",
         "Collision.ts",

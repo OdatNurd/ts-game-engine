@@ -820,6 +820,250 @@ declare module nurdz.game {
 }
 declare module nurdz.game {
     /**
+     * This type is used to mark what kind of collision volume a Collider instance uses.
+     *
+     * Where positioning is concerned, all collision types are represented logically by a rectangular area
+     * with the position referenced from the top left corner. This position is offset by an origin property,
+     * allowing the referenced position to be anywhere inside the rectangle.
+     *
+     * Where actual collisions are concerned, the actual collision volume it somewhere inside of the
+     * positioning rectangle as outlined in the description of the collider type below.
+     */
+    enum ColliderType {
+        /**
+         * No collision volume at all; no collisions are possible with this collider type. All of the
+         * collision methods will always return false no matter what.
+         */
+        NONE = 0,
+        /**
+         * Rectangular bounding volume; the collision volume is the same as the positioning rectangle itself.
+         *
+         * The default origin for a rectangle collider is (0, 0) so that the position references the upper
+         * left corner as one might expect by default.
+         */
+        RECTANGLE = 1,
+        /**
+         * Circular bounding volume; the collision volume is a circle positioned inside the exact center
+         * of the positioning rectangle itself, which is always a square with sides the same as the
+         * diameter of the circle it contains.
+         *
+         * The default origin for a circle collider is (width/2, height/2) so that the position references
+         * the center of the circle as one might expect. This can of course be changed if the position is
+         * best referenced from some other point.
+         */
+        CIRCLE = 2,
+    }
+    /**
+     * This class represents the basis of an object that can be positioned on the stage and can collide
+     * with other such instances. Collider objects can be one of the types in the ColliderType enumeration,
+     * which controls how they interact with each other.
+     *
+     * Collider objects have minimal rendering functionality that allows them to represent their volumes
+     * on the stage for debugging purposes.
+     *
+     * @see ColliderType
+     */
+    class Collider {
+        /**
+         * The type of collisions that this object allows.
+         *
+         * @type {ColliderType}
+         */
+        protected _type: ColliderType;
+        /**
+         * The stage that this collision object will be displayed on. This is used for rendering purposes
+         * as well as for determining the dimensions of the area for collisions with the edges of the stage.
+         *
+         * @type {Stage}
+         */
+        protected _stage: Stage;
+        /**
+         * The angle that the collision object is rotated to. This is measured in degrees with 0 being to the
+         * right and 90 degrees being downward (due to the y axis increasing in a downward fashion).
+         *
+         * Note that the angle of a rectangular collision object is not taken into account for collision
+         * detection currently.
+         */
+        protected _angle: number;
+        /**
+         * The origin point of this collision object. This is an offset from the top left corner of the
+         * position rectangle of this collider that describes where the actual position places this object.
+         *
+         * When the value of the origin is (0, 0), the position of the object is its direct position.
+         *
+         * @type {Point}
+         */
+        protected _origin: Point;
+        /**
+         * The position of this collision object in the world. These coordinates are in pixel coordinates; The
+         * actual bounding volume (whatever its type) is referenced by this location, although the offset
+         * from the position is given by the origin point.
+         *
+         * @type {Point}
+         */
+        protected _position: Point;
+        /**
+         * This property is interpreted in different ways for different collider types:
+         *
+         * For type RECTANGLE, this is the width of the collision rectangle, in pixels.
+         *
+         * For type CIRCLE, this is the radius of the collision circle, in pixels (and thus the positioning
+         * box is twice this wide and twice this tall).
+         *
+         * @type {number}
+         */
+        protected _width: number;
+        /**
+         * This property is interpreted in different ways for different collider types:
+         *
+         * For type RECTANGLE, this is the height of the collision rectangle, in pixels.
+         *
+         * For type CIRCLE, this is the diameter of the collision circle, in pixels (and thus the positioning
+         * box is this wide and this tall).
+         *
+         * @type {number}
+         */
+        protected _height: number;
+        /**
+         * Obtain the type of collision object that this is.
+         *
+         * @returns {ColliderType}
+         */
+        type: ColliderType;
+        /**
+         * Get the rotation angle of this collider (in degrees); 0 is to the right and 90 is downward (due
+         * to the Y axis increasing downwards).
+         *
+         * @returns {number}
+         */
+        /**
+         * Set the rotation angle of this collider (in degrees, does not affect collision
+         * detection).
+         *
+         * The value is normalized to the range 0-359.
+         *
+         * @param newAngle the new angle to render at
+         */
+        angle: number;
+        /**
+         * The origin of this collision object, which is an offset from its position and is used to
+         * determine at what point inside the collision object the position represents.
+         *
+         * @returns {Point}
+         */
+        origin: Point;
+        /**
+         * The position of this collision object in the world. These coordinates are in pixel coordinates.
+         *
+         * @returns {Point}
+         */
+        position: Point;
+        /**
+         * Obtain the radius of this collision object, in pixels.
+         *
+         * This only has meaning when the collider type is CIRCLE; in all other cases, this returns 0.
+         *
+         * @returns {number}
+         */
+        radius: number;
+        /**
+         * Obtain the width of this collision object, in pixels. This represents how wide the collision
+         * volume is at its widest point, even if the collision type itself is not rectangular.
+         *
+         * @returns {number}
+         */
+        width: number;
+        /**
+         * Obtain the height of this collision object, in pixels. This represents how tall the collision
+         * volume is at its tallest point, even if the collision type itself is not rectangular.
+         *
+         * @returns {number}
+         */
+        height: number;
+        /**
+         * Construct a new collider object of a provided type with the given properties. The origin of the
+         * object is set to a sensible default for the collider type provided.
+         *
+         * @param stage the stage that will manage this collider
+         * @param type the type of collision volume to use for this object
+         * @param x the X position of the collision object
+         * @param y the Y position of the collision object
+         * @param widthOrRadius the width of the collision bounds; for circular bounding volumes this is
+         * instead the radius of the circle
+         * @param height the height of the collision bounds; this is ignored for circular bounding volumes
+         * since both dimensions of a circle are identical
+         */
+        constructor(stage: Stage, type: ColliderType, x: number, y: number, widthOrRadius: number, height?: number);
+        /**
+         * Render the collision volume and origin of this collider using the renderer provided.
+         *
+         * The position provided to this method is the stage position of the collider object itself (which
+         * may be adjusted for scrolling, for example).
+         *
+         * This will render the bounding volume as well as the the origin point.
+         *
+         * @param x the x location of the position to render the collider at, in stage coordinates (NOT world)
+         * @param y the y location of the position to render the collider at, in stage coordinates (NOT world)
+         * @param color the color specification to use to render the collision volume and origin
+         * @param renderer the object to render with
+         */
+        renderVolume(x: number, y: number, color: string, renderer: Renderer): void;
+        /**
+         * Perform a collision check to see if the point provided falls within the bounding volume of this
+         * collider.
+         *
+         * @param point the point to check
+         * @returns {boolean} true if the point is within the bounding volume of this collision object or
+         * false otherwise
+         */
+        contains(point: Point): boolean;
+        /**
+         * Perform a collision check to see if the point provided falls within the bounding volume of this
+         * collider.
+         *
+         * @param x the X coordinate of the point to check
+         * @param y the Y coordinate of the point to check
+         * @returns {boolean} true if the point is within the bounding volume of this collision object or
+         * false otherwise
+         */
+        containsXY(x: number, y: number): boolean;
+        /**
+         * Perform a collision with the other object under the assumption that both us and the other
+         * object are circles.
+         *
+         * @param other the other collision object, which needs to be a circle
+         * @returns {boolean} true if we collide with this circle, or false otherwise
+         */
+        private circleCircleCollide(other);
+        /**
+         * Perform a collision with the other object under the assumption that both us and the other
+         * object are rectangles.
+         *
+         * @param other the other collision object, which needs to be a rectangle
+         * @returns {boolean} true if we collide with this rectangle, false otherwise
+         */
+        private rectRectCollide(other);
+        /**
+         * Perform a collision with the other object under the assumption that one of us is a rectangle
+         * and the other is a circle. Which is which does not matter, this works both ways.
+         *
+         * @param other the other collision object, which need to be either a rectangle or a circle
+         * (whichever we are not)
+         * @returns {boolean} true if we collide with this rectangle, false otherwise
+         */
+        private circleRectCollide(other);
+        /**
+         * Perform a collision check between this collision object and some other collision object. This
+         * takes into account the types of each object and collides them as appropriate.
+         *
+         * @param other the other object to collide with
+         * @returns {boolean} true if these two objects are colliding, or false otherwise
+         */
+        collidesWith(other: Collider): boolean;
+    }
+}
+declare module nurdz.game {
+    /**
      * This class represents the base class for any game object of any base type. This base class
      * implementation has a position and knows how to render itself.
      *
