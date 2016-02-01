@@ -156,14 +156,6 @@ module nurdz.main
     class Dot extends nurdz.game.Entity
     {
         /**
-         * The radius of the circle we use to render ourselves.
-         *
-         * @type {number}
-         * @private
-         */
-        private _radius : number;
-
-        /**
          * The sound to play whenever we bounce off of the sides of the screen.
          */
         private _sound : game.Sound;
@@ -202,12 +194,16 @@ module nurdz.main
                     ySpeed: game.Utils.randomIntInRange (-5, 5),
                 }, 'red');
 
-            // Our radius is half our width because our position is registered via the center of our own
-            // bounds.
-            this._radius = this._width / 2;
-
-            // Set our origin to be the center of ourselves.
+            // Set our origin to be the center of ourselves. We do this before the type switch below so
+            // that our origin is properly at our center.
             this._origin.setToXY (this._width / 2, this._height / 2);
+
+            // Now we change the collider type from a rectangle to a circle; this also requires setting up
+            // our width to be our radius. We were constructed as a square with the appropriate dimension
+            // as a diameter, so we just need to diddle our width here. Our height should be our radius,
+            // and it already is. yay!
+            this._type = game.ColliderType.CIRCLE;
+            this._width /= 2;
 
             // Save the sound we were given.
             this._sound = sound;
@@ -254,14 +250,14 @@ module nurdz.main
             this._position.translateXY (this._properties.xSpeed, this._properties.ySpeed);
 
             // Bounce left and right
-            if (this._position.x < this._radius || this._position.x >= stage.width - this._radius)
+            if (this._position.x < this.radius || this._position.x >= stage.width - this.radius)
             {
                 this._properties.xSpeed *= -1;
                 this._sound.play ();
             }
 
             // Bounce up and down.
-            if (this._position.y < this._radius || this._position.y >= stage.height - this._radius)
+            if (this._position.y < this.radius || this._position.y >= stage.height - this.radius)
             {
                 this._properties.ySpeed *= -1;
                 this._sound.play ();
