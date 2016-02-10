@@ -1215,6 +1215,13 @@ declare module nurdz.game {
          */
         angle: number;
         /**
+         * Construct a new actor instance at the given position with the provided width and height.
+         *
+         * This defaults the Actor object to a rectangular bounding region for collisions (the most common)
+         * with the width and height as provided and an origin in the upper left corner.
+         *
+         * If desired, the makeCircle method can be used to convert the actor to a circular bounding region
+         * for collisions.
          *
          * @param name the internal name for this actor instance, for debugging
          * @param stage the stage that will be used to display this actor
@@ -1225,8 +1232,38 @@ declare module nurdz.game {
          * @param zOrder the Z-order of this actor when rendered (smaller numbers render before larger ones)
          * @param debugColor the color specification to use in debug rendering for this actor
          * @constructor
+         * @see Actor.makeRectangle
+         * @see Actor.makeCircle
          */
         constructor(name: string, stage: Stage, x: number, y: number, width: number, height: number, zOrder?: number, debugColor?: string);
+        /**
+         * Convert this actor to use a rectangular collision boundary with the given width and height as the
+         * dimensions of the collider. If desired, this can also reset the origin to be the upper left corner
+         * (the default for rectangular colliders).
+         *
+         * Actors are created as rectangles, so this is generally not needed unless you want to swap an
+         * actor between circular and rectangular collision boundaries.
+         *
+         * @param width the width of the collision bounding box
+         * @param height the height of the collision bounding box
+         * @param resetOrigin if true, reset the origin to be (0, 0) (the upper left corner). When false, the
+         *     origin is left as it currently is.
+         * @see Actor.makeCircle
+         */
+        makeRectangle(width: number, height: number, resetOrigin?: boolean): void;
+        /**
+         * Convert this actor to use a circular collision boundary with the given radius as the dimensions.
+         * If desired, this can also reset the origin to be the center of the circle (the default for
+         * circular colliders).
+         *
+         * Actors are created as rectangles, so this can be used to convert them to circles if desired.
+         *
+         * @param radius the radius of the circular collider
+         * @param resetOrigin if true, reset the origin point to be the center of the circle. WHen false, the
+         *     origin is left as it currently is.
+         * @see Actor.makeCircle
+         */
+        makeCircle(radius: number, resetOrigin?: boolean): void;
         /**
          * Add a new animation with a textual name, which will run at the frames per second provided. The
          * animation can be set to loop or not as desired.
