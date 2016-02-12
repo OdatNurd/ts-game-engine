@@ -1,6 +1,17 @@
 module nurdz.game
 {
     /**
+     * The type of a callback function to invoke when a SpriteSheet has been fully loaded; i.e. when it
+     * has enough information to fully determine the dimensions of all of the sprites contained in it.
+     *
+     * This gets invoked after the SpriteSheet has finished setting up its internal state regarding the
+     * size and location of all sprites in the sheet. For SpriteSheets that need to preload their images
+     * first, this happens after the preload is finished, while for other SpriteSheets it will get invoked
+     * before the constructor of the SpriteSheet returns.
+     */
+    export type SpriteSheetSetupCallback = (SpriteSheet) => void;
+
+    /**
      * This class represents the basics of a sprite sheet; this takes the URL to an image, and will
      * preload that image and internally slice it into sprites at given size boundaries for later rendering.
      *
@@ -45,6 +56,12 @@ module nurdz.game
         protected _spritePos : Array<Point>;
 
         /**
+         * If this is non-null, when we finish out internal setup, this is invoked to give the caller
+         * information as to the dimensions of the sprites, etc.
+         */
+        protected _callback : SpriteSheetSetupCallback;
+
+        /**
          * Obtain the width of sprites that are present in this sprite sheet; this is not available until
          * the sprite sheet has finished loading the underlying image.
          *
@@ -72,9 +89,16 @@ module nurdz.game
         { return this._spriteCount; }
 
         /**
-         * Construct a new sprite sheet by preloading the given image. Images are expected to be in a folder
-         * named "images/" inside of the folder that the game page is served from, so only a filename and
-         * extension is required.
+         * Construct a new sprite sheet either from a previously loaded image or by preloading an image.
+         *
+         * In the first case, the image needs to have been loaded enough to have dimension information
+         * available at the very least, so that the sprites can be pulled from it. This means that you
+         * should really only invoke this from the completion handler of your own preload (or after
+         * pulling the image from somewhere else).
+         *
+         * In the second case, the class will preload the image itself. Here images are expected to be in a
+         * folder named "images/" inside of the folder that the game page is served from, so only a filename
+         * and extension is required.
          *
          * The constructor is passed two dimensions, an "across" and a "down", plus a boolean flag which
          * is used to determine how the dimension parameters are interpreted.
@@ -89,15 +113,22 @@ module nurdz.game
          * is given directly and the number of total sprites is determined based on the size of the
          * incoming image.
          *
+         * The constructor can be passed a callback function; this will be invoked once all information
+
+         * necessary has been obtained (i.e. image preloads).
+         *
          * @param stage the stage that will display this sprite sheet
-         * @param filename the filename of the image to use for this sprite sheet
+         * @param image the image to use for this sprite sheet, either a filename of an image or a
+         * previously fully loaded image
          * @param across number of sprites across (asSprites == true) or pixel width of each sprite
          * @param down number of sprites down (asSprites == true) or pixel height of each sprite
          * @param asSprites true if across/down specifies the size of the sprite sheet in sprites, or
          * false if across/down is specifying the size of the sprites explicitly.
+         * @param callback if provided, this function is invoked once the SpriteSheet has finished setting
+         * up; its invoked with this SpriteSheet object as a parameter.
          */
-        constructor (stage : Stage, filename : string, across : number, down : number = 1,
-                     asSprites : boolean = true)
+        constructor (stage : Stage, image : string|HTMLImageElement, across : number, down : number = 1,
+                     asSprites : boolean = true, callback : SpriteSheetSetupCallback = null)
         {
             // Set up either sprite width and height or sprites across and down, depending on our boolean
             // flag.
@@ -106,9 +137,30 @@ module nurdz.game
             this._spritesAcross = (asSprites ? across : -1);
             this._spritesDown = (asSprites ? down : -1);
 
-            // Now preload the image and use the preload callback to set up the rest of the information
-            // when the image is fully loaded.
-            this._image = stage.preloadImage (filename, this.imageLoadComplete);
+            // Save the callback, if any.
+            this._callback = callback;
+
+            // If the value passed in is a string, then we need to preload the image and do the rest of
+            // our work in the handler when the preload finishes. This doesn't use instanceof because
+            // constant strings aren't instances of class String for some obscure reason; sadly this also
+            // requires
+            if (typeof (image) == "string")
+                this._image = stage.preloadImage (<string>image, this.imageLoadComplete);
+
+            // If we got an actual image, then we can set up right now (theoretically).
+            else if (image instanceof HTMLImageElement)
+            {
+                // Here we were given an image and not a filename; ensure that it was actually already loaded.
+                if (image.complete == false || image.naturalWidth == 0)
+                    throw new TypeError ("SpriteSheet provided an image that is not already loaded");
+
+                // Save the image and then invoke the handler as if a preload just finished.
+                this._image = image;
+                this.imageLoadComplete (image);
+            }
+
+            else
+                throw new TypeError ("Somehow SpriteSheet constructor was passed an invalid value");
         }
 
         /**
@@ -146,6 +198,10 @@ module nurdz.game
                 let y = Math.floor (spriteIndex / this._spritesAcross) * this._spriteHeight;
                 this._spritePos.push (new Point (x, y));
             }
+
+            // If there is a callback, invoke it now.
+            if (this._callback)
+                this._callback (this);
         };
 
         /**

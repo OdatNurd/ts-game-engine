@@ -569,6 +569,16 @@ declare module nurdz.game {
 }
 declare module nurdz.game {
     /**
+     * The type of a callback function to invoke when a SpriteSheet has been fully loaded; i.e. when it
+     * has enough information to fully determine the dimensions of all of the sprites contained in it.
+     *
+     * This gets invoked after the SpriteSheet has finished setting up its internal state regarding the
+     * size and location of all sprites in the sheet. For SpriteSheets that need to preload their images
+     * first, this happens after the preload is finished, while for other SpriteSheets it will get invoked
+     * before the constructor of the SpriteSheet returns.
+     */
+    type SpriteSheetSetupCallback = (SpriteSheet) => void;
+    /**
      * This class represents the basics of a sprite sheet; this takes the URL to an image, and will
      * preload that image and internally slice it into sprites at given size boundaries for later rendering.
      *
@@ -605,6 +615,11 @@ declare module nurdz.game {
          */
         protected _spritePos: Array<Point>;
         /**
+         * If this is non-null, when we finish out internal setup, this is invoked to give the caller
+         * information as to the dimensions of the sprites, etc.
+         */
+        protected _callback: SpriteSheetSetupCallback;
+        /**
          * Obtain the width of sprites that are present in this sprite sheet; this is not available until
          * the sprite sheet has finished loading the underlying image.
          *
@@ -626,9 +641,16 @@ declare module nurdz.game {
          */
         count: number;
         /**
-         * Construct a new sprite sheet by preloading the given image. Images are expected to be in a folder
-         * named "images/" inside of the folder that the game page is served from, so only a filename and
-         * extension is required.
+         * Construct a new sprite sheet either from a previously loaded image or by preloading an image.
+         *
+         * In the first case, the image needs to have been loaded enough to have dimension information
+         * available at the very least, so that the sprites can be pulled from it. This means that you
+         * should really only invoke this from the completion handler of your own preload (or after
+         * pulling the image from somewhere else).
+         *
+         * In the second case, the class will preload the image itself. Here images are expected to be in a
+         * folder named "images/" inside of the folder that the game page is served from, so only a filename
+         * and extension is required.
          *
          * The constructor is passed two dimensions, an "across" and a "down", plus a boolean flag which
          * is used to determine how the dimension parameters are interpreted.
@@ -643,14 +665,21 @@ declare module nurdz.game {
          * is given directly and the number of total sprites is determined based on the size of the
          * incoming image.
          *
+         * The constructor can be passed a callback function; this will be invoked once all information
+
+         * necessary has been obtained (i.e. image preloads).
+         *
          * @param stage the stage that will display this sprite sheet
-         * @param filename the filename of the image to use for this sprite sheet
+         * @param image the image to use for this sprite sheet, either a filename of an image or a
+         * previously fully loaded image
          * @param across number of sprites across (asSprites == true) or pixel width of each sprite
          * @param down number of sprites down (asSprites == true) or pixel height of each sprite
          * @param asSprites true if across/down specifies the size of the sprite sheet in sprites, or
          * false if across/down is specifying the size of the sprites explicitly.
+         * @param callback if provided, this function is invoked once the SpriteSheet has finished setting
+         * up; its invoked with this SpriteSheet object as a parameter.
          */
-        constructor(stage: Stage, filename: string, across: number, down?: number, asSprites?: boolean);
+        constructor(stage: Stage, image: string | HTMLImageElement, across: number, down?: number, asSprites?: boolean, callback?: SpriteSheetSetupCallback);
         /**
          * This gets invoked when our image is fully loaded, which means its dimensions are known. This
          * kicks off setting up the rest of the information needed for this sprite sheet.
