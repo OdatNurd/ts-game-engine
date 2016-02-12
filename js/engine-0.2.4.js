@@ -1180,9 +1180,16 @@ var nurdz;
          */
         var SpriteSheet = (function () {
             /**
-             * Construct a new sprite sheet by preloading the given image. Images are expected to be in a folder
-             * named "images/" inside of the folder that the game page is served from, so only a filename and
-             * extension is required.
+             * Construct a new sprite sheet either from a previously loaded image or by preloading an image.
+             *
+             * In the first case, the image needs to have been loaded enough to have dimension information
+             * available at the very least, so that the sprites can be pulled from it. This means that you
+             * should really only invoke this from the completion handler of your own preload (or after
+             * pulling the image from somewhere else).
+             *
+             * In the second case, the class will preload the image itself. Here images are expected to be in a
+             * folder named "images/" inside of the folder that the game page is served from, so only a filename
+             * and extension is required.
              *
              * The constructor is passed two dimensions, an "across" and a "down", plus a boolean flag which
              * is used to determine how the dimension parameters are interpreted.
@@ -1198,13 +1205,14 @@ var nurdz;
              * incoming image.
              *
              * @param stage the stage that will display this sprite sheet
-             * @param filename the filename of the image to use for this sprite sheet
+             * @param image the image to use for this sprite sheet, either a filename of an image or a
+             * previously fully loaded image
              * @param across number of sprites across (asSprites == true) or pixel width of each sprite
              * @param down number of sprites down (asSprites == true) or pixel height of each sprite
              * @param asSprites true if across/down specifies the size of the sprite sheet in sprites, or
              * false if across/down is specifying the size of the sprites explicitly.
              */
-            function SpriteSheet(stage, filename, across, down, asSprites) {
+            function SpriteSheet(stage, image, across, down, asSprites) {
                 var _this = this;
                 if (down === void 0) { down = 1; }
                 if (asSprites === void 0) { asSprites = true; }
@@ -1244,9 +1252,22 @@ var nurdz;
                 this._spriteHeight = (asSprites ? -1 : down);
                 this._spritesAcross = (asSprites ? across : -1);
                 this._spritesDown = (asSprites ? down : -1);
-                // Now preload the image and use the preload callback to set up the rest of the information
-                // when the image is fully loaded.
-                this._image = stage.preloadImage(filename, this.imageLoadComplete);
+                // If the value passed in is a string, then we need to preload the image and do the rest of
+                // our work in the handler when the preload finishes. This doesn't use instanceof because
+                // constant strings aren't instances of class String for some obscure reason; sadly this also
+                // requires
+                if (typeof (image) == "string")
+                    this._image = stage.preloadImage(image, this.imageLoadComplete);
+                else if (image instanceof HTMLImageElement) {
+                    // Here we were given an image and not a filename; ensure that it was actually already loaded.
+                    if (image.complete == false || image.naturalWidth == 0)
+                        throw new TypeError("SpriteSheet provided an image that is not already loaded");
+                    // Save the image and then invoke the handler as if a preload just finished.
+                    this._image = image;
+                    this.imageLoadComplete(image);
+                }
+                else
+                    throw new TypeError("Somehow SpriteSheet constructor was passed an invalid value");
             }
             Object.defineProperty(SpriteSheet.prototype, "width", {
                 /**
