@@ -89,16 +89,27 @@ module nurdz.main
             super ("A grey guy", stage, stage.width / 2, stage.height - 64, 64, 96, 1, {}, {});
 
             // Set up a sprite sheet and turn on debugging
-            this._sheet = new game.SpriteSheet (stage, "sprite_animation.png", 10, 2);
+            this._sheet = new game.SpriteSheet (stage, "sprite_animation.png", 10, 2, true, this.sheetLoaded);
             this._properties.debug = true;
-
-            // Change our origin.
-            this._origin.setToXY (this._width / 2, this._height - 1);
 
             // Set animations up. The first animation becomes active automatically.
             this.addAnimation ("idle", 5, true, game.Utils.createRange (0, 9));
             this.addAnimation ("walk", 15, true, game.Utils.createRange (10, 19));
         }
+
+        /**
+         * This gets invoked once the sprite sheet is fully loaded; here we can determine the dimensions
+         * of the underlying sprites (if we didn't already know).
+         * @param sheet
+         */
+        private sheetLoaded = (sheet : game.SpriteSheet) =>
+        {
+            // Set our dimensions to be the dimensions of sprites in this sprite sheet and our origin to
+            // be between the "feet" of the sprite.
+            this._width = sheet.width;
+            this._height = sheet.height;
+            this._origin.setToXY (this._width / 2, this._height - 1);
+        };
 
         /**
          * Toggle between our animations whenever we are invoked.

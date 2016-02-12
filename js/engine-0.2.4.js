@@ -1204,6 +1204,10 @@ var nurdz;
              * is given directly and the number of total sprites is determined based on the size of the
              * incoming image.
              *
+             * The constructor can be passed a callback function; this will be invoked once all information
+    
+             * necessary has been obtained (i.e. image preloads).
+             *
              * @param stage the stage that will display this sprite sheet
              * @param image the image to use for this sprite sheet, either a filename of an image or a
              * previously fully loaded image
@@ -1211,11 +1215,14 @@ var nurdz;
              * @param down number of sprites down (asSprites == true) or pixel height of each sprite
              * @param asSprites true if across/down specifies the size of the sprite sheet in sprites, or
              * false if across/down is specifying the size of the sprites explicitly.
+             * @param callback if provided, this function is invoked once the SpriteSheet has finished setting
+             * up; its invoked with this SpriteSheet object as a parameter.
              */
-            function SpriteSheet(stage, image, across, down, asSprites) {
+            function SpriteSheet(stage, image, across, down, asSprites, callback) {
                 var _this = this;
                 if (down === void 0) { down = 1; }
                 if (asSprites === void 0) { asSprites = true; }
+                if (callback === void 0) { callback = null; }
                 /**
                  * This gets invoked when our image is fully loaded, which means its dimensions are known. This
                  * kicks off setting up the rest of the information needed for this sprite sheet.
@@ -1245,6 +1252,9 @@ var nurdz;
                         var y = Math.floor(spriteIndex / _this._spritesAcross) * _this._spriteHeight;
                         _this._spritePos.push(new game.Point(x, y));
                     }
+                    // If there is a callback, invoke it now.
+                    if (_this._callback)
+                        _this._callback(_this);
                 };
                 // Set up either sprite width and height or sprites across and down, depending on our boolean
                 // flag.
@@ -1252,6 +1262,8 @@ var nurdz;
                 this._spriteHeight = (asSprites ? -1 : down);
                 this._spritesAcross = (asSprites ? across : -1);
                 this._spritesDown = (asSprites ? down : -1);
+                // Save the callback, if any.
+                this._callback = callback;
                 // If the value passed in is a string, then we need to preload the image and do the rest of
                 // our work in the handler when the preload finishes. This doesn't use instanceof because
                 // constant strings aren't instances of class String for some obscure reason; sadly this also
