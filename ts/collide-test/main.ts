@@ -131,9 +131,9 @@ module nurdz.main
         private _colliders : Array<Collider>;
 
         /**
-         * The list of the four points that control our line segments for doing line collisions. These are
-         * what are visualized on the screen; the user can interact with them in order to change where the
-         * lines are drawn (and thus where they intersect).
+         * The list of the points that control our line segments for doing line collisions. These are what
+         * are visualized on the screen; the user can interact with them in order to change where the lines
+         * are drawn (and thus where they intersect).
          */
         private _lineControls : Array<Collider>;
 
@@ -152,8 +152,7 @@ module nurdz.main
         /**
          * When _lineIntersect is non-null, this indicates what color to use to render the intersection.
          */
-        private _lineIntersectColor;
-        string;
+        private _lineIntersectColor : string;
 
         /**
          * A list of origin points that we can use for our collision objects.
@@ -233,6 +232,8 @@ module nurdz.main
             this._lineControls[1] = new game.Collider (stage, ColliderType.CIRCLE, 750, 550, 8);
             this._lineControls[2] = new game.Collider (stage, ColliderType.CIRCLE, 150, 550, 8);
             this._lineControls[3] = new game.Collider (stage, ColliderType.CIRCLE, 750, 450, 8);
+            this._lineControls[4] = new game.Collider (stage, ColliderType.CIRCLE, 350, 250, 8);
+            this._lineControls[5] = new game.Collider (stage, ColliderType.CIRCLE, 550, 250, 8);
 
             // Get the initial intersection (if any).
             this.recalculateIntersect ();
@@ -271,7 +272,7 @@ module nurdz.main
                                                         this._lineControls[2].position,
                                                         this._lineControls[3].position,
                                                         this._lineIntersect) != null)
-                        this._lineIntersectColor = 'green';
+                    this._lineIntersectColor = 'green';
             }
         }
 
@@ -304,19 +305,20 @@ module nurdz.main
             super.render ();
             this._stage.renderer.drawTxt (`FPS: ${this._stage.fps}`, 16, 16, 'white');
 
-
             // Iterate through all of the colliders. We will render them in different colors based on
             // whether or not they are currently colliding.
             for (let i = 0 ; i < this._colliders.length ; i++)
             {
                 // Get this collision object and then check to see if it's colliding or not.
                 //
-                // If there is a collider, we collide with it, otherwise we collide with the mouse
-                // position (assuming there is one).
+                // If there is a collider, we collide with it, otherwise we collide with the mouse position
+                // (assuming there is one). We don't collide interactively while controlling a line point.
                 let collider = this._colliders[i];
-                let collides = (this._currentCollider == null)
-                    ? collider.contains (this._mouse)
-                    : collider.collidesWith (this._currentCollider);
+                let collides = false;
+                if (this._draggedControl == null)
+                    collides = (this._currentCollider == null)
+                        ? collider.contains (this._mouse)
+                        : collider.collidesWith (this._currentCollider);
 
                 // Render it, using the color determined by whether there is a collision or not.
                 collider.renderVolume (collider.position.x, collider.position.y,
@@ -342,6 +344,10 @@ module nurdz.main
                                               game.ArrowType.BOTH,
                                               Math.PI / 8,
                                               16);
+
+                // If this is the third (fourth) point, change the color style for the rest of the lines.
+                if (i == 3)
+                    this._renderer.setArrowStyle ('yellow', 1);
             }
 
             // If there is an intersection for our line, display it.

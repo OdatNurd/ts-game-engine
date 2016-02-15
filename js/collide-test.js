@@ -151,6 +151,8 @@ var nurdz;
                 this._lineControls[1] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 750, 550, 8);
                 this._lineControls[2] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 150, 550, 8);
                 this._lineControls[3] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 750, 450, 8);
+                this._lineControls[4] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 350, 250, 8);
+                this._lineControls[5] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 550, 250, 8);
                 // Get the initial intersection (if any).
                 this.recalculateIntersect();
                 // Default mode: point; the current collider is thus null.
@@ -205,12 +207,14 @@ var nurdz;
                 for (var i = 0; i < this._colliders.length; i++) {
                     // Get this collision object and then check to see if it's colliding or not.
                     //
-                    // If there is a collider, we collide with it, otherwise we collide with the mouse
-                    // position (assuming there is one).
+                    // If there is a collider, we collide with it, otherwise we collide with the mouse position
+                    // (assuming there is one). We don't collide interactively while controlling a line point.
                     var collider = this._colliders[i];
-                    var collides = (this._currentCollider == null)
-                        ? collider.contains(this._mouse)
-                        : collider.collidesWith(this._currentCollider);
+                    var collides = false;
+                    if (this._draggedControl == null)
+                        collides = (this._currentCollider == null)
+                            ? collider.contains(this._mouse)
+                            : collider.collidesWith(this._currentCollider);
                     // Render it, using the color determined by whether there is a collision or not.
                     collider.renderVolume(collider.position.x, collider.position.y, collides ? 'red' : 'white', this._renderer);
                 }
@@ -223,6 +227,9 @@ var nurdz;
                     // arrow will have heads on both ends.
                     if (i % 2 == 1)
                         this._renderer.drawArrow(this._lineControls[i - 1].position.x, this._lineControls[i - 1].position.y, this._lineControls[i].position.x, this._lineControls[i].position.y, nurdz.game.ArrowStyle.UNFILLED, nurdz.game.ArrowType.BOTH, Math.PI / 8, 16);
+                    // If this is the third (fourth) point, change the color style for the rest of the lines.
+                    if (i == 3)
+                        this._renderer.setArrowStyle('yellow', 1);
                 }
                 // If there is an intersection for our line, display it.
                 if (this._lineIntersect != null)
