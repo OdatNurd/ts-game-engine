@@ -13,6 +13,7 @@
         "Preloader.ts",
         "Utils.ts",
         "Point.ts",
+        "Vector.ts",
         "SpriteSheet.ts",
         "AnimationList.ts",
         "Collider.ts",

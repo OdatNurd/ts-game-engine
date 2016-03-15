@@ -568,6 +568,8 @@ declare module nurdz.game {
     }
 }
 declare module nurdz.game {
+}
+declare module nurdz.game {
     /**
      * The type of a callback function to invoke when a SpriteSheet has been fully loaded; i.e. when it
      * has enough information to fully determine the dimensions of all of the sprites contained in it.
