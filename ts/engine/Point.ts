@@ -71,6 +71,26 @@ module nurdz.game
         }
 
         /**
+         * Create and return a new point based on a given vector, optionally translating the values by the
+         * origin point provided; this is a fast way to turn a point and a vector into the result of
+         * following that vector.
+         *
+         * When no origin point is provided, it is assumed to be the point (0, 0).
+         *
+         * @param vector the point to convert into a point
+         * @param origin the point to consider the origin for the purposes of the conversion; if not
+         * given, (0, 0) is assumed
+         */
+        static fromPoint (vector : Vector2D, origin : Point = null)
+        {
+            let retVal = new Point (vector.x, vector.y);
+            if (origin != null)
+                retVal.translate (origin);
+
+            return retVal;
+        }
+
+        /**
          * Return a new point instance that is a copy of this point.
          *
          * @returns {Point} a duplicate of this point
@@ -265,6 +285,108 @@ module nurdz.game
             // need to translate the calculated values by the position of that point to get the final
             // location of where the end of the line falls.
             return new Point (Math.cos (angle), Math.sin (angle)).scale (distance).translate (this);
+        }
+
+        /**
+         * Given some other coordinate value, calculate the angle between this point and that point, in
+         * degrees. 0 degrees faces to the right and 90 degrees is down instead of up (because it faces in
+         * the direction of positive Y, which increases downwards).
+         *
+         * @param x the X-coordinate to calculate the angle to
+         * @param y the Y-coordinate to calculate the angle to
+         * @returns {number} the angle (in degrees) between this point and the passed in point.
+         * @see Point.angleTo
+         */
+        angleToXY (x : number, y : number) : number
+        {
+            // Get the angle and convert it to degrees on the way out.
+            return Math.atan2 (y - this._y, x - this._x) * (180 / Math.PI);
+        }
+
+        /**
+         * Given some other coordinate value, calculate the angle between this point and that point, in
+         * degrees. 0 degrees faces to the right and 90 degrees is down instead of up (because it faces in
+         * the direction of positive Y, which increases downwards).
+         *
+         * @param other the point to calculate the angle to
+         * @returns {number} the angle (in degrees) between this point and the passed in point.
+         * @see Point.angleToXY
+         */
+        angleTo (other : Point) : number
+        {
+            return this.angleToXY (other._x, other._y);
+        }
+
+        /**
+         * Calculate and return the distance between this point and the coordinates provided.
+         *
+         * @param x the X-coordinate to calculate the distance to
+         * @param y the Y-coordinate to calculate the distance to
+         * @returns {number} the distance between this point and the location provided
+         * @see Point.distance
+         * @see Point.distanceSquared
+         * @see Point.distanceSquaredXY
+         */
+        distanceXY (x : number, y : number) : number
+        {
+            // Take the square of our squared distance
+            return Math.sqrt (this.distanceSquaredXY (x, y));
+        }
+
+        /**
+         * Calculate and return the square of the distance between this point and the coordinates
+         * provided.
+         *
+         * This is meant for purposes where a lot of distances are being compared without requiring the
+         * actual computed distance; this saves a costly square root function.
+         *
+         * @param x the X-coordinate to calculate the distance to
+         * @param y the Y-coordinate to calculate the distance to
+         * @returns {number} the squared distance between this point and the location provided
+         * @see Point.distance
+         * @see Point.distanceXY
+         * @see Point.distanceSquared
+         */
+        distanceSquaredXY (x : number, y : number) : number
+        {
+            // Save the actual distance between the two points
+            let offsX = this._x - x;
+            let offsY = this._y - y;
+
+            // Calculate by using pythagoras and skipping the square root portion
+            return (offsX * offsX) + (offsY * offsY);
+        }
+
+        /**
+         * Calculate and return the distance between this point and the point passed in.
+         *
+         * @param other the other point to calculate the distance to
+         * @returns {number} the distance between this point and the other point
+         * @see Point.distanceXY
+         * @see Point.distanceSquared
+         * @see Point.distanceSquaredXY
+         */
+        distance (other : Point) : number
+        {
+            return Math.sqrt (this.distanceSquaredXY (other._x, other._y));
+        }
+
+        /**
+         * Calculate and return the square of the distance between this point and the coordinates
+         * provided.
+         *
+         * This is meant for purposes where a lot of distances are being compared without requiring the
+         * actual computed distance; this saves a costly square root function.
+         *
+         * @param other the other point to calculate the distance to
+         * @returns {number} the squared distance between this point and the other point
+         * @see Point.distance
+         * @see Point.distanceXY
+         * @see Point.distanceSquaredXY
+         */
+        distanceSquared (other : Point) : number
+        {
+            return this.distanceSquaredXY (other._x, other._y);
         }
 
         /**

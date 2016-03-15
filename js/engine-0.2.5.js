@@ -905,6 +905,24 @@ var nurdz;
                 configurable: true
             });
             /**
+             * Create and return a new point based on a given vector, optionally translating the values by the
+             * origin point provided; this is a fast way to turn a point and a vector into the result of
+             * following that vector.
+             *
+             * When no origin point is provided, it is assumed to be the point (0, 0).
+             *
+             * @param vector the point to convert into a point
+             * @param origin the point to consider the origin for the purposes of the conversion; if not
+             * given, (0, 0) is assumed
+             */
+            Point.fromPoint = function (vector, origin) {
+                if (origin === void 0) { origin = null; }
+                var retVal = new Point(vector.x, vector.y);
+                if (origin != null)
+                    retVal.translate(origin);
+                return retVal;
+            };
+            /**
              * Return a new point instance that is a copy of this point.
              *
              * @returns {Point} a duplicate of this point
@@ -1074,6 +1092,95 @@ var nurdz;
                 return new Point(Math.cos(angle), Math.sin(angle)).scale(distance).translate(this);
             };
             /**
+             * Given some other coordinate value, calculate the angle between this point and that point, in
+             * degrees. 0 degrees faces to the right and 90 degrees is down instead of up (because it faces in
+             * the direction of positive Y, which increases downwards).
+             *
+             * @param x the X-coordinate to calculate the angle to
+             * @param y the Y-coordinate to calculate the angle to
+             * @returns {number} the angle (in degrees) between this point and the passed in point.
+             * @see Point.angleTo
+             */
+            Point.prototype.angleToXY = function (x, y) {
+                // Get the angle and convert it to degrees on the way out.
+                return Math.atan2(y - this._y, x - this._x) * (180 / Math.PI);
+            };
+            /**
+             * Given some other coordinate value, calculate the angle between this point and that point, in
+             * degrees. 0 degrees faces to the right and 90 degrees is down instead of up (because it faces in
+             * the direction of positive Y, which increases downwards).
+             *
+             * @param other the point to calculate the angle to
+             * @returns {number} the angle (in degrees) between this point and the passed in point.
+             * @see Point.angleToXY
+             */
+            Point.prototype.angleTo = function (other) {
+                return this.angleToXY(other._x, other._y);
+            };
+            /**
+             * Calculate and return the distance between this point and the coordinates provided.
+             *
+             * @param x the X-coordinate to calculate the distance to
+             * @param y the Y-coordinate to calculate the distance to
+             * @returns {number} the distance between this point and the location provided
+             * @see Point.distance
+             * @see Point.distanceSquared
+             * @see Point.distanceSquaredXY
+             */
+            Point.prototype.distanceXY = function (x, y) {
+                // Take the square of our squared distance
+                return Math.sqrt(this.distanceSquaredXY(x, y));
+            };
+            /**
+             * Calculate and return the square of the distance between this point and the coordinates
+             * provided.
+             *
+             * This is meant for purposes where a lot of distances are being compared without requiring the
+             * actual computed distance; this saves a costly square root function.
+             *
+             * @param x the X-coordinate to calculate the distance to
+             * @param y the Y-coordinate to calculate the distance to
+             * @returns {number} the squared distance between this point and the location provided
+             * @see Point.distance
+             * @see Point.distanceXY
+             * @see Point.distanceSquared
+             */
+            Point.prototype.distanceSquaredXY = function (x, y) {
+                // Save the actual distance between the two points
+                var offsX = this._x - x;
+                var offsY = this._y - y;
+                // Calculate by using pythagoras and skipping the square root portion
+                return (offsX * offsX) + (offsY * offsY);
+            };
+            /**
+             * Calculate and return the distance between this point and the point passed in.
+             *
+             * @param other the other point to calculate the distance to
+             * @returns {number} the distance between this point and the other point
+             * @see Point.distanceXY
+             * @see Point.distanceSquared
+             * @see Point.distanceSquaredXY
+             */
+            Point.prototype.distance = function (other) {
+                return Math.sqrt(this.distanceSquaredXY(other._x, other._y));
+            };
+            /**
+             * Calculate and return the square of the distance between this point and the coordinates
+             * provided.
+             *
+             * This is meant for purposes where a lot of distances are being compared without requiring the
+             * actual computed distance; this saves a costly square root function.
+             *
+             * @param other the other point to calculate the distance to
+             * @returns {number} the squared distance between this point and the other point
+             * @see Point.distance
+             * @see Point.distanceXY
+             * @see Point.distanceSquaredXY
+             */
+            Point.prototype.distanceSquared = function (other) {
+                return this.distanceSquaredXY(other._x, other._y);
+            };
+            /**
              * Reduce the components in this point by dividing each by the factor provided. This allows for some
              * simple coordinate conversions in a single step. After conversion the points are rounded down to
              * ensure that the coordinates remain integers.
@@ -1240,14 +1347,40 @@ var nurdz;
                 /**
                  * Get the magnitude of this vector.
                  *
-                 * This value is cached internally so that as long as the vector components don't change,
-                 * accessing this property is very cheap.
-                 *
                  * @returns {number} the length of this vector
                  */
                 get: function () {
+                    // Take the square root of our squared magnitude.
+                    return Math.sqrt(this.magnitudeSquared);
+                },
+                /**
+                 * Set the magnitude of this vector. This retains the current direction of the vector but modifies
+                 * the components so that the magnitude is the new magnitude.
+                 *
+                 * Setting the magnitude to 1 is a shortcut for normalizing it.
+                 *
+                 * @param newMagnitude the new magnitude for the vector
+                 */
+                set: function (newMagnitude) {
+                    // In order to set the magnitude of the vector, we first need to normalize it, and then scale
+                    // it according to the magnitude provided.
+                    this.normalize().scale(newMagnitude);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vector2D.prototype, "magnitudeSquared", {
+                /**
+                 * Get the squared magnitude of this vector. The true magnitude is the square root of this value,
+                 * which can be a costly operation; for comparison purposes you may want to skip that portion of
+                 * the operation.
+                 *
+                 * @returns {number}
+                 */
+                get: function () {
                     // A vector is really just the hypotenuse of a right triangle, so this is easily calculated.
-                    return Math.sqrt((this._x * this._x) + (this._y * this._y));
+                    // We don't take the square root here.
+                    return (this._x * this._x) + (this._y * this._y);
                 },
                 enumerable: true,
                 configurable: true
@@ -1270,7 +1403,7 @@ var nurdz;
             };
             /**
              * Create and return a new vector based on a given point, optionally translating the values at the
-             * same time to turn the point into a proper displacement.
+             * same time to turn the point into a proper displacement from some known origin point.
              *
              * The function assumes that both the point provided and the origin point are using the same frame
              * of reference, and so the position of the point will be translated by the inverse of the origin
@@ -1314,6 +1447,16 @@ var nurdz;
              */
             Vector2D.prototype.copyReversed = function () {
                 return this.copy().reverse();
+            };
+            /**
+             * Return a new vector instance that is a copy of this vector after it has been rotated 90
+             * degrees to the left or right.
+             *
+             * @param left true to rotate the copied vector to the left or false to rotate it to the right
+             */
+            Vector2D.prototype.copyOrthogonal = function (left) {
+                if (left === void 0) { left = true; }
+                return this.copy().orthogonalize(left);
             };
             /**
              * Reverse the direction of the vector by rotating it 180 degrees from the direction that it is
@@ -1403,22 +1546,21 @@ var nurdz;
                 return (this._x * other._x) + (this._y * other._y);
             };
             /**
-             * Construct and return a vector that has the same magnitude of this vector, but which is orthogonal
-             * to it (i.e. 90 degrees to the left or right).
+             * Rotate this vector 90 degrees to the left or right by 90 degrees to make it orthogonal to its
+             * current direction. This leaves the magnitude intact.
              *
              * The parameter allows you to select the orientation of the new vector, either pointing to the left
              * of this vector (true) or the right of it (false).
              *
              * Although this is possible via the rotate() method, the version here does not require the use of
-             * any
-             * trig functions in order to perform the rotation, and so runs faster, should that be needed.
+             * any trig functions in order to perform the rotation, and so runs faster, should that be needed.
              *
              * @param left true to return a vector rotated 90 degrees to the left (counter-clockwise) or false to
              * rotate clockwise instead.
-             * @returns {Vector2D} the new vector
+             * @returns {Vector2D} the vector after it has been rotated
              * @see Vector2D.rotate
              */
-            Vector2D.prototype.getOrthogonal = function (left) {
+            Vector2D.prototype.orthogonalize = function (left) {
                 if (left === void 0) { left = true; }
                 // The magic of the dot product tells us that the dot product of two perpendicular vectors is 0
                 // because the cosine of 90 degrees is 0.
@@ -1430,7 +1572,11 @@ var nurdz;
                 //
                 // The term that you negate controls the direction which the apparent "rotation" has occurred,
                 // which we control here via a boolean.
-                return new Vector2D(this._y * (left ? 1 : -1), this._x * (left ? -1 : 1));
+                var newX = this._y * (left ? 1 : -1);
+                var newY = this._x * (left ? -1 : 1);
+                this._x = newX;
+                this._y = newY;
+                return this;
             };
             /**
              * Add the provided vector to this vector, returning this vector.

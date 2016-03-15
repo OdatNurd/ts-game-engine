@@ -69,15 +69,41 @@ module nurdz.game
         /**
          * Get the magnitude of this vector.
          *
-         * This value is cached internally so that as long as the vector components don't change,
-         * accessing this property is very cheap.
-         *
          * @returns {number} the length of this vector
          */
         get magnitude () : number
         {
+            // Take the square root of our squared magnitude.
+            return Math.sqrt (this.magnitudeSquared);
+        }
+
+        /**
+         * Set the magnitude of this vector. This retains the current direction of the vector but modifies
+         * the components so that the magnitude is the new magnitude.
+         *
+         * Setting the magnitude to 1 is a shortcut for normalizing it.
+         *
+         * @param newMagnitude the new magnitude for the vector
+         */
+        set magnitude (newMagnitude : number)
+        {
+            // In order to set the magnitude of the vector, we first need to normalize it, and then scale
+            // it according to the magnitude provided.
+            this.normalize ().scale (newMagnitude);
+        }
+
+        /**
+         * Get the squared magnitude of this vector. The true magnitude is the square root of this value,
+         * which can be a costly operation; for comparison purposes you may want to skip that portion of
+         * the operation.
+         *
+         * @returns {number}
+         */
+        get magnitudeSquared () : number
+        {
             // A vector is really just the hypotenuse of a right triangle, so this is easily calculated.
-            return Math.sqrt ((this._x * this._x) + (this._y * this._y));
+            // We don't take the square root here.
+            return (this._x * this._x) + (this._y * this._y);
         }
         
         /**
@@ -117,7 +143,7 @@ module nurdz.game
 
         /**
          * Create and return a new vector based on a given point, optionally translating the values at the
-         * same time to turn the point into a proper displacement.
+         * same time to turn the point into a proper displacement from some known origin point.
          *
          * The function assumes that both the point provided and the origin point are using the same frame
          * of reference, and so the position of the point will be translated by the inverse of the origin
@@ -167,6 +193,17 @@ module nurdz.game
         copyReversed () : Vector2D
         {
             return this.copy ().reverse ();
+        }
+
+        /**
+         * Return a new vector instance that is a copy of this vector after it has been rotated 90
+         * degrees to the left or right.
+         *
+         * @param left true to rotate the copied vector to the left or false to rotate it to the right
+         */
+        copyOrthogonal (left : boolean = true) : Vector2D
+        {
+            return this.copy ().orthogonalize (left);
         }
 
         /**
@@ -267,22 +304,21 @@ module nurdz.game
         }
 
         /**
-         * Construct and return a vector that has the same magnitude of this vector, but which is orthogonal
-         * to it (i.e. 90 degrees to the left or right).
+         * Rotate this vector 90 degrees to the left or right by 90 degrees to make it orthogonal to its
+         * current direction. This leaves the magnitude intact.
          *
          * The parameter allows you to select the orientation of the new vector, either pointing to the left
          * of this vector (true) or the right of it (false).
          *
          * Although this is possible via the rotate() method, the version here does not require the use of
-         * any
-         * trig functions in order to perform the rotation, and so runs faster, should that be needed.
+         * any trig functions in order to perform the rotation, and so runs faster, should that be needed.
          *
          * @param left true to return a vector rotated 90 degrees to the left (counter-clockwise) or false to
          * rotate clockwise instead.
-         * @returns {Vector2D} the new vector
+         * @returns {Vector2D} the vector after it has been rotated
          * @see Vector2D.rotate
          */
-        getOrthogonal (left : boolean = true) : Vector2D
+        orthogonalize (left : boolean = true) : Vector2D
         {
             // The magic of the dot product tells us that the dot product of two perpendicular vectors is 0
             // because the cosine of 90 degrees is 0.
@@ -294,7 +330,12 @@ module nurdz.game
             //
             // The term that you negate controls the direction which the apparent "rotation" has occurred,
             // which we control here via a boolean.
-            return new Vector2D (this._y * (left ? 1 : -1), this._x * (left ? -1 : 1));
+            let newX = this._y * (left ? 1 : -1);
+            let newY = this._x * (left ? -1 : 1);
+
+            this._x = newX;
+            this._y = newY;
+            return this;
         }
 
         /**

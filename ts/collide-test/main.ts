@@ -309,8 +309,9 @@ module nurdz.main
             let midP = new Point ((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
 
             // Create a vector version of the line by using the first point as an origin for the second
-            // point, then make it orthogonal, normalize it and scale it to be 32 units long.
-            let v0 = Vector2D.fromPoint (p1, p0).getOrthogonal (true).normalize ().scale (32);
+            // point, then make it orthogonal to itself and set its magnitude to be 32
+            let v0 = Vector2D.fromPoint (p1, p0).orthogonalize (true);
+            v0.magnitude = 32;
 
             // Draw a dot at the midpoint
             this._renderer.fillCircle (midP.x, midP.y, 4, 'yellow');

@@ -383,6 +383,18 @@ declare module nurdz.game {
          */
         constructor(x: number, y: number);
         /**
+         * Create and return a new point based on a given vector, optionally translating the values by the
+         * origin point provided; this is a fast way to turn a point and a vector into the result of
+         * following that vector.
+         *
+         * When no origin point is provided, it is assumed to be the point (0, 0).
+         *
+         * @param vector the point to convert into a point
+         * @param origin the point to consider the origin for the purposes of the conversion; if not
+         * given, (0, 0) is assumed
+         */
+        static fromPoint(vector: Vector2D, origin?: Point): Point;
+        /**
          * Return a new point instance that is a copy of this point.
          *
          * @returns {Point} a duplicate of this point
@@ -504,6 +516,77 @@ declare module nurdz.game {
          */
         pointAtAngle(angle: number, distance: number): Point;
         /**
+         * Given some other coordinate value, calculate the angle between this point and that point, in
+         * degrees. 0 degrees faces to the right and 90 degrees is down instead of up (because it faces in
+         * the direction of positive Y, which increases downwards).
+         *
+         * @param x the X-coordinate to calculate the angle to
+         * @param y the Y-coordinate to calculate the angle to
+         * @returns {number} the angle (in degrees) between this point and the passed in point.
+         * @see Point.angleTo
+         */
+        angleToXY(x: number, y: number): number;
+        /**
+         * Given some other coordinate value, calculate the angle between this point and that point, in
+         * degrees. 0 degrees faces to the right and 90 degrees is down instead of up (because it faces in
+         * the direction of positive Y, which increases downwards).
+         *
+         * @param other the point to calculate the angle to
+         * @returns {number} the angle (in degrees) between this point and the passed in point.
+         * @see Point.angleToXY
+         */
+        angleTo(other: Point): number;
+        /**
+         * Calculate and return the distance between this point and the coordinates provided.
+         *
+         * @param x the X-coordinate to calculate the distance to
+         * @param y the Y-coordinate to calculate the distance to
+         * @returns {number} the distance between this point and the location provided
+         * @see Point.distance
+         * @see Point.distanceSquared
+         * @see Point.distanceSquaredXY
+         */
+        distanceXY(x: number, y: number): number;
+        /**
+         * Calculate and return the square of the distance between this point and the coordinates
+         * provided.
+         *
+         * This is meant for purposes where a lot of distances are being compared without requiring the
+         * actual computed distance; this saves a costly square root function.
+         *
+         * @param x the X-coordinate to calculate the distance to
+         * @param y the Y-coordinate to calculate the distance to
+         * @returns {number} the squared distance between this point and the location provided
+         * @see Point.distance
+         * @see Point.distanceXY
+         * @see Point.distanceSquared
+         */
+        distanceSquaredXY(x: number, y: number): number;
+        /**
+         * Calculate and return the distance between this point and the point passed in.
+         *
+         * @param other the other point to calculate the distance to
+         * @returns {number} the distance between this point and the other point
+         * @see Point.distanceXY
+         * @see Point.distanceSquared
+         * @see Point.distanceSquaredXY
+         */
+        distance(other: Point): number;
+        /**
+         * Calculate and return the square of the distance between this point and the coordinates
+         * provided.
+         *
+         * This is meant for purposes where a lot of distances are being compared without requiring the
+         * actual computed distance; this saves a costly square root function.
+         *
+         * @param other the other point to calculate the distance to
+         * @returns {number} the squared distance between this point and the other point
+         * @see Point.distance
+         * @see Point.distanceXY
+         * @see Point.distanceSquaredXY
+         */
+        distanceSquared(other: Point): number;
+        /**
          * Reduce the components in this point by dividing each by the factor provided. This allows for some
          * simple coordinate conversions in a single step. After conversion the points are rounded down to
          * ensure that the coordinates remain integers.
@@ -624,12 +707,25 @@ declare module nurdz.game {
         /**
          * Get the magnitude of this vector.
          *
-         * This value is cached internally so that as long as the vector components don't change,
-         * accessing this property is very cheap.
-         *
          * @returns {number} the length of this vector
          */
+        /**
+         * Set the magnitude of this vector. This retains the current direction of the vector but modifies
+         * the components so that the magnitude is the new magnitude.
+         *
+         * Setting the magnitude to 1 is a shortcut for normalizing it.
+         *
+         * @param newMagnitude the new magnitude for the vector
+         */
         magnitude: number;
+        /**
+         * Get the squared magnitude of this vector. The true magnitude is the square root of this value,
+         * which can be a costly operation; for comparison purposes you may want to skip that portion of
+         * the operation.
+         *
+         * @returns {number}
+         */
+        magnitudeSquared: number;
         /**
          * Construct a new 2D vector, optionally also providing one or both components of the vector itself.
          *
@@ -652,7 +748,7 @@ declare module nurdz.game {
         static fromDisplacement(direction: number, magnitude: number): Vector2D;
         /**
          * Create and return a new vector based on a given point, optionally translating the values at the
-         * same time to turn the point into a proper displacement.
+         * same time to turn the point into a proper displacement from some known origin point.
          *
          * The function assumes that both the point provided and the origin point are using the same frame
          * of reference, and so the position of the point will be translated by the inverse of the origin
@@ -685,6 +781,13 @@ declare module nurdz.game {
          * @returns {Vector2D} a duplicate of the reversed form of this vector
          */
         copyReversed(): Vector2D;
+        /**
+         * Return a new vector instance that is a copy of this vector after it has been rotated 90
+         * degrees to the left or right.
+         *
+         * @param left true to rotate the copied vector to the left or false to rotate it to the right
+         */
+        copyOrthogonal(left?: boolean): Vector2D;
         /**
          * Reverse the direction of the vector by rotating it 180 degrees from the direction that it is
          * currently pointing.
@@ -738,22 +841,21 @@ declare module nurdz.game {
          */
         dot(other: Vector2D): number;
         /**
-         * Construct and return a vector that has the same magnitude of this vector, but which is orthogonal
-         * to it (i.e. 90 degrees to the left or right).
+         * Rotate this vector 90 degrees to the left or right by 90 degrees to make it orthogonal to its
+         * current direction. This leaves the magnitude intact.
          *
          * The parameter allows you to select the orientation of the new vector, either pointing to the left
          * of this vector (true) or the right of it (false).
          *
          * Although this is possible via the rotate() method, the version here does not require the use of
-         * any
-         * trig functions in order to perform the rotation, and so runs faster, should that be needed.
+         * any trig functions in order to perform the rotation, and so runs faster, should that be needed.
          *
          * @param left true to return a vector rotated 90 degrees to the left (counter-clockwise) or false to
          * rotate clockwise instead.
-         * @returns {Vector2D} the new vector
+         * @returns {Vector2D} the vector after it has been rotated
          * @see Vector2D.rotate
          */
-        getOrthogonal(left?: boolean): Vector2D;
+        orthogonalize(left?: boolean): Vector2D;
         /**
          * Add the provided vector to this vector, returning this vector.
          *
