@@ -569,6 +569,281 @@ declare module nurdz.game {
 }
 declare module nurdz.game {
     /**
+     * This class represents a 2-Dimensional vector.
+     *
+     * A vector is a geometric entity which has two properties; length (magnitude) and direction. They are
+     * objects which are inherently an offset or displacement from some other point.
+     *
+     * Vectors can operate in any number of dimensions, but this class operates only with 2 dimensional
+     * vectors due to the nature of the engine that it's used in.
+     *
+     * Note also that mathematically vectors are represented as a column matrix, which stops you from
+     * confusing them with points. We take the lazy approach of representing them in comments here and
+     * elsewhere as row matrices instead. Normally you would include a T superscript to indicate that this ia
+     * a row matrix which should be Transposed, but we're not doing that here due to the aforementioned
+     * laziness.
+     */
+    class Vector2D {
+        /**
+         * The amount of offset that we have in the X direction; positive X values face right while negative X
+         * values face left. A value of 0 is going either up or down as determined by the Y value.
+         */
+        protected _x: number;
+        /**
+         * The amount of offset that we have in the Y direction; positive Y values face downward while
+         * negative Y values face upward. A value of 0 is either either right or left and determined by the
+         * X value.
+         *
+         * Note that the sense of what is up and what is down is reversed what what you would expect in
+         * standard geometry because on our canvas the Y values increase downward and not upwards as they
+         * normally would.
+         */
+        protected _y: number;
+        /**
+         * The x component of this vector.
+         *
+         * @returns {number}
+         */
+        /**
+         * Set the x component of this vector.
+         *
+         * @param newX the new X to set.
+         */
+        x: number;
+        /**
+         * The y component of this vector.
+         *
+         * @returns {number}
+         */
+        /**
+         * Set the y component of this vector.
+         *
+         * @param newY the new y to set.
+         */
+        y: number;
+        /**
+         * Get the magnitude of this vector.
+         *
+         * This value is cached internally so that as long as the vector components don't change,
+         * accessing this property is very cheap.
+         *
+         * @returns {number} the length of this vector
+         */
+        magnitude: number;
+        /**
+         * Construct a new 2D vector, optionally also providing one or both components of the vector itself.
+         *
+         * As a vector is an offset from some location, it is important to note that the X and Y provided are
+         * not POSITIONS, but are in fact the amount of OFFSET on each axis from some other (externally
+         * defined) position.
+         *
+         * @param x the amount of X offset for this vector
+         * @param y the amount of Y offset for this vector
+         */
+        constructor(x?: number, y?: number);
+        /**
+         * Given a direction and a magnitude, return back a vector object that represents those values. This
+         * calculates the appropriate X and Y displacements required in order to obtain a vector with these
+         * properties.
+         *
+         * @param direction the direction the vector is pointing (in degrees)
+         * @param magnitude the magnitude of the vector
+         */
+        static fromDisplacement(direction: number, magnitude: number): Vector2D;
+        /**
+         * Create and return a new vector based on a given point, optionally translating the values at the
+         * same time to turn the point into a proper displacement.
+         *
+         * The function assumes that both the point provided and the origin point are using the same frame
+         * of reference, and so the position of the point will be translated by the inverse of the origin
+         * point provided.
+         *
+         * When no origin point is provided, it is assumed to be the point (0, 0); thus in this case the
+         * point you provide is deemed to already be a vector.
+         *
+         * @param point the point to convert into a vector
+         * @param origin the point to consider the origin for the purposes of the conversion; if not
+         * given, (0, 0) is assumed
+         */
+        static fromPoint(point: Point, origin?: Point): Vector2D;
+        /**
+         * Return a new vector instance that is a copy of this vector
+         *
+         * @returns {Vector2D} a duplicate of this vector
+         */
+        copy(): Vector2D;
+        /**
+         * Return a new vector instance that is a copy of this vector after it has been normalized.
+         *
+         * @returns {Vector2D} a duplicate of the normalized form of this vector.
+         */
+        copyNormalized(): Vector2D;
+        /**
+         * Return a new vector instance that is a copy of this vector after it has been reversed to point in
+         * the opposite direction of this vector
+         *
+         * @returns {Vector2D} a duplicate of the reversed form of this vector
+         */
+        copyReversed(): Vector2D;
+        /**
+         * Reverse the direction of the vector by rotating it 180 degrees from the direction that it is
+         * currently pointing.
+         *
+         * @returns {Vector2D} this vector after being reversed.
+         */
+        reverse(): Vector2D;
+        /**
+         * Normalize this vector to convert it to a unit vector.
+         *
+         * A normalized vector is one which has a magnitude of 1; as such the components of the vector are
+         * modified but it's orientation will remain the same.
+         *
+         * Note that this is just a specialized case of scaling the vector by its current magnitude.
+         * Additionally, don't confuse a normalized vector (vector with magnitude of 1) with a "normal
+         * vector", which is a vector that is perpendicular to a surface but may or may not have a magnitude
+         * of 1.
+         *
+         * @see Vector2D.scale
+         * @returns {Vector2D} this vector after being normalized.
+         */
+        normalize(): Vector2D;
+        /**
+         * Calculate the dot product between two vectors.
+         *
+         * Geometrically, the dot product is defined as:
+         *
+         *    U . V = ||U|| * ||V|| * cos (theta)
+         *
+         * Which means "the dot product between two vectors U and V is the same as the magnitude of each
+         * vector multiplied  by the cosine of the angle between them, where "the angle between them" is the
+         * angle that one of the vectors would need to be rotated in order to be pointing in the same
+         * direction of the other one.
+         *
+         * For the case of normalized unit vectors (whose magnitude is always 1) the dot product tells you
+         * directly the cosine of the angle between the vectors. For non-unit vectors, you can obtain this by
+         * dividing the dot product by the multiple of the magnitudes of both vectors (which cancels them
+         * out). This is generally costly which is why we generally work with unit vectors in this case, which
+         * allow us to assume the magnitude.
+         *
+         * Properties of the dot product:
+         *   A) When both are pointing in the same direction, the angle between them is 0, and cos(0) is 1.
+         *   B) When each points in the opposite direction, the angle between them is 180, and cos(180) is -1.
+         *   C) When the two are perpendicular, the angle between them is 90, and cos(90) = 0.
+         *   D) Due to the way the dot product is calculated, the dot product of a vector and itself is always
+         *      the square of the magnitude, which may be interesting for various algebraic and/or geometric
+         *     reasons.
+         *
+         * @param other the other vector to calculate the dot product with.
+         * @returns {number} the dot product between this vector and the other vector
+         */
+        dot(other: Vector2D): number;
+        /**
+         * Construct and return a vector that has the same magnitude of this vector, but which is orthogonal
+         * to it (i.e. 90 degrees to the left or right).
+         *
+         * The parameter allows you to select the orientation of the new vector, either pointing to the left
+         * of this vector (true) or the right of it (false).
+         *
+         * Although this is possible via the rotate() method, the version here does not require the use of
+         * any
+         * trig functions in order to perform the rotation, and so runs faster, should that be needed.
+         *
+         * @param left true to return a vector rotated 90 degrees to the left (counter-clockwise) or false to
+         * rotate clockwise instead.
+         * @returns {Vector2D} the new vector
+         * @see Vector2D.rotate
+         */
+        getOrthogonal(left?: boolean): Vector2D;
+        /**
+         * Add the provided vector to this vector, returning this vector.
+         *
+         * @param other the vector to add to this vector
+         * @returns {Vector2D} this vector after the other vector has been added to it
+         */
+        add(other: Vector2D): Vector2D;
+        /**
+         * Subtract the provided vector from this vector, returning this vector
+         *
+         * @param other the vector to subtract from this vector
+         * @returns {Vector2D} this vector after the other vector has been subtracted from it
+         */
+        sub(other: Vector2D): Vector2D;
+        /**
+         * Negate the components of this vector by flipping the sign of all of its components. The vector is
+         * returned to allow chaining this as required.
+         *
+         * This is useful for purposes of turning a vector subtraction into a vector addition, since vector
+         * addition is commutative but subtraction is not. This can make some calculations visually easier to
+         * follow, even if it does complicate the code and slow it down.
+         *
+         * @returns {Vector2D} this vector after the negation has been computed
+         */
+        negate(): Vector2D;
+        /**
+         * Calculate and return the angle (in degrees) that this vector is currently pointing. A rotation
+         * angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
+         *
+         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
+         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
+         * upward.
+         *
+         * The return is always a value in the range of 0-359 inclusive.
+         *
+         * The Zero vector (a vector with all components 0) is assumed to point in the direction with angle 0
+         * (to the right).
+         *
+         * @returns {number} the angle in degrees that the vector is pointing.
+         */
+        direction(): number;
+        /**
+         * Rotate the direction of this vector by the specified angle (in degrees), returning the vector after
+         * the rotation has completed.
+         *
+         * Positive angle rotate in a clockwise fashion while negative angles rotate in a counterclockwise
+         * fashion. This is inverted to what you might expect due to the Y axis increasing downwards and not
+         * upwards.
+         *
+         * For the special case of rotating the vector 90 degrees to the left or right, the getOrthogonal()
+         * method can be used to return a new vector that is so rotated without the expense of the trig
+         * functions that are used by this method.
+         *
+         * @param angle the angle to rotate by, in degrees
+         * @returns {Vector2D} this vector after the rotation has been completed
+         * @see Vector2D.getOrthogonal
+         */
+        rotate(angle: number): Vector2D;
+        /**
+         * Rotate this vector so that it points at the angle provided.
+         *
+         * @param angle the absolute angle to point the vector in, in degrees
+         * @returns {Vector2D} this vector after the rotation has been accomplished
+         */
+        rotateTo(angle: number): Vector2D;
+        /**
+         * Scale this vector by the scale factor provided. This alters the magnitude of the vector (and thus
+         * also the displacement) but leaves the direction untouched.
+         *
+         * Scaling by the current magnitude of the vector will normalize it into a unit vector. There is a
+         * normalize() method that does this for you, for convenience.
+         *
+         * @param factor the scale factor to apply to the vector
+         * @returns {Vector2D} this vector after it has been scaled
+         * @see Vector2D.normalize
+         */
+        scale(factor: number): Vector2D;
+        /**
+         * Display a string version of the vector for debugging purposes.
+         *
+         * This displays the displacement values as well as the direction and magnitude. All values are set to
+         * a fixed level 0f 3 digits after the decimal point.
+         *
+         * @returns {string}
+         */
+        toString(): string;
+    }
+}
+declare module nurdz.game {
+    /**
      * The type of a callback function to invoke when a SpriteSheet has been fully loaded; i.e. when it
      * has enough information to fully determine the dimensions of all of the sprites contained in it.
      *
