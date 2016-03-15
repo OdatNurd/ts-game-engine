@@ -320,6 +320,14 @@ declare module nurdz.game.Utils {
      */
     function distanceBetween(point1: Point, point2: Point): number;
     /**
+     * Calculate the square of the distance between the two points provided.
+     *
+     * @param point1 the first point
+     * @param point2 the second point
+     * @returns {number} the square of the distance between the two points
+     */
+    function distanceSquaredBetween(point1: Point, point2: Point): number;
+    /**
      * Calculate the distance between the two points provided.
      *
      * @param x1 X coordinate of first point
@@ -329,6 +337,16 @@ declare module nurdz.game.Utils {
      * @returns {number} the distance between the two points
      */
     function distanceBetweenXY(x1: number, y1: number, x2: number, y2: number): number;
+    /**
+     * Calculate the square of the distance between the two points provided.
+     *
+     * @param x1 X coordinate of first point
+     * @param y1 Y coordinate of first point
+     * @param x2 X coordinate of second point
+     * @param y2 Y coordinate of second point
+     * @returns {number} the square of the distance between the two points
+     */
+    function distanceSquaredBetweenXY(x1: number, y1: number, x2: number, y2: number): number;
 }
 declare module nurdz.game {
     /**
@@ -2049,7 +2067,8 @@ declare module nurdz.game.Collision {
     function rectInCircle(rectX: number, rectY: number, rectW: number, rectH: number, circleX: number, circleY: number, circleR: number): boolean;
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+     * if
      * both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -2057,7 +2076,8 @@ declare module nurdz.game.Collision {
      *
      * The function returns a point that represents the intersection point, or null if there is no
      * intersection available. When result is specified, the return value is that point if there is an
-     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     * intersection; in the case where there is no intersection, the point is left as-is and null is
+     * returned.
      *
      * Note that this method returns the intersection of the two lines as if they were infinitely
      * projected in both directions; to determine if the intersection is on the line segments as
@@ -2077,7 +2097,8 @@ declare module nurdz.game.Collision {
     function lineIntersection(p0: Point, p1: Point, p2: Point, p3: Point, result?: Point): Point;
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+     * if
      * both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -2085,7 +2106,8 @@ declare module nurdz.game.Collision {
      *
      * The function returns a point that represents the intersection point, or null if there is no
      * intersection available. When result is specified, the return value is that point if there is an
-     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     * intersection; in the case where there is no intersection, the point is left as-is and null is
+     * returned.
      *
      * Note that this method returns the intersection of the two lines as if they were infinitely
      * projected in both directions; to determine if the intersection is on the line segments as
@@ -2109,7 +2131,8 @@ declare module nurdz.game.Collision {
     function lineIntersectionXY(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, result?: Point): Point;
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+     * if
      * both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -2117,7 +2140,8 @@ declare module nurdz.game.Collision {
      *
      * The function returns a point that represents the intersection point, or null if there is no
      * intersection available. When result is specified, the return value is that point if there is an
-     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     * intersection; in the case where there is no intersection, the point is left as-is and null is
+     * returned.
      *
      * This method, unlike the other method, returns the intersection of the two line segments directly;
      * if the two line segments do not directly intersect, null is returned.
@@ -2136,7 +2160,8 @@ declare module nurdz.game.Collision {
     function segmentIntersection(p0: Point, p1: Point, p2: Point, p3: Point, result?: Point): Point;
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+     * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+     * if
      * both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -2144,7 +2169,8 @@ declare module nurdz.game.Collision {
      *
      * The function returns a point that represents the intersection point, or null if there is no
      * intersection available. When result is specified, the return value is that point if there is an
-     * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+     * intersection; in the case where there is no intersection, the point is left as-is and null is
+     * returned.
      *
      * This method, unlike the other method, returns the intersection of the two line segments directly;
      * if the two line segments do not directly intersect, null is returned.

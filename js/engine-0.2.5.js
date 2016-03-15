@@ -829,6 +829,18 @@ var nurdz;
             }
             Utils.distanceBetween = distanceBetween;
             /**
+             * Calculate the square of the distance between the two points provided.
+             *
+             * @param point1 the first point
+             * @param point2 the second point
+             * @returns {number} the square of the distance between the two points
+             */
+            function distanceSquaredBetween(point1, point2) {
+                // Use the other function
+                return this.distanceSquaredBetweenXY(point1.x, point1.y, point2.x, point2.y);
+            }
+            Utils.distanceSquaredBetween = distanceSquaredBetween;
+            /**
              * Calculate the distance between the two points provided.
              *
              * @param x1 X coordinate of first point
@@ -845,6 +857,23 @@ var nurdz;
                 return Math.sqrt((dX * dX) + (dY * dY));
             }
             Utils.distanceBetweenXY = distanceBetweenXY;
+            /**
+             * Calculate the square of the distance between the two points provided.
+             *
+             * @param x1 X coordinate of first point
+             * @param y1 Y coordinate of first point
+             * @param x2 X coordinate of second point
+             * @param y2 Y coordinate of second point
+             * @returns {number} the square of the distance between the two points
+             */
+            function distanceSquaredBetweenXY(x1, y1, x2, y2) {
+                // Get the delta values between the two points.
+                var dX = x2 - x1;
+                var dY = y2 - y1;
+                // Do that thing we all know what it does but without that other part that we also know what it does.
+                return (dX * dX) + (dY * dY);
+            }
+            Utils.distanceSquaredBetweenXY = distanceSquaredBetweenXY;
         })(Utils = game.Utils || (game.Utils = {}));
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
@@ -3226,8 +3255,9 @@ var nurdz;
              */
             function pointInCircle(pX, pY, circleX, circleY, circleR) {
                 // For the point to be in the circle, the distance between the point and the circle has to be
-                // smaller than the radius.
-                return game.Utils.distanceBetweenXY(pX, pY, circleX, circleY) <= circleR;
+                // smaller than the radius. Here we do the comparison with the squares of the distances because we
+                // don't care about what the distance ultimately is, only that it's close enough.
+                return game.Utils.distanceSquaredBetweenXY(pX, pY, circleX, circleY) <= circleR * circleR;
             }
             Collision.pointInCircle = pointInCircle;
             /**
@@ -3264,9 +3294,12 @@ var nurdz;
              * @returns {boolean} true if the two circles intersect or false otherwise
              */
             function circleInCircle(circle1X, circle1Y, circle1R, circle2X, circle2Y, circle2R) {
+                // Get the combined radius of both circles.
+                var combinedR = circle1R + circle2R;
                 // In order for the two circles to intersect, the distance between their center points has to be
-                // no larger than the combination of both of their radii.
-                return game.Utils.distanceBetweenXY(circle1X, circle1Y, circle2X, circle2Y) <= circle1R + circle2R;
+                // no larger than the combination of both of their radii. Like in the point/circle collision, we
+                // work with the squares here because they just need to be in range.
+                return game.Utils.distanceSquaredBetweenXY(circle1X, circle1Y, circle2X, circle2Y) <= combinedR * combinedR;
             }
             Collision.circleInCircle = circleInCircle;
             /**
@@ -3294,7 +3327,8 @@ var nurdz;
             Collision.rectInCircle = rectInCircle;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+             * if
              * both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -3302,7 +3336,8 @@ var nurdz;
              *
              * The function returns a point that represents the intersection point, or null if there is no
              * intersection available. When result is specified, the return value is that point if there is an
-             * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+             * intersection; in the case where there is no intersection, the point is left as-is and null is
+             * returned.
              *
              * Note that this method returns the intersection of the two lines as if they were infinitely
              * projected in both directions; to determine if the intersection is on the line segments as
@@ -3327,7 +3362,8 @@ var nurdz;
             Collision.lineIntersection = lineIntersection;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+             * if
              * both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -3335,7 +3371,8 @@ var nurdz;
              *
              * The function returns a point that represents the intersection point, or null if there is no
              * intersection available. When result is specified, the return value is that point if there is an
-             * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+             * intersection; in the case where there is no intersection, the point is left as-is and null is
+             * returned.
              *
              * Note that this method returns the intersection of the two lines as if they were infinitely
              * projected in both directions; to determine if the intersection is on the line segments as
@@ -3360,33 +3397,17 @@ var nurdz;
                 // This function operates based on standard form equation of a line, which is:
                 //   Ax + By = C; where A, B and C are integers and A is positive
                 //
-                // This basically decomposes the point-slope (the m in 'y = mx + b') into the terms that apply to both
-                // the X and Y values separately; in particular:
-                //    A = y2 - y1
-                //    B = x1 - x2
-                //    C = calculated as Ax + By like the equation says, by inserting a point into the line
-                //
-                // Note that the order of x1 and x2 is reversed in the equation for B; this is due to algebraic
-                // manipulation and corresponds to the "mx" term of the point-slope form shifting to the left side
-                // of the equality sign to convert the equation to 'y - mx = b'.
-                //
-                // The function operates over four points, and works by taking a system of two identical equations
-                // and solving them as one; doing this determines the one point that satisfies both equations,
-                // which is the point at which those lines intersect.
-                //
-                // The algebra for that is outside the scope of these comments, but suffice it to say that given
-                // the two equations (where here the 1 and 2 indicate the first and second lines, respectively):
-                //   A1X + B1Y = C1
-                //   A2X + B2Y = C2
-                //
-                // The system can be worked out to the following two equations, isolating the terms for X and for Y:
-                //
-                //  X = ((C1 * B2) - (C2 * B1)) / ((A1 * B2) - (A2 * B1))
-                //  y = ((C2 * A1) - (C1 * A2)) / ((B2 * A1) - (B1 * A2))
-                //
-                // Note that the denominator for both calculations is identical (although here the terms are
-                // represented in a slightly different order, A * B == B * A), so we only need to calculate that
-                // value once.
+                // This basically decomposes the point-slope (the m in 'y = mx + b') into the terms that apply to
+                // both the X and Y values separately; in particular: A = y2 - y1 B = x1 - x2 C = calculated as
+                // Ax + By like the equation says, by inserting a point into the line  Note that the order of x1
+                // and x2 is reversed in the equation for B; this is due to algebraic manipulation and
+                // corresponds to the "mx" term of the point-slope form shifting to the left side of the equality
+                // sign to convert the equation to 'y - mx = b'.  The function operates over four points, and
+                // works by taking a system of two identical equations and solving them as one; doing this
+                // determines the one point that satisfies both equations, which is the point at which those
+                // lines intersect.  The algebra for that is outside the scope of these comments, but suffice it
+                // to say that given the two equations (where here the 1 and 2 indicate the first and second
+                // lines, respectively): A1X + B1Y = C1 A2X + B2Y = C2  The system can be worked out to the following two equations, isolating the terms for X and for Y:  X = ((C1 * B2) - (C2 * B1)) / ((A1 * B2) - (A2 * B1)) y = ((C2 * A1) - (C1 * A2)) / ((B2 * A1) - (B1 * A2))  Note that the denominator for both calculations is identical (although here the terms are represented in a slightly different order, A * B == B * A), so we only need to calculate that value once.
                 if (result === void 0) { result = null; }
                 // First, calculate the parts of the first line, which uses points 0 and 1
                 var A1 = y1 - y0, B1 = x0 - x1, C1 = (A1 * x0) + (B1 * y0), 
@@ -3415,7 +3436,8 @@ var nurdz;
             Collision.lineIntersectionXY = lineIntersectionXY;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+             * if
              * both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -3423,7 +3445,8 @@ var nurdz;
              *
              * The function returns a point that represents the intersection point, or null if there is no
              * intersection available. When result is specified, the return value is that point if there is an
-             * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+             * intersection; in the case where there is no intersection, the point is left as-is and null is
+             * returned.
              *
              * This method, unlike the other method, returns the intersection of the two line segments directly;
              * if the two line segments do not directly intersect, null is returned.
@@ -3447,7 +3470,8 @@ var nurdz;
             Collision.segmentIntersection = segmentIntersection;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
-             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly, if
+             * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
+             * if
              * both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
@@ -3455,7 +3479,8 @@ var nurdz;
              *
              * The function returns a point that represents the intersection point, or null if there is no
              * intersection available. When result is specified, the return value is that point if there is an
-             * intersection; in the case where there is no intersection, the point is left as-is and null is returned.
+             * intersection; in the case where there is no intersection, the point is left as-is and null is
+             * returned.
              *
              * This method, unlike the other method, returns the intersection of the two line segments directly;
              * if the two line segments do not directly intersect, null is returned.

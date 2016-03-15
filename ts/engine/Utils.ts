@@ -170,6 +170,19 @@ module nurdz.game.Utils
     }
 
     /**
+     * Calculate the square of the distance between the two points provided.
+     *
+     * @param point1 the first point
+     * @param point2 the second point
+     * @returns {number} the square of the distance between the two points
+     */
+    export function distanceSquaredBetween (point1 : Point, point2 : Point) : number
+    {
+        // Use the other function
+        return this.distanceSquaredBetweenXY (point1.x, point1.y, point2.x, point2.y);
+    }
+
+    /**
      * Calculate the distance between the two points provided.
      *
      * @param x1 X coordinate of first point
@@ -186,5 +199,24 @@ module nurdz.game.Utils
 
         // Do that thing we all know what it does.
         return Math.sqrt ((dX * dX) + (dY * dY));
+    }
+
+    /**
+     * Calculate the square of the distance between the two points provided.
+     *
+     * @param x1 X coordinate of first point
+     * @param y1 Y coordinate of first point
+     * @param x2 X coordinate of second point
+     * @param y2 Y coordinate of second point
+     * @returns {number} the square of the distance between the two points
+     */
+    export function distanceSquaredBetweenXY (x1 : number, y1 : number, x2 : number, y2 : number) : number
+    {
+        // Get the delta values between the two points.
+        let dX = x2 - x1;
+        let dY = y2 - y1;
+
+        // Do that thing we all know what it does but without that other part that we also know what it does.
+        return (dX * dX) + (dY * dY);
     }
 }
