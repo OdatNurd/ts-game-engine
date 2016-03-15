@@ -194,6 +194,34 @@ var nurdz;
                     this._stage.renderer.fillCircle(this._mouse.x, this._mouse.y, 3, 'white');
             };
             /**
+             * Renders a line perpendicular to the center point of the third control line (points 4 and 5).
+             */
+            TestScene.prototype.renderPerpendicularLine = function () {
+                // As a helper alias the two points that we're using.
+                var p0 = this._lineControls[4].position;
+                var p1 = this._lineControls[5].position;
+                // Determine the midpoint of the line that we are trying to find the perpendicular of; this
+                // will be where we start our perpendicular line from.
+                var midP = new Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
+                // Convert the helper line into a vector by subtracting the second point from the first; this
+                // makes it consider the first point its origin.
+                var v0 = p1.copy().translateXY(-p0.x, -p0.y);
+                // Now we swap the X and Y coordinates around and invert the sign of the Y coordinate in the
+                // process. This makes the vector rotate 90 degrees counter-clockwise due to mathemagics.
+                v0.setToXY(v0.y * -1, v0.x);
+                // Calculate the magnitude of this vector; once we have that, make its length exactly 32 by
+                // first turning it into a unit vector and then multiplying each component by 32.
+                var magnitude = Math.sqrt(v0.x * v0.x + v0.y * v0.y);
+                v0.x = (v0.x / magnitude) * 32;
+                v0.y = (v0.y / magnitude) * 32;
+                // Now translate it by the midpoint to make that its local origin
+                v0.translate(midP);
+                // Draw a dot at the midpoint
+                this._renderer.fillCircle(midP.x, midP.y, 4, 'yellow');
+                // Render a short line.
+                this._renderer.drawArrow(midP.x, midP.y, v0.x, v0.y, nurdz.game.ArrowStyle.UNFILLED, nurdz.game.ArrowType.END, Math.PI / 8, 16);
+            };
+            /**
              * Render the scene.
              */
             TestScene.prototype.render = function () {
@@ -231,6 +259,8 @@ var nurdz;
                     if (i == 3)
                         this._renderer.setArrowStyle('yellow', 1);
                 }
+                // Render the temporary perpendicular line to the third line; this is only for testing purposes.
+                this.renderPerpendicularLine();
                 // If there is an intersection for our line, display it.
                 if (this._lineIntersect != null)
                     this._renderer.fillCircle(this._lineIntersect.x, this._lineIntersect.y, 5, this._lineIntersectColor);
@@ -323,7 +353,7 @@ var nurdz;
                 return _super.prototype.inputKeyDown.call(this, eventObj);
             };
             return TestScene;
-        })(nurdz.game.Scene);
+        }(nurdz.game.Scene));
         // Once the DOM is loaded, set things up.
         nurdz.contentLoaded(window, function () {
             try {
