@@ -83,6 +83,7 @@ var nurdz;
          * making assumptions about when it gets invoked.
          */
         var Point = nurdz.game.Point;
+        var Vector2D = nurdz.game.Vector2D;
         var Collider = nurdz.game.Collider;
         var ColliderType = nurdz.game.ColliderType;
         var TestScene = (function (_super) {
@@ -203,23 +204,13 @@ var nurdz;
                 // Determine the midpoint of the line that we are trying to find the perpendicular of; this
                 // will be where we start our perpendicular line from.
                 var midP = new Point((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
-                // Convert the helper line into a vector by subtracting the second point from the first; this
-                // makes it consider the first point its origin.
-                var v0 = p1.copy().translateXY(-p0.x, -p0.y);
-                // Now we swap the X and Y coordinates around and invert the sign of the Y coordinate in the
-                // process. This makes the vector rotate 90 degrees counter-clockwise due to mathemagics.
-                v0.setToXY(v0.y * -1, v0.x);
-                // Calculate the magnitude of this vector; once we have that, make its length exactly 32 by
-                // first turning it into a unit vector and then multiplying each component by 32.
-                var magnitude = Math.sqrt(v0.x * v0.x + v0.y * v0.y);
-                v0.x = (v0.x / magnitude) * 32;
-                v0.y = (v0.y / magnitude) * 32;
-                // Now translate it by the midpoint to make that its local origin
-                v0.translate(midP);
+                // Create a vector version of the line by using the first point as an origin for the second
+                // point, then make it orthogonal, normalize it and scale it to be 32 units long.
+                var v0 = Vector2D.fromPoint(p1, p0).getOrthogonal(true).normalize().scale(32);
                 // Draw a dot at the midpoint
                 this._renderer.fillCircle(midP.x, midP.y, 4, 'yellow');
                 // Render a short line.
-                this._renderer.drawArrow(midP.x, midP.y, v0.x, v0.y, nurdz.game.ArrowStyle.UNFILLED, nurdz.game.ArrowType.END, Math.PI / 8, 16);
+                this._renderer.drawArrow(midP.x, midP.y, midP.x + v0.x, midP.y + v0.y, nurdz.game.ArrowStyle.UNFILLED, nurdz.game.ArrowType.END, Math.PI / 8, 16);
             };
             /**
              * Render the scene.
@@ -353,7 +344,7 @@ var nurdz;
                 return _super.prototype.inputKeyDown.call(this, eventObj);
             };
             return TestScene;
-        }(nurdz.game.Scene));
+        })(nurdz.game.Scene);
         // Once the DOM is loaded, set things up.
         nurdz.contentLoaded(window, function () {
             try {
