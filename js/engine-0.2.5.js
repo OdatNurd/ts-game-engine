@@ -874,6 +874,39 @@ var nurdz;
                 return (dX * dX) + (dY * dY);
             }
             Utils.distanceSquaredBetweenXY = distanceSquaredBetweenXY;
+            /**
+             * Normalize the value passed in for the range provided, returning the normalized value. The value is
+             * normalized such that when value == min, 0 is returned and when value == max, max is returned.
+             *
+             * The value itself can fall outside of the range, in which case it will be smaller than 0 or larger
+             * than 1 using the same linear range.
+             *
+             * @param value the value to normalize
+             * @param min the minimum value in the range
+             * @param max the maximum value in the range
+             * @returns {number} the normalized value, which is between 0.0 and 1.0 assuming that the value falls
+             * within the range or its endpoints.
+             */
+            function normalize(value, min, max) {
+                return (value - min) / (max - min);
+            }
+            Utils.normalize = normalize;
+            /**
+             * Do a linear interpolation for the normalized value into the range given. The returned value will be
+             * min when normal == 0 or max when normal == 1.
+             *
+             * The normalized value can fall outside of the range of min to max, in which case it will be smaller
+             * than min or larger than max using the same linear range.
+             *
+             * @param normal the normalized value (usually 0.0 to 1.0 inclusive)
+             * @param min the minimum value in the range
+             * @param max the maximum value in the range
+             * @returns {number} an interpolation of the value between the ranged endpoints
+             */
+            function linearInterpolate(normal, min, max) {
+                return min + (max - min) * normal;
+            }
+            Utils.linearInterpolate = linearInterpolate;
         })(Utils = game.Utils || (game.Utils = {}));
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
