@@ -87,9 +87,62 @@ module nurdz.game
          */
         set magnitude (newMagnitude : number)
         {
-            // In order to set the magnitude of the vector, we first need to normalize it, and then scale
-            // it according to the magnitude provided.
-            this.normalize ().scale (newMagnitude);
+            // Get the current angle of vector and convert it to radians.
+            let direction = this.direction * (Math.PI / 180);
+
+            // Now use a little trig to set the X and Y to the new length.
+            this._x = Math.cos (direction) * newMagnitude;
+            this._y = Math.sin (direction) * newMagnitude;
+        }
+
+        /**
+         * Get the angle (in degrees) that this vector is currently pointing.
+         *
+         * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
+         *
+         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
+         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
+         * upward.
+         *
+         * The return is always a value in the range of 0-359 inclusive.
+         *
+         * The Zero vector (a vector with all components 0) is assumed to point in the direction with angle 0
+         * (to the right).
+         *
+         * @returns {number} the angle in degrees that the vector is pointing.
+         */
+        get direction () : number
+        {
+            // Calculate the actual angle in degrees. This calculates the angle as something between -180 and
+            // 180 (anything with a negative Y value is a negative angle).
+            let angle = Math.atan2 (this._y, this._x) * (180 / Math.PI);
+
+            // Normalize the angle to be in the range of 0 - 359 instead
+            return (angle < 0) ? angle + 360 : angle;
+        }
+
+        /**
+         * Set the angle (in degrees) that this vector points. This keeps the current magnitude of the
+         * vector intact.
+         *
+         * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
+         *
+         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
+         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
+         * upward.
+         *
+         * @param newDirection
+         */
+        set direction (newDirection : number)
+        {
+            // Convert the angle given from degrees to radians.
+            newDirection = newDirection * (Math.PI / 180);
+
+            // Now using a little trig, calculate what the new X and Y values should be in order to get to
+            // that direction while maintaining the length.
+            let currentLength = this.magnitude;
+            this._x = Math.cos (newDirection) * currentLength;
+            this._y = Math.sin (newDirection) * currentLength;
         }
 
         /**
@@ -381,31 +434,6 @@ module nurdz.game
         }
 
         /**
-         * Calculate and return the angle (in degrees) that this vector is currently pointing. A rotation
-         * angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
-         *
-         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
-         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
-         * upward.
-         *
-         * The return is always a value in the range of 0-359 inclusive.
-         *
-         * The Zero vector (a vector with all components 0) is assumed to point in the direction with angle 0
-         * (to the right).
-         *
-         * @returns {number} the angle in degrees that the vector is pointing.
-         */
-        direction () : number
-        {
-            // Calculate the actual angle in degrees. This calculates the angle as something between -180 and
-            // 180 (anything with a negative Y value is a negative angle).
-            let angle = Math.atan2 (this._y, this._x) * (180 / Math.PI);
-
-            // Normalize the angle to be in the range of 0 - 359 instead
-            return (angle < 0) ? angle + 360 : angle;
-        }
-
-        /**
          * Rotate the direction of this vector by the specified angle (in degrees), returning the vector after
          * the rotation has completed.
          *
@@ -448,7 +476,7 @@ module nurdz.game
          */
         rotateTo (angle : number) : Vector2D
         {
-            return this.rotate (angle - this.direction ());
+            return this.rotate (angle - this.direction);
         }
 
         /**
@@ -483,7 +511,7 @@ module nurdz.game
         toString () : string
         {
             return `V<(${this._x.toFixed (3)},${this._y.toFixed (3)}), ` +
-                `${this.direction ().toFixed (3)}\xB0, ${this.magnitude.toFixed (3)}>`;
+                `${this.direction.toFixed (3)}\xB0, ${this.magnitude.toFixed (3)}>`;
         }
     }
 }

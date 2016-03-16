@@ -764,6 +764,35 @@ declare module nurdz.game {
          */
         magnitude: number;
         /**
+         * Get the angle (in degrees) that this vector is currently pointing.
+         *
+         * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
+         *
+         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
+         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
+         * upward.
+         *
+         * The return is always a value in the range of 0-359 inclusive.
+         *
+         * The Zero vector (a vector with all components 0) is assumed to point in the direction with angle 0
+         * (to the right).
+         *
+         * @returns {number} the angle in degrees that the vector is pointing.
+         */
+        /**
+         * Set the angle (in degrees) that this vector points. This keeps the current magnitude of the
+         * vector intact.
+         *
+         * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
+         *
+         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
+         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
+         * upward.
+         *
+         * @param newDirection
+         */
+        direction: number;
+        /**
          * Get the squared magnitude of this vector. The true magnitude is the square root of this value,
          * which can be a costly operation; for comparison purposes you may want to skip that portion of
          * the operation.
@@ -926,22 +955,6 @@ declare module nurdz.game {
          * @returns {Vector2D} this vector after the negation has been computed
          */
         negate(): Vector2D;
-        /**
-         * Calculate and return the angle (in degrees) that this vector is currently pointing. A rotation
-         * angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
-         *
-         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
-         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
-         * upward.
-         *
-         * The return is always a value in the range of 0-359 inclusive.
-         *
-         * The Zero vector (a vector with all components 0) is assumed to point in the direction with angle 0
-         * (to the right).
-         *
-         * @returns {number} the angle in degrees that the vector is pointing.
-         */
-        direction(): number;
         /**
          * Rotate the direction of this vector by the specified angle (in degrees), returning the vector after
          * the rotation has completed.
