@@ -2541,13 +2541,13 @@ declare module nurdz.game {
          */
         NONE = 0,
         /**
-         * The start of the line should have an arrowhead.
-         */
-        START = 1,
-        /**
          * The end of the line should have an arrowhead.
          */
-        END = 2,
+        END = 1,
+        /**
+         * The start of the line should have an arrowhead.
+         */
+        START = 2,
         /**
          * Both ends of the line should have an arrowhead.
          */

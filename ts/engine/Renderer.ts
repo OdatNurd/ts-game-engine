@@ -13,14 +13,14 @@ module nurdz.game
         NONE = 0,
 
         /**
-         * The start of the line should have an arrowhead.
-         */
-        START,
-
-        /**
          * The end of the line should have an arrowhead.
          */
         END,
+
+        /**
+         * The start of the line should have an arrowhead.
+         */
+        START,
 
         /**
          * Both ends of the line should have an arrowhead.

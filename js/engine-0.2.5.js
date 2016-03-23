@@ -3942,13 +3942,13 @@ var nurdz;
              */
             ArrowType[ArrowType["NONE"] = 0] = "NONE";
             /**
-             * The start of the line should have an arrowhead.
-             */
-            ArrowType[ArrowType["START"] = 1] = "START";
-            /**
              * The end of the line should have an arrowhead.
              */
-            ArrowType[ArrowType["END"] = 2] = "END";
+            ArrowType[ArrowType["END"] = 1] = "END";
+            /**
+             * The start of the line should have an arrowhead.
+             */
+            ArrowType[ArrowType["START"] = 2] = "START";
             /**
              * Both ends of the line should have an arrowhead.
              */
