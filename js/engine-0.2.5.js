@@ -2628,6 +2628,66 @@ var nurdz;
                 // We are not the same type; thus, we need to intersect between a circle and a rectangle.
                 return this.circleRectCollide(other);
             };
+            /**
+             * Calculate the first intersection point between the line that runs from the two points provided
+             * and this collision object. Since it is possible that the line segment may intersect more than
+             * once, the direction of the line is used to determine the direction of the intersection points.
+             * As such, the order of the points is important.
+             *
+             * If the result parameter is non-null, it is filled with the intersection point (if any). Otherwise,
+             * a new point is created if needed.
+             *
+             * The return value is null if there is no intersection or the point of intersection if there is;
+             * in this case, this could be the new point created or the point passed in, depending on the
+             * value of result.
+             *
+             * @param p0 the starting point of the line segment
+             * @param p1 the ending point of the line segment
+             * @param result the result point to store the intersection in or null to create a new point if
+             *     needed
+             * @returns {Point} the point of the intersection (if any) or null otherwise.
+             * @see Collider.intersectWithSegmentXY
+             */
+            Collider.prototype.intersectWithSegment = function (p0, p1, result) {
+                if (result === void 0) { result = null; }
+                // Use the other method.
+                return this.intersectWithSegmentXY(p0.x, p0.y, p1.x, p1.y, result);
+            };
+            /**
+             * Calculate the first intersection point between the line that runs from the two points provided
+             * and this collision object. Since it is possible that the line segment may intersect more than
+             * once, the direction of the line is used to determine the direction of the intersection points.
+             * As such, the order of the points is important.
+             *
+             * If the result parameter is non-null, it is filled with the intersection point (if any). Otherwise,
+             * a new point is created if needed.
+             *
+             * The return value is null if there is no intersection or the point of intersection if there is;
+             * in this case, this could be the new point created or the point passed in, depending on the
+             * value of result.
+             *
+             * @param x0 the X coordinate of the starting point of the line segment
+             * @param y0 the Y coordinate of the starting point of the line segment
+             * @param x1 the X coordinate of the ending point of the line segment
+             * @param y1 the Y coordinate of the ending point of the line segment
+             * @param result the result point to store the intersection in or null to create a new point if
+             *     needed
+             * @returns {Point} the point of the intersection (if any) or null otherwise.
+             * @see Collider.intersectWithSegment
+             */
+            Collider.prototype.intersectWithSegmentXY = function (x0, y0, x1, y1, result) {
+                if (result === void 0) { result = null; }
+                // Collide based on the type of this object.
+                switch (this._type) {
+                    // No possible intersection.
+                    case ColliderType.NONE:
+                    case ColliderType.CIRCLE:
+                        return null;
+                    // Check to see where the segment intersects with our rectangle.
+                    case ColliderType.RECTANGLE:
+                        return game.Collision.segmentRectangleIntersectionXY(x0, y0, x1, y1, this._position.x - this._origin.x, this._position.y - this._origin.y, this._width, this._height, result);
+                }
+            };
             return Collider;
         })();
         game.Collider = Collider;

@@ -1532,6 +1532,50 @@ declare module nurdz.game {
          * @returns {boolean} true if these two objects are colliding, or false otherwise
          */
         collidesWith(other: Collider): boolean;
+        /**
+         * Calculate the first intersection point between the line that runs from the two points provided
+         * and this collision object. Since it is possible that the line segment may intersect more than
+         * once, the direction of the line is used to determine the direction of the intersection points.
+         * As such, the order of the points is important.
+         *
+         * If the result parameter is non-null, it is filled with the intersection point (if any). Otherwise,
+         * a new point is created if needed.
+         *
+         * The return value is null if there is no intersection or the point of intersection if there is;
+         * in this case, this could be the new point created or the point passed in, depending on the
+         * value of result.
+         *
+         * @param p0 the starting point of the line segment
+         * @param p1 the ending point of the line segment
+         * @param result the result point to store the intersection in or null to create a new point if
+         *     needed
+         * @returns {Point} the point of the intersection (if any) or null otherwise.
+         * @see Collider.intersectWithSegmentXY
+         */
+        intersectWithSegment(p0: Point, p1: Point, result?: Point): Point;
+        /**
+         * Calculate the first intersection point between the line that runs from the two points provided
+         * and this collision object. Since it is possible that the line segment may intersect more than
+         * once, the direction of the line is used to determine the direction of the intersection points.
+         * As such, the order of the points is important.
+         *
+         * If the result parameter is non-null, it is filled with the intersection point (if any). Otherwise,
+         * a new point is created if needed.
+         *
+         * The return value is null if there is no intersection or the point of intersection if there is;
+         * in this case, this could be the new point created or the point passed in, depending on the
+         * value of result.
+         *
+         * @param x0 the X coordinate of the starting point of the line segment
+         * @param y0 the Y coordinate of the starting point of the line segment
+         * @param x1 the X coordinate of the ending point of the line segment
+         * @param y1 the Y coordinate of the ending point of the line segment
+         * @param result the result point to store the intersection in or null to create a new point if
+         *     needed
+         * @returns {Point} the point of the intersection (if any) or null otherwise.
+         * @see Collider.intersectWithSegment
+         */
+        intersectWithSegmentXY(x0: number, y0: number, x1: number, y1: number, result?: Point): Point;
     }
 }
 declare module nurdz.game {
