@@ -3290,9 +3290,6 @@ var nurdz;
         game.Entity = Entity;
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
-/**
- * This module exports various routines for the purpose of doing collision detection.
- */
 var nurdz;
 (function (nurdz) {
     var game;
@@ -3404,8 +3401,7 @@ var nurdz;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
              * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-             * if
-             * both lines are collinear, there are an infinite number of intersection points.
+             * if both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
              * a new point is created if needed
@@ -3439,8 +3435,7 @@ var nurdz;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
              * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-             * if
-             * both lines are collinear, there are an infinite number of intersection points.
+             * if both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
              * a new point is created if needed
@@ -3483,7 +3478,11 @@ var nurdz;
                 // determines the one point that satisfies both equations, which is the point at which those
                 // lines intersect.  The algebra for that is outside the scope of these comments, but suffice it
                 // to say that given the two equations (where here the 1 and 2 indicate the first and second
-                // lines, respectively): A1X + B1Y = C1 A2X + B2Y = C2  The system can be worked out to the following two equations, isolating the terms for X and for Y:  X = ((C1 * B2) - (C2 * B1)) / ((A1 * B2) - (A2 * B1)) y = ((C2 * A1) - (C1 * A2)) / ((B2 * A1) - (B1 * A2))  Note that the denominator for both calculations is identical (although here the terms are represented in a slightly different order, A * B == B * A), so we only need to calculate that value once.
+                // lines, respectively): A1X + B1Y = C1 A2X + B2Y = C2  The system can be worked out to the
+                // following two equations, isolating the terms for X and for Y:  X = ((C1 * B2) - (C2 * B1)) /
+                // ((A1 * B2) - (A2 * B1)) y = ((C2 * A1) - (C1 * A2)) / ((B2 * A1) - (B1 * A2))  Note that the
+                // denominator for both calculations is identical (although here the terms are represented in a
+                // slightly different order, A * B == B * A), so we only need to calculate that value once.
                 if (result === void 0) { result = null; }
                 // First, calculate the parts of the first line, which uses points 0 and 1
                 var A1 = y1 - y0, B1 = x0 - x1, C1 = (A1 * x0) + (B1 * y0), 
@@ -3513,8 +3512,7 @@ var nurdz;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
              * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-             * if
-             * both lines are collinear, there are an infinite number of intersection points.
+             * if both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
              * a new point is created if needed
@@ -3524,8 +3522,9 @@ var nurdz;
              * intersection; in the case where there is no intersection, the point is left as-is and null is
              * returned.
              *
-             * This method, unlike the other method, returns the intersection of the two line segments directly;
-             * if the two line segments do not directly intersect, null is returned.
+             * This method, unlike the other method, returns the intersection of the two line segments directly
+             * (i.e. the lines are not infinitely projected); if the two line segments do not directly intersect,
+             * null is returned.
              *
              * @param p0 the first point of the first line
              * @param p1 the second point of the first line
@@ -3547,8 +3546,7 @@ var nurdz;
             /**
              * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
              * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-             * if
-             * both lines are collinear, there are an infinite number of intersection points.
+             * if both lines are collinear, there are an infinite number of intersection points.
              *
              * If result is non-null, the collision point is put into that point before it is returned. Otherwise
              * a new point is created if needed
@@ -3558,8 +3556,9 @@ var nurdz;
              * intersection; in the case where there is no intersection, the point is left as-is and null is
              * returned.
              *
-             * This method, unlike the other method, returns the intersection of the two line segments directly;
-             * if the two line segments do not directly intersect, null is returned.
+             * This method, unlike the other method, returns the intersection of the two line segments directly
+             * (i.e. the lines are not infinitely projected); if the two line segments do not directly intersect,
+             * null is returned.
              *
              * @param x0 the X coordinate of the first point of the first line
              * @param y0 the Y coordinate of the first point of the first line
@@ -3593,6 +3592,122 @@ var nurdz;
                 return null;
             }
             Collision.segmentIntersectionXY = segmentIntersectionXY;
+            /**
+             * Given a line segment that originates at (x0, y0) and ends at(x1, y1), determine the first
+             * intersection between the line and the rectangle whose left corner is at (rectX, rectY) with the
+             * dimensions given.
+             *
+             * The order of the points determines the direction that the line segment is assumed to be
+             * pointing for the purposes of determining which of two possible intersection points is the first
+             * intersection.
+             *
+             * The return value is null if there is no collision, or the point of the first intersection
+             * between the line and the rectangle (based on directionality). If the result variable is null, a
+             * new point object is created and returned; otherwise, the result object given is modified to
+             * contain the collision location and is then returned.
+             *
+             * @param p0 the first point of the line segment
+             * @param p1 the second point of the line segment
+             * @param rectPos the upper left corner of the rectangle
+             * @param rectW the width of the rectangle
+             * @param rectH the height of the rectangle
+             * @param result a point to store the result value in, or null to create a new one
+             * @returns {Point} null if the line segment and the rectangle do not intersect, or the point at
+             * which the first intersection happens
+             * @see Collision.segmentRectangleIntersectionXY
+             */
+            function segmentRectangleIntersection(p0, p1, rectPos, rectW, rectH, result) {
+                if (result === void 0) { result = null; }
+                // Use the other method to do the hard work
+                return this.segmentRectangleIntersectionXY(p0.x, p0.y, p1.x, p1.y, rectPos.x, rectPos.y, rectW, rectH, result);
+            }
+            Collision.segmentRectangleIntersection = segmentRectangleIntersection;
+            /**
+             * Given a line segment that originates at (x0, y0) and ends at(x1, y1), determine the first
+             * intersection between the line and the rectangle whose left corner is at (rectX, rectY) with the
+             * dimensions given.
+             *
+             * The order of the points determines the direction that the line segment is assumed to be
+             * pointing for the purposes of determining which of two possible intersection points is the first
+             * intersection.
+             *
+             * The return value is null if there is no collision, or the point of the first intersection
+             * between the line and the rectangle (based on directionality). If the result variable is null, a
+             * new point object is created and returned; otherwise, the result object given is modified to
+             * contain the collision location and is then returned.
+             *
+             * @param x0 the X coordinate of the first point of the line segment
+             * @param y0 the Y coordinate of the first point of the line segment
+             * @param x1 the X coordinate of the second point of the line segment
+             * @param y1 the Y coordinate of the second point of the line segment
+             * @param rectX the X coordinate of the upper left corner of the rectangle
+             * @param rectY the Y coordinate of the upper left corner of the rectangle
+             * @param rectW the width of the rectangle
+             * @param rectH the height of the rectangle
+             * @param result a point to store the result value in, or null to create a new one
+             * @returns {Point} null if the line segment and the rectangle do not intersect, or the point at
+             * which the first intersection happens
+             * @see Collision.segmentRectangleIntersection
+             */
+            function segmentRectangleIntersectionXY(x0, y0, x1, y1, rectX, rectY, rectW, rectH, result) {
+                if (result === void 0) { result = null; }
+                // As a first test of collision, treat the line as a rectangular bounding volume and see if it
+                // intersects with the rectangle. If it doesn't, then we can stop right now; it's only possible
+                // for the line to intersect if the bounds overlap.
+                if (this.rectInRect(x0, y0, x1 - x0, y1 - y0, rectX, rectY, rectW, rectH) == false)
+                    return null;
+                // Now we know that there is at least some possibility of collision between the line segment and the
+                // rectangle; In order to determine if there ACTUALLY is (and if so, where), we decompose the
+                // rectangle to be 4 line segments, and test each of them for collision. There can be anywhere
+                // from 0 to two of them.
+                var collisions = [];
+                var intersect = new game.Point(0, 0);
+                // First, test the top of the rectangle.
+                if (this.segmentIntersectionXY(x0, y0, x1, y1, rectX, rectY, rectX + rectW, rectY, intersect) != null)
+                    collisions.push(intersect.copy());
+                // Next, the bottom.
+                if (this.segmentIntersectionXY(x0, y0, x1, y1, rectX, rectY + rectH, rectX + rectW, rectY + rectH, intersect) != null)
+                    collisions.push(intersect.copy());
+                // Now the left side.
+                if (this.segmentIntersectionXY(x0, y0, x1, y1, rectX, rectY, rectX, rectY + rectH, intersect) != null)
+                    collisions.push(intersect.copy());
+                // Finally the right side
+                if (this.segmentIntersectionXY(x0, y0, x1, y1, rectX + rectW, rectY, rectX + rectW, rectY + rectH, intersect) != null)
+                    collisions.push(intersect.copy());
+                // If there are no collisions at this point, return null to indicate that.
+                if (collisions.length == 0)
+                    return null;
+                // We know that there is going to be a returned value, so make sure that result is a point
+                // object.
+                if (result == null)
+                    result = new game.Point(0, 0);
+                // If there is a single collision value, that is what we will return.
+                if (collisions.length == 1)
+                    result.setTo(collisions[0]);
+                else {
+                    // Here there are two collision objects. In that case, we need to select which one of them is the
+                    // first collision. To do this, we take advantage of knowing that the two collisions form a line
+                    // that is collinear with the line segment we were given.
+                    //
+                    // We treat both the original line segment as well as the two collision points as vectors, and
+                    // test to see if the direction between collision 0 and 1 is the same as the direction of the
+                    // line. The only possibilities are that it is the same direction or that it is the opposite
+                    // direction.
+                    //
+                    // We know from vector math that to reverse a vector you flip the sign of both offsets.
+                    // Thus here we test to see if the sign of both offsets is the same or not; if it is,
+                    // they're in the same direction and the first collision is the one we want; otherwise
+                    // it's the second one.
+                    if (Math.sign(x1 - x0) == Math.sign(collisions[1].x - collisions[0].x) &&
+                        Math.sign(y1 - y0) == Math.sign(collisions[1].y - collisions[0].y))
+                        result.setTo(collisions[0]);
+                    else
+                        result.setTo(collisions[1]);
+                }
+                // Return it now.
+                return result;
+            }
+            Collision.segmentRectangleIntersectionXY = segmentRectangleIntersectionXY;
         })(Collision = game.Collision || (game.Collision = {}));
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));

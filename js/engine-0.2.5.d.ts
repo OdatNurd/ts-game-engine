@@ -2041,9 +2041,6 @@ declare module nurdz.game {
         toString(): string;
     }
 }
-/**
- * This module exports various routines for the purpose of doing collision detection.
- */
 declare module nurdz.game.Collision {
     /**
      * Determine if a point provided falls within the rectangle made up of the corner point with the width
@@ -2116,8 +2113,7 @@ declare module nurdz.game.Collision {
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
      * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-     * if
-     * both lines are collinear, there are an infinite number of intersection points.
+     * if both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
      * a new point is created if needed
@@ -2146,8 +2142,7 @@ declare module nurdz.game.Collision {
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
      * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-     * if
-     * both lines are collinear, there are an infinite number of intersection points.
+     * if both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
      * a new point is created if needed
@@ -2180,8 +2175,7 @@ declare module nurdz.game.Collision {
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
      * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-     * if
-     * both lines are collinear, there are an infinite number of intersection points.
+     * if both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
      * a new point is created if needed
@@ -2191,8 +2185,9 @@ declare module nurdz.game.Collision {
      * intersection; in the case where there is no intersection, the point is left as-is and null is
      * returned.
      *
-     * This method, unlike the other method, returns the intersection of the two line segments directly;
-     * if the two line segments do not directly intersect, null is returned.
+     * This method, unlike the other method, returns the intersection of the two line segments directly
+     * (i.e. the lines are not infinitely projected); if the two line segments do not directly intersect,
+     * null is returned.
      *
      * @param p0 the first point of the first line
      * @param p1 the second point of the first line
@@ -2209,8 +2204,7 @@ declare module nurdz.game.Collision {
     /**
      * Determine the intersection point between the line (p0, p1) and (p2, p3), if any can be found. In
      * particular, if the two lines are parallel to each other, no intersection is possible. Similarly,
-     * if
-     * both lines are collinear, there are an infinite number of intersection points.
+     * if both lines are collinear, there are an infinite number of intersection points.
      *
      * If result is non-null, the collision point is put into that point before it is returned. Otherwise
      * a new point is created if needed
@@ -2220,8 +2214,9 @@ declare module nurdz.game.Collision {
      * intersection; in the case where there is no intersection, the point is left as-is and null is
      * returned.
      *
-     * This method, unlike the other method, returns the intersection of the two line segments directly;
-     * if the two line segments do not directly intersect, null is returned.
+     * This method, unlike the other method, returns the intersection of the two line segments directly
+     * (i.e. the lines are not infinitely projected); if the two line segments do not directly intersect,
+     * null is returned.
      *
      * @param x0 the X coordinate of the first point of the first line
      * @param y0 the Y coordinate of the first point of the first line
@@ -2239,6 +2234,59 @@ declare module nurdz.game.Collision {
      * @see Collision.segmentIntersection
      */
     function segmentIntersectionXY(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, result?: Point): Point;
+    /**
+     * Given a line segment that originates at (x0, y0) and ends at(x1, y1), determine the first
+     * intersection between the line and the rectangle whose left corner is at (rectX, rectY) with the
+     * dimensions given.
+     *
+     * The order of the points determines the direction that the line segment is assumed to be
+     * pointing for the purposes of determining which of two possible intersection points is the first
+     * intersection.
+     *
+     * The return value is null if there is no collision, or the point of the first intersection
+     * between the line and the rectangle (based on directionality). If the result variable is null, a
+     * new point object is created and returned; otherwise, the result object given is modified to
+     * contain the collision location and is then returned.
+     *
+     * @param p0 the first point of the line segment
+     * @param p1 the second point of the line segment
+     * @param rectPos the upper left corner of the rectangle
+     * @param rectW the width of the rectangle
+     * @param rectH the height of the rectangle
+     * @param result a point to store the result value in, or null to create a new one
+     * @returns {Point} null if the line segment and the rectangle do not intersect, or the point at
+     * which the first intersection happens
+     * @see Collision.segmentRectangleIntersectionXY
+     */
+    function segmentRectangleIntersection(p0: Point, p1: Point, rectPos: Point, rectW: number, rectH: number, result?: Point): Point;
+    /**
+     * Given a line segment that originates at (x0, y0) and ends at(x1, y1), determine the first
+     * intersection between the line and the rectangle whose left corner is at (rectX, rectY) with the
+     * dimensions given.
+     *
+     * The order of the points determines the direction that the line segment is assumed to be
+     * pointing for the purposes of determining which of two possible intersection points is the first
+     * intersection.
+     *
+     * The return value is null if there is no collision, or the point of the first intersection
+     * between the line and the rectangle (based on directionality). If the result variable is null, a
+     * new point object is created and returned; otherwise, the result object given is modified to
+     * contain the collision location and is then returned.
+     *
+     * @param x0 the X coordinate of the first point of the line segment
+     * @param y0 the Y coordinate of the first point of the line segment
+     * @param x1 the X coordinate of the second point of the line segment
+     * @param y1 the Y coordinate of the second point of the line segment
+     * @param rectX the X coordinate of the upper left corner of the rectangle
+     * @param rectY the Y coordinate of the upper left corner of the rectangle
+     * @param rectW the width of the rectangle
+     * @param rectH the height of the rectangle
+     * @param result a point to store the result value in, or null to create a new one
+     * @returns {Point} null if the line segment and the rectangle do not intersect, or the point at
+     * which the first intersection happens
+     * @see Collision.segmentRectangleIntersection
+     */
+    function segmentRectangleIntersectionXY(x0: number, y0: number, x1: number, y1: number, rectX: number, rectY: number, rectW: number, rectH: number, result?: Point): Point;
 }
 declare module nurdz.game {
     /**
