@@ -151,6 +151,13 @@ module nurdz.main
         private _lineIntersect : Point;
 
         /**
+         * The intersection point or points (if any) between the vector ray and all of the static
+         * collision objects on the stage. This is always an array but it might be empty if there are no
+         * active intersections.
+         */
+        private _vectorIntersects : Array<Point> = [];
+
+        /**
          * When _lineIntersect is non-null, this indicates what color to use to render the intersection.
          */
         private _lineIntersectColor : string;
@@ -275,6 +282,21 @@ module nurdz.main
                                                         this._lineIntersect) != null)
                     this._lineIntersectColor = 'green';
             }
+
+            // Check for collisions between the single vector control line (the last two line control
+            // points) and the collision shapes.
+            //
+            // This requires us to throw away the list of current vector intersects (if any) and push
+            // copies of any found intersections into the array.
+            let intersect = new Point (0, 0);
+            this._vectorIntersects.length = 0;
+            for (let i = 0 ; i < this._colliders.length ; i++)
+            {
+                if (this._colliders[i].intersectWithSegment (this._lineControls[4].position,
+                                                             this._lineControls[5].position,
+                                                             intersect) != null)
+                    this._vectorIntersects.push (intersect.copy ());
+            }
         }
 
         /**
@@ -296,29 +318,25 @@ module nurdz.main
         }
 
         /**
-         * Renders a line perpendicular to the center point of the third control line (points 4 and 5).
+         * Renders a line perpendicular to the third control line (points 4 and 5).
+         *
+         * This is essentially just a visualization for testing the new Vector code.
          */
         private renderPerpendicularLine ()
         {
-            // As a helper alias the two points that we're using.
+            // As a helper alias the two points that we're using. This makes the code a little easier to read.
             let p0 = this._lineControls[4].position;
             let p1 = this._lineControls[5].position;
 
-            // Determine the midpoint of the line that we are trying to find the perpendicular of; this
-            // will be where we start our perpendicular line from.
-            let midP = new Point ((p0.x + p1.x) / 2, (p0.y + p1.y) / 2);
-
-            // Create a vector version of the line by using the first point as an origin for the second
-            // point, then make it orthogonal to itself and set its magnitude to be 32
+            // Create a vector version of the line that originates at the first point and extends in the
+            // direction of the second point. Once we do that we make it orthogonal to itself with a
+            // leftward direction. Lastly, we set its magnitude to be 32.
             let v0 = Vector2D.fromPoint (p1, p0).orthogonalize (true);
             v0.magnitude = 32;
 
-            // Draw a dot at the midpoint
-            this._renderer.fillCircle (midP.x, midP.y, 4, 'yellow');
-
-            // Render a short line.
-            this._renderer.drawArrow (midP.x, midP.y,
-                                      midP.x + v0.x, midP.y + v0.y,
+            // Render the vector as a line that is anchored on the first point.
+            this._renderer.drawArrow (p0.x, p0.y,
+                                      p0.x + v0.x, p0.y + v0.y,
                                       game.ArrowStyle.UNFILLED,
                                       game.ArrowType.END,
                                       Math.PI / 8,
@@ -365,14 +383,16 @@ module nurdz.main
                 control.renderVolume (control.position.x, control.position.y, 'gray', this._renderer);
 
                 // Every second point, render an arrow between the previous point and this point. Our
-                // arrow will have heads on both ends.
+                // arrow will have heads on both ends, except for the directional line used for line/shape
+                // intersections, which has a head only on the end so that it is easier to visualize the
+                // direction of the line for testing.
                 if (i % 2 == 1)
                     this._renderer.drawArrow (this._lineControls[i - 1].position.x,
                                               this._lineControls[i - 1].position.y,
                                               this._lineControls[i].position.x,
                                               this._lineControls[i].position.y,
                                               game.ArrowStyle.UNFILLED,
-                                              game.ArrowType.BOTH,
+                                              (i == 5 ? game.ArrowType.END : game.ArrowType.BOTH),
                                               Math.PI / 8,
                                               16);
 
@@ -389,6 +409,15 @@ module nurdz.main
                 this._renderer.fillCircle (this._lineIntersect.x, this._lineIntersect.y,
                                            5,
                                            this._lineIntersectColor);
+
+            // Render any intersections between the intersection vector and the collision shapes. There
+            // can be any number of these, including 0.
+            if (this._vectorIntersects.length > 0)
+            {
+                for (let i = 0 ; i < this._vectorIntersects.length ; i++)
+                    this._renderer.fillCircle (this._vectorIntersects[i].x, this._vectorIntersects[i].y,
+                                               5, 'red');
+            }
 
             // Now we can render the collision object that follows the mouse, and an indication of where
             // the center of the screen is.
