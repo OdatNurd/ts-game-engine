@@ -368,7 +368,7 @@ var nurdz;
                 return _super.prototype.inputKeyDown.call(this, eventObj);
             };
             return TestScene;
-        }(nurdz.game.Scene));
+        })(nurdz.game.Scene);
         // Once the DOM is loaded, set things up.
         nurdz.contentLoaded(window, function () {
             try {
