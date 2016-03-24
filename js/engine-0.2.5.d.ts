@@ -7,6 +7,14 @@
 interface StringConstructor {
     format(formatString: string, ...params: any[]): string;
 }
+/**
+ * As above, this allows us to cram a new extra static method into the Math namespace. Here these items
+ * aren't included in TypeScript by default, which I think is because they're not standard enough or
+ * something.
+ */
+interface Math {
+    sign(x: number): number;
+}
 declare module nurdz {
     /**
      * In a browser non-specific way, watch to determine when the DOM is fully loaded and then invoke

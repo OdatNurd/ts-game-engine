@@ -46,6 +46,34 @@ if (!String.format)
     };
 }
 
+/**
+ * As above, this allows us to cram a new extra static method into the Math namespace. Here these items
+ * aren't included in TypeScript by default, which I think is because they're not standard enough or
+ * something.
+ */
+interface Math
+{
+    sign (x : number) : number;
+}
+
+if (!Math.sign)
+{
+    /**
+     * Given a number, return a value that indicates the sign of the value. The return value is -1 for
+     * negative values, 1 for positive values, or 0/NaN as appropriate based on the input
+     *
+     * @param x the number to test
+     * @returns -1, 0, 1 or NaN to indicate the sign of the number provided
+     */
+    Math.sign = function (x)
+    {
+        x = +x;
+        if (x === 0 || isNaN (x))
+            return x;
+        return x > 0 ? 1 : -1;
+    }
+}
+
 module nurdz
 {
     /**
