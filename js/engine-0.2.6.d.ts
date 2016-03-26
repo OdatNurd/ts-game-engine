@@ -871,6 +871,16 @@ declare module nurdz.game {
          */
         copyOrthogonal(left?: boolean): Vector2D;
         /**
+         * Flip the X component of this vector to reverse its direction in the left/right sense, leaving
+         * the magnitude unchanged.
+         */
+        flipX(): void;
+        /**
+         * Flip the Y component of this vector to reverse its direction in the left/right sense, leaving
+         * the magnitude unchanged.
+         */
+        flipY(): void;
+        /**
          * Reverse the direction of the vector by rotating it 180 degrees from the direction that it is
          * currently pointing.
          *

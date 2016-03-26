@@ -158,7 +158,7 @@ module nurdz.game
             // We don't take the square root here.
             return (this._x * this._x) + (this._y * this._y);
         }
-        
+
         /**
          * Construct a new 2D vector, optionally also providing one or both components of the vector itself.
          *
@@ -260,6 +260,24 @@ module nurdz.game
         }
 
         /**
+         * Flip the X component of this vector to reverse its direction in the left/right sense, leaving
+         * the magnitude unchanged.
+         */
+        flipX () : void
+        {
+            this._x *= -1;
+        }
+
+        /**
+         * Flip the Y component of this vector to reverse its direction in the left/right sense, leaving
+         * the magnitude unchanged.
+         */
+        flipY () : void
+        {
+            this._y *= -1;
+        }
+
+        /**
          * Reverse the direction of the vector by rotating it 180 degrees from the direction that it is
          * currently pointing.
          *
@@ -269,11 +287,8 @@ module nurdz.game
         {
             // Reversing the direction of the vector is as simple as changing the sign of both of the
             // components so that they face the other way.
-            //
-            // This does not change the magnitude (if we have calculated it) because the length doesn't
-            // change when this happens.
-            this._x *= -1;
-            this._y *= -1;
+            this.flipX ();
+            this.flipY ();
             return this;
         }
 
