@@ -91,7 +91,7 @@ var nurdz;
                 this.playAnimation(this._animations.current == "idle" ? "walk" : "idle");
             };
             return GreyGuy;
-        })(nurdz.game.Entity);
+        }(nurdz.game.Entity));
         /**
          * This simple class just displays an image and slowly rotates in place.
          */
@@ -123,7 +123,7 @@ var nurdz;
                 this.angle = this.angle + 5;
             };
             return Star;
-        })(nurdz.game.Entity);
+        }(nurdz.game.Entity));
         /**
          * This simple class represents a Dot on the screen. It starts in the center of the screen and bounces
          * around.
@@ -203,7 +203,7 @@ var nurdz;
                 }
             };
             return Dot;
-        })(nurdz.game.Entity);
+        }(nurdz.game.Entity));
         /**
          * This is a simple extension of the scene class; it displays the FPS on the screen.
          *
@@ -322,7 +322,7 @@ var nurdz;
                 }
             };
             return TestScene;
-        })(nurdz.game.Scene);
+        }(nurdz.game.Scene));
         // Once the DOM is loaded, set things up.
         nurdz.contentLoaded(window, function () {
             try {
