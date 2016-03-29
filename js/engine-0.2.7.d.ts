@@ -500,12 +500,13 @@ declare module nurdz.game {
          */
         copyScaled(scale: number): Point;
         /**
-         * Set the position of this point to the same as the point passed in.
+         * Set the position of this point to the same as the point or vector passed in. In the case of a
+         * vector, the point will be relative to the origin.
          *
-         * @param point the point to copy from
+         * @param point the point or vector to copy from
          * @returns {Point} this point after the operation completes, for chaining calls.
          */
-        setTo(point: Point): Point;
+        setTo(point: Point | Vector2D): Point;
         /**
          * Set the position of this point to the same as the values passed in
          *
@@ -526,12 +527,14 @@ declare module nurdz.game {
          */
         setToArray(array: Array<number>): Point;
         /**
-         * Compares this point to the point passed in to determine if they represent the same point.
+         * Compares this point to the point or vector passed in to determine if they represent the same point.
+         *
+         * This compares the components of this object and the other object to determine equality.
          *
          * @param other the point to compare to
          * @returns {boolean} true or false depending on equality
          */
-        equals(other: Point): boolean;
+        equals(other: Point | Vector2D): boolean;
         /**
          * Compares this point to the values passed in to determine if they represent the same point.
          *
@@ -541,13 +544,13 @@ declare module nurdz.game {
          */
         equalsXY(x: number, y: number): boolean;
         /**
-         * Translate the location of this point using the values of the point passed in. No range checking is
-         * done.
+         * Translate the location of this point using the values of the point or vector passed in. No range
+         * checking is done.
          *
          * @param delta the point that controls both delta values
          * @returns {Point} this point after the translation, for chaining calls.
          */
-        translate(delta: Point): Point;
+        translate(delta: Point | Vector2D): Point;
         /**
          * Translate the location of this point using the values passed in. No range checking is done.
          *

@@ -164,14 +164,15 @@ module nurdz.game
         }
 
         /**
-         * Set the position of this point to the same as the point passed in.
+         * Set the position of this point to the same as the point or vector passed in. In the case of a
+         * vector, the point will be relative to the origin.
          *
-         * @param point the point to copy from
+         * @param point the point or vector to copy from
          * @returns {Point} this point after the operation completes, for chaining calls.
          */
-        setTo (point : Point) : Point
+        setTo (point : Point|Vector2D) : Point
         {
-            return this.setToXY (point._x, point._y)
+            return this.setToXY (point.x, point.y)
         }
 
         /**
@@ -209,14 +210,16 @@ module nurdz.game
         }
 
         /**
-         * Compares this point to the point passed in to determine if they represent the same point.
+         * Compares this point to the point or vector passed in to determine if they represent the same point.
+         *
+         * This compares the components of this object and the other object to determine equality.
          *
          * @param other the point to compare to
          * @returns {boolean} true or false depending on equality
          */
-        equals (other : Point) : boolean
+        equals (other : Point|Vector2D) : boolean
         {
-            return this._x == other._x && this._y == other._y;
+            return this._x == other.x && this._y == other.y;
         }
 
         /**
@@ -232,15 +235,15 @@ module nurdz.game
         }
 
         /**
-         * Translate the location of this point using the values of the point passed in. No range checking is
-         * done.
+         * Translate the location of this point using the values of the point or vector passed in. No range
+         * checking is done.
          *
          * @param delta the point that controls both delta values
          * @returns {Point} this point after the translation, for chaining calls.
          */
-        translate (delta : Point) : Point
+        translate (delta : Point|Vector2D) : Point
         {
-            return this.translateXY (delta._x, delta._y);
+            return this.translateXY (delta.x, delta.y);
         }
 
         /**
@@ -435,10 +438,7 @@ module nurdz.game
          */
         clampX (minX : number, maxX : number) : Point
         {
-            if (this._x < minX)
-                this._x = minX;
-            else if (this._x > maxX)
-                this._x = maxX;
+            this._x = Utils.clampToRange (this._x, minX, maxX);
             return this;
 
         }
@@ -453,10 +453,7 @@ module nurdz.game
          */
         clampY (minY : number, maxY : number) : Point
         {
-            if (this._y < minY)
-                this._y = minY;
-            else if (this._y > maxY)
-                this._y = maxY;
+            this._y = Utils.clampToRange (this._y, minY, maxY);
             return this;
         }
 
