@@ -57,6 +57,15 @@ if (!Math.sign) {
 var nurdz;
 (function (nurdz) {
     /**
+     * This stores a reference to the last (and hopefully only) stage object that was created.
+     *
+     * This is primarily meant for debugging purposes, allowing interactive console access to the stage
+     * object, and thus all of the scenes and their contents, from a well defined but still not global space.
+     *
+     * @type {nurdz.game.Stage}
+     */
+    nurdz.stage = null;
+    /**
      * In a browser non-specific way, watch to determine when the DOM is fully loaded and then invoke
      * the function that is provided.
      *
@@ -2178,7 +2187,7 @@ var nurdz;
              * The animation is made up of a list of frames to play in order from some sprite sheet.
              *
              * The first animation that is added is the one that the class plays by default. This can be
-             * overridden by explicitely requesting playback of a null animation.
+             * overridden by explicitly requesting playback of a null animation.
              *
              * @param name textual name for this animation, which should be unique amongst all registered
              * animations
@@ -4173,7 +4182,7 @@ var nurdz;
              * NOTE: Older browsers may not support this event (e.g. older versions of Chrome); it's also not
              * portable to mobile, if that matters.
              *
-             * The method should return true if the mouse event was handled or falss if it was not. The Stage
+             * The method should return true if the mouse event was handled or false if it was not. The Stage
              * will prevent the default handling for all mouse events that are handled.
              *
              * @param eventObj the event object
@@ -5176,6 +5185,8 @@ var nurdz;
                 this._renderer.clear(initialColor);
                 // Append the canvas to the container
                 container.appendChild(this._canvas);
+                // Set the global stage object to be us, for debugging or other nefarious purposes.
+                nurdz.stage = this;
             }
             Object.defineProperty(Stage.prototype, "width", {
                 /**
