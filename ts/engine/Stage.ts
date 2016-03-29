@@ -273,6 +273,9 @@ module nurdz.game
 
             // Append the canvas to the container
             container.appendChild (this._canvas);
+
+            // Set the global stage object to be us, for debugging or other nefarious purposes.
+            nurdz.stage = this;
         }
 
         /**

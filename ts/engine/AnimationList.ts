@@ -160,7 +160,7 @@ module nurdz.game
          * The animation is made up of a list of frames to play in order from some sprite sheet.
          *
          * The first animation that is added is the one that the class plays by default. This can be
-         * overridden by explicitely requesting playback of a null animation.
+         * overridden by explicitly requesting playback of a null animation.
          *
          * @param name textual name for this animation, which should be unique amongst all registered
          * animations

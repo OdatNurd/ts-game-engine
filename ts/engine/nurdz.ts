@@ -77,6 +77,16 @@ if (!Math.sign)
 module nurdz
 {
     /**
+     * This stores a reference to the last (and hopefully only) stage object that was created.
+     *
+     * This is primarily meant for debugging purposes, allowing interactive console access to the stage
+     * object, and thus all of the scenes and their contents, from a well defined but still not global space.
+     * 
+     * @type {nurdz.game.Stage}
+     */
+    export var stage : nurdz.game.Stage = null;
+
+    /**
      * This type interface is used to make the contentLoaded function below operate as expected. In order
      * to be cross platform it tries to use some sort of stupid IE only method (which no longer works as
      * of IE 11).

@@ -397,7 +397,7 @@ module nurdz.game
          * NOTE: Older browsers may not support this event (e.g. older versions of Chrome); it's also not
          * portable to mobile, if that matters.
          *
-         * The method should return true if the mouse event was handled or falss if it was not. The Stage
+         * The method should return true if the mouse event was handled or false if it was not. The Stage
          * will prevent the default handling for all mouse events that are handled.
          *
          * @param eventObj the event object
