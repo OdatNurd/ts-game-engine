@@ -1068,13 +1068,14 @@ var nurdz;
                 return this.copy().scale(scale);
             };
             /**
-             * Set the position of this point to the same as the point passed in.
+             * Set the position of this point to the same as the point or vector passed in. In the case of a
+             * vector, the point will be relative to the origin.
              *
-             * @param point the point to copy from
+             * @param point the point or vector to copy from
              * @returns {Point} this point after the operation completes, for chaining calls.
              */
             Point.prototype.setTo = function (point) {
-                return this.setToXY(point._x, point._y);
+                return this.setToXY(point.x, point.y);
             };
             /**
              * Set the position of this point to the same as the values passed in
@@ -1106,13 +1107,15 @@ var nurdz;
                 }
             };
             /**
-             * Compares this point to the point passed in to determine if they represent the same point.
+             * Compares this point to the point or vector passed in to determine if they represent the same point.
+             *
+             * This compares the components of this object and the other object to determine equality.
              *
              * @param other the point to compare to
              * @returns {boolean} true or false depending on equality
              */
             Point.prototype.equals = function (other) {
-                return this._x == other._x && this._y == other._y;
+                return this._x == other.x && this._y == other.y;
             };
             /**
              * Compares this point to the values passed in to determine if they represent the same point.
@@ -1125,14 +1128,14 @@ var nurdz;
                 return this._x == x && this._y == y;
             };
             /**
-             * Translate the location of this point using the values of the point passed in. No range checking is
-             * done.
+             * Translate the location of this point using the values of the point or vector passed in. No range
+             * checking is done.
              *
              * @param delta the point that controls both delta values
              * @returns {Point} this point after the translation, for chaining calls.
              */
             Point.prototype.translate = function (delta) {
-                return this.translateXY(delta._x, delta._y);
+                return this.translateXY(delta.x, delta.y);
             };
             /**
              * Translate the location of this point using the values passed in. No range checking is done.
@@ -1303,10 +1306,7 @@ var nurdz;
              * @returns {Point} this point after the clamp is completed, for chaining calls.
              */
             Point.prototype.clampX = function (minX, maxX) {
-                if (this._x < minX)
-                    this._x = minX;
-                else if (this._x > maxX)
-                    this._x = maxX;
+                this._x = game.Utils.clampToRange(this._x, minX, maxX);
                 return this;
             };
             /**
@@ -1318,10 +1318,7 @@ var nurdz;
              * @returns {Point} this point after the clamp is completed, for chaining calls.
              */
             Point.prototype.clampY = function (minY, maxY) {
-                if (this._y < minY)
-                    this._y = minY;
-                else if (this._y > maxY)
-                    this._y = maxY;
+                this._y = game.Utils.clampToRange(this._y, minY, maxY);
                 return this;
             };
             /**
