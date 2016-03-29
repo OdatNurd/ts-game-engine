@@ -727,7 +727,7 @@ declare module nurdz.game {
          * The amount of offset that we have in the X direction; positive X values face right while negative X
          * values face left. A value of 0 is going either up or down as determined by the Y value.
          */
-        protected _x: number;
+        private _x;
         /**
          * The amount of offset that we have in the Y direction; positive Y values face downward while
          * negative Y values face upward. A value of 0 is either either right or left and determined by the
@@ -737,7 +737,7 @@ declare module nurdz.game {
          * standard geometry because on our canvas the Y values increase downward and not upwards as they
          * normally would.
          */
-        protected _y: number;
+        private _y;
         /**
          * The x component of this vector.
          *
@@ -775,7 +775,7 @@ declare module nurdz.game {
          */
         magnitude: number;
         /**
-         * Get the angle (in degrees) that this vector is currently pointing.
+         * Get the angle (in radians) that this vector is currently pointing.
          *
          * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
          *
@@ -783,12 +783,34 @@ declare module nurdz.game {
          * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
          * upward.
          *
-         * The return is always a value in the range of 0-359 inclusive.
-         *
          * The Zero vector (a vector with all components 0) is assumed to point in the direction with angle 0
          * (to the right).
          *
+         * @returns {number} the angle in radians that the vector is pointing.
+         * @see Vector2D.directionDeg
+         */
+        /**
+         * Set the angle (in radians) that this vector points. This keeps the current magnitude of the
+         * vector intact.
+         *
+         * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
+         *
+         * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
+         * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
+         * upward.
+         *
+         * @param newDirection the new direction angle, in radians
+         * @see Vector2D.directionDeg
+         */
+        direction: number;
+        /**
+         * Get the angle (in degrees) that this vector is currently pointing.
+         *
+         * This does what direction does but converts the angle to degrees and constrains it to the range
+         * 0-359.
+         *
          * @returns {number} the angle in degrees that the vector is pointing.
+         * @see Vector2D.direction
          */
         /**
          * Set the angle (in degrees) that this vector points. This keeps the current magnitude of the
@@ -800,9 +822,10 @@ declare module nurdz.game {
          * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
          * upward.
          *
-         * @param newDirection
+         * @param newDirection the new direction angle, in degrees
+         * @see Vector2D.direction
          */
-        direction: number;
+        directionDeg: number;
         /**
          * Get the squared magnitude of this vector. The true magnitude is the square root of this value,
          * which can be a costly operation; for comparison purposes you may want to skip that portion of
@@ -827,10 +850,23 @@ declare module nurdz.game {
          * calculates the appropriate X and Y displacements required in order to obtain a vector with these
          * properties.
          *
-         * @param direction the direction the vector is pointing (in degrees)
+         * @param direction the direction the vector is pointing (in radians)
          * @param magnitude the magnitude of the vector
+         * @see Vector2D.fromDisplacementDeg
          */
         static fromDisplacement(direction: number, magnitude: number): Vector2D;
+        /**
+         * Given a direction and a magnitude, return back a vector object that represents those values. This
+         * calculates the appropriate X and Y displacements required in order to obtain a vector with these
+         * properties.
+         *
+         * This works the same as fromDisplacement() except that it takes an angle in degrees instead.
+         *
+         * @param direction the direction the vector is pointing (in degrees)
+         * @param magnitude the magnitude of the vector
+         * @see Vector2D.fromDisplacement
+         */
+        static fromDisplacementDeg(direction: number, magnitude: number): Vector2D;
         /**
          * Create and return a new vector based on a given point, optionally translating the values at the
          * same time to turn the point into a proper displacement from some known origin point.
@@ -977,29 +1013,52 @@ declare module nurdz.game {
          */
         negate(): Vector2D;
         /**
-         * Rotate the direction of this vector by the specified angle (in degrees), returning the vector after
+         * Rotate the direction of this vector by the specified angle (in radians), returning the vector after
          * the rotation has completed.
          *
-         * Positive angle rotate in a clockwise fashion while negative angles rotate in a counterclockwise
+         * Positive angles rotate in a clockwise fashion while negative angles rotate in a counterclockwise
          * fashion. This is inverted to what you might expect due to the Y axis increasing downwards and not
          * upwards.
          *
-         * For the special case of rotating the vector 90 degrees to the left or right, the getOrthogonal()
-         * method can be used to return a new vector that is so rotated without the expense of the trig
-         * functions that are used by this method.
+         * For the special cases of rotating by 90 or 180 degrees, the orthogonalize() and reverse()
+         * methods can be used to do this operation with no trig needed, which might be faster if you're
+         * doing it a lot.
+         *
+         * @param angle the angle to rotate by, in radians
+         * @returns {Vector2D} this vector after the rotation has been completed
+         * @see Vector2D.orthogonalize
+         * @see Vector2D.reverse
+         */
+        rotate(angle: number): Vector2D;
+        /**
+         * Rotate the direction of this vector by the specified angle (in degrees), returning the vector after
+         * the rotation has completed.
+         *
+         * This works as rotate() does, but takes angles in degrees instead of radians.
          *
          * @param angle the angle to rotate by, in degrees
          * @returns {Vector2D} this vector after the rotation has been completed
-         * @see Vector2D.getOrthogonal
+         * @see Vector2D.rotate
+         * @see Vector2D.orthogonalize
+         * @see Vector2D.reverse
          */
-        rotate(angle: number): Vector2D;
+        rotateDeg(angle: number): Vector2D;
+        /**
+         * Rotate this vector so that it points at the angle provided.
+         *
+         * @param angle the absolute angle to point the vector in, in radians
+         * @returns {Vector2D} this vector after the rotation has been accomplished
+         * @see Vector2D.rotateToDeg
+         */
+        rotateTo(angle: number): Vector2D;
         /**
          * Rotate this vector so that it points at the angle provided.
          *
          * @param angle the absolute angle to point the vector in, in degrees
          * @returns {Vector2D} this vector after the rotation has been accomplished
+         * @see Vector2D.rotateTo
          */
-        rotateTo(angle: number): Vector2D;
+        rotateToDeg(angle: number): Vector2D;
         /**
          * Scale this vector by the scale factor provided. This alters the magnitude of the vector (and thus
          * also the displacement) but leaves the direction untouched.
