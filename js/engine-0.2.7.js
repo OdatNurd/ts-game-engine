@@ -1441,8 +1441,9 @@ var nurdz;
                  * @param newMagnitude the new magnitude for the vector
                  */
                 set: function (newMagnitude) {
-                    // Get the current angle of vector and convert it to radians.
-                    var direction = this.direction * (Math.PI / 180);
+                    // Get the current angle of vector in radians; we cache it here, since we're going to use it
+                    // twice and we don't want to do the calculation for it twice.
+                    var direction = this.direction;
                     // Now use a little trig to set the X and Y to the new length.
                     this._x = Math.cos(direction) * newMagnitude;
                     this._y = Math.sin(direction) * newMagnitude;
@@ -1452,7 +1453,7 @@ var nurdz;
             });
             Object.defineProperty(Vector2D.prototype, "direction", {
                 /**
-                 * Get the angle (in degrees) that this vector is currently pointing.
+                 * Get the angle (in radians) that this vector is currently pointing.
                  *
                  * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
                  *
@@ -1460,19 +1461,52 @@ var nurdz;
                  * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
                  * upward.
                  *
-                 * The return is always a value in the range of 0-359 inclusive.
-                 *
                  * The Zero vector (a vector with all components 0) is assumed to point in the direction with angle 0
                  * (to the right).
                  *
-                 * @returns {number} the angle in degrees that the vector is pointing.
+                 * @returns {number} the angle in radians that the vector is pointing.
+                 * @see Vector2D.directionDeg
                  */
                 get: function () {
-                    // Calculate the actual angle in degrees. This calculates the angle as something between -180 and
-                    // 180 (anything with a negative Y value is a negative angle).
-                    var angle = Math.atan2(this._y, this._x) * (180 / Math.PI);
-                    // Normalize the angle to be in the range of 0 - 359 instead
-                    return (angle < 0) ? angle + 360 : angle;
+                    return Math.atan2(this._y, this._x);
+                },
+                /**
+                 * Set the angle (in radians) that this vector points. This keeps the current magnitude of the
+                 * vector intact.
+                 *
+                 * A rotation angle of 0 represents the right, and the rest of the angles go in a clockwise direction.
+                 *
+                 * Note that this is different from what you might expect (e.g. an angle pointing up and to the right
+                 * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
+                 * upward.
+                 *
+                 * @param newDirection the new direction angle, in radians
+                 * @see Vector2D.directionDeg
+                 */
+                set: function (newDirection) {
+                    // Using a little trig, calculate what the new X and Y values should be in order to get to this
+                    // direction while maintaining the length.
+                    var currentLength = this.magnitude;
+                    this._x = Math.cos(newDirection) * currentLength;
+                    this._y = Math.sin(newDirection) * currentLength;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vector2D.prototype, "directionDeg", {
+                /**
+                 * Get the angle (in degrees) that this vector is currently pointing.
+                 *
+                 * This does what direction does but converts the angle to degrees and constrains it to the range
+                 * 0-359.
+                 *
+                 * @returns {number} the angle in degrees that the vector is pointing.
+                 * @see Vector2D.direction
+                 */
+                get: function () {
+                    // Get the actual direction in radians and convert it to degrees, then normalize it to the range
+                    // 0 - 359.
+                    return game.Utils.normalizeDegrees(game.Utils.toDegrees(this.direction));
                 },
                 /**
                  * Set the angle (in degrees) that this vector points. This keeps the current magnitude of the
@@ -1484,16 +1518,13 @@ var nurdz;
                  * is not 45 degrees but is instead 315 degrees) because the Y axis increases downward and not
                  * upward.
                  *
-                 * @param newDirection
+                 * @param newDirection the new direction angle, in degrees
+                 * @see Vector2D.direction
                  */
                 set: function (newDirection) {
-                    // Convert the angle given from degrees to radians.
-                    newDirection = newDirection * (Math.PI / 180);
-                    // Now using a little trig, calculate what the new X and Y values should be in order to get to
-                    // that direction while maintaining the length.
-                    var currentLength = this.magnitude;
-                    this._x = Math.cos(newDirection) * currentLength;
-                    this._y = Math.sin(newDirection) * currentLength;
+                    // Invoke our other method to set the rotation based on converting the direction specification
+                    // from degrees to radians.
+                    this.direction = game.Utils.toRadians(newDirection);
                 },
                 enumerable: true,
                 configurable: true
@@ -1519,16 +1550,30 @@ var nurdz;
              * calculates the appropriate X and Y displacements required in order to obtain a vector with these
              * properties.
              *
-             * @param direction the direction the vector is pointing (in degrees)
+             * @param direction the direction the vector is pointing (in radians)
              * @param magnitude the magnitude of the vector
+             * @see Vector2D.fromDisplacementDeg
              */
             Vector2D.fromDisplacement = function (direction, magnitude) {
-                // Convert the angle from degrees to radians.
-                direction *= (Math.PI / 180);
                 // This is a classic right angle situation; the cosine of the direction is the ratio of the X
                 // portion and the sine is the ratio of the Y direction. We need to multiply those results by the
                 // actual magnitude that we were given in order to scale them appropriately.
                 return new Vector2D(Math.cos(direction) * magnitude, Math.sin(direction) * magnitude);
+            };
+            /**
+             * Given a direction and a magnitude, return back a vector object that represents those values. This
+             * calculates the appropriate X and Y displacements required in order to obtain a vector with these
+             * properties.
+             *
+             * This works the same as fromDisplacement() except that it takes an angle in degrees instead.
+             *
+             * @param direction the direction the vector is pointing (in degrees)
+             * @param magnitude the magnitude of the vector
+             * @see Vector2D.fromDisplacement
+             */
+            Vector2D.fromDisplacementDeg = function (direction, magnitude) {
+                // Use the other method, but convert the angle to radians first.
+                return Vector2D.fromDisplacement(game.Utils.toRadians(direction), magnitude);
             };
             /**
              * Create and return a new vector based on a given point, optionally translating the values at the
@@ -1755,28 +1800,28 @@ var nurdz;
                 return this.reverse();
             };
             /**
-             * Rotate the direction of this vector by the specified angle (in degrees), returning the vector after
+             * Rotate the direction of this vector by the specified angle (in radians), returning the vector after
              * the rotation has completed.
              *
-             * Positive angle rotate in a clockwise fashion while negative angles rotate in a counterclockwise
+             * Positive angles rotate in a clockwise fashion while negative angles rotate in a counterclockwise
              * fashion. This is inverted to what you might expect due to the Y axis increasing downwards and not
              * upwards.
              *
-             * For the special case of rotating the vector 90 degrees to the left or right, the getOrthogonal()
-             * method can be used to return a new vector that is so rotated without the expense of the trig
-             * functions that are used by this method.
+             * For the special cases of rotating by 90 or 180 degrees, the orthogonalize() and reverse()
+             * methods can be used to do this operation with no trig needed, which might be faster if you're
+             * doing it a lot.
              *
-             * @param angle the angle to rotate by, in degrees
+             * @param angle the angle to rotate by, in radians
              * @returns {Vector2D} this vector after the rotation has been completed
-             * @see Vector2D.getOrthogonal
+             * @see Vector2D.orthogonalize
+             * @see Vector2D.reverse
              */
             Vector2D.prototype.rotate = function (angle) {
-                // Convert degrees to radians
-                angle *= Math.PI / 180;
                 // Pre-calculate the cos and sin, since we need each one twice.
                 var cos = Math.cos(angle);
                 var sin = Math.sin(angle);
-                // Calculate the rotation of the end of the vector by using a simple 2D rotation matrix.
+                // Calculate the rotation of the end of the vector by using a simple 2D rotation matrix. Note
+                // that we invert the Y since the axis is reversed on the canvas.
                 var newX = (this._x * cos) - (this._y * sin);
                 var newY = (this._x * sin) + (this._y * cos);
                 // Set in the new points now
@@ -1785,13 +1830,40 @@ var nurdz;
                 return this;
             };
             /**
+             * Rotate the direction of this vector by the specified angle (in degrees), returning the vector after
+             * the rotation has completed.
+             *
+             * This works as rotate() does, but takes angles in degrees instead of radians.
+             *
+             * @param angle the angle to rotate by, in degrees
+             * @returns {Vector2D} this vector after the rotation has been completed
+             * @see Vector2D.rotate
+             * @see Vector2D.orthogonalize
+             * @see Vector2D.reverse
+             */
+            Vector2D.prototype.rotateDeg = function (angle) {
+                // Use the other method, converting the angle to degrees.
+                return this.rotate(game.Utils.toRadians(angle));
+            };
+            /**
+             * Rotate this vector so that it points at the angle provided.
+             *
+             * @param angle the absolute angle to point the vector in, in radians
+             * @returns {Vector2D} this vector after the rotation has been accomplished
+             * @see Vector2D.rotateToDeg
+             */
+            Vector2D.prototype.rotateTo = function (angle) {
+                return this.rotate(angle - this.direction);
+            };
+            /**
              * Rotate this vector so that it points at the angle provided.
              *
              * @param angle the absolute angle to point the vector in, in degrees
              * @returns {Vector2D} this vector after the rotation has been accomplished
+             * @see Vector2D.rotateTo
              */
-            Vector2D.prototype.rotateTo = function (angle) {
-                return this.rotate(angle - this.direction);
+            Vector2D.prototype.rotateToDeg = function (angle) {
+                return this.rotateTo(game.Utils.toRadians(angle));
             };
             /**
              * Scale this vector by the scale factor provided. This alters the magnitude of the vector (and thus
@@ -1822,7 +1894,7 @@ var nurdz;
              */
             Vector2D.prototype.toString = function () {
                 return ("V<(" + this._x.toFixed(3) + "," + this._y.toFixed(3) + "), ") +
-                    (this.direction.toFixed(3) + "\u00B0, " + this.magnitude.toFixed(3) + ">");
+                    (this.directionDeg.toFixed(3) + "\u00B0, " + this.magnitude.toFixed(3) + ">");
             };
             return Vector2D;
         }());
