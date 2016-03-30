@@ -1450,6 +1450,9 @@ var nurdz;
                  * @param newMagnitude the new magnitude for the vector
                  */
                 set: function (newMagnitude) {
+                    // Make sure that the provided magnitude is positive; if it's negative, the vector will go
+                    // back the other way, which is probably not what we want.
+                    newMagnitude = Math.abs(newMagnitude);
                     // Get the current angle of vector in radians; we cache it here, since we're going to use it
                     // twice and we don't want to do the calculation for it twice.
                     var direction = this.direction;
