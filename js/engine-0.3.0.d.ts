@@ -770,6 +770,33 @@ declare module nurdz.game {
          */
         y: number;
         /**
+         * Set the components of this Vector to the same as the vector or point provided. In the case of a
+         * point, the vector will be relative to the screen origin.
+         *
+         * @param point the point or vector to copy from
+         * @returns {Vector2D} this vector after the operation completes, for chaining calls.
+         */
+        setTo(point: Point | Vector2D): Vector2D;
+        /**
+         * Set the position of this vector to the same as the values passed in
+         *
+         * @param x new X-coordinate for this point
+         * @param y new Y-coordinate for this point
+         * @returns {Vector2D} this point after the operation completes, for chaining calls.
+         */
+        setToXY(x: number, y: number): Vector2D;
+        /**
+         * Set the components of this vector to the first two values in the array passed in, where the first
+         * value is treated as the X value and the second value is treated as the Y value.
+         *
+         * It is valid for the array to have more than two elements, but if it has fewer than two, nothing
+         * happens.
+         *
+         * @param array the array to get the new values from.
+         * @returns {Vector2D} this vector after the operation completes, for chaining calls.
+         */
+        setToArray(array: Array<number>): Vector2D;
+        /**
          * Get the magnitude of this vector.
          *
          * @returns {number} the length of this vector
@@ -1080,6 +1107,12 @@ declare module nurdz.game {
          * @see Vector2D.normalize
          */
         scale(factor: number): Vector2D;
+        /**
+         * Return a copy of this vector as an array of two numbers in x, y ordering.
+         *
+         * @returns {Array<number>} the vector as an array of two numbers.
+         */
+        toArray(): Array<number>;
         /**
          * Display a string version of the vector for debugging purposes.
          *
