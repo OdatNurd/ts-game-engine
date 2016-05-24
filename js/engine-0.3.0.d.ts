@@ -3567,6 +3567,27 @@ declare module nurdz.game {
          */
         private _canvas;
         /**
+         * The element that contains the canvas element; this is used to control the position of the
+         * canvas in the page.
+         *
+         * @type {HTMLElement}
+         */
+        private _container;
+        /**
+         * Controls whether the stage automatically scales itself to fill the
+         * window or not.
+         *
+         * When this is false, the stage is of a specific size, and although it
+         * will keep itself centered in the page, it will remain that size.
+         *
+         * When this is true, the canvas will expand itself to try and fill
+         * the entire page body (less the header and footer) while maintaining
+         * aspect.
+         *
+         * @type {Boolean}
+         */
+        private _canScale;
+        /**
          * The object responsible for rendering to our canvas.
          *
          * This is a simple wrapper around the canvas context and is the gateway to Rendering Magic (tm).
@@ -3652,8 +3673,8 @@ declare module nurdz.game {
          */
         currentScene: Scene;
         /**
-         * Obtain the current engine update tick. This is incremented once every time the frame update
-         * loop is invoked, and can be used to time things in a crude fashion.
+         * Obtain the current engine update tick. This is incremented once every time the frame update loop is
+         * invoked, and can be used to time things in a crude fashion.
          *
          * The frame update loop is invoked at a set frame rate.
          *
@@ -3666,15 +3687,19 @@ declare module nurdz.game {
          * A canvas will be created and inserted into the DOM as the last child of the container DIV with the
          * ID provided.
          *
-         * The CSS of the DIV will be modified to have a width and height of the canvas, with options that
-         * cause it to center itself.
+         * The style of the div will be modified so that the canvas is properly contained and positioned in
+         * the page.
          *
          * @param containerDivID the ID of the DIV that should contain the created canvas
          * @param initialColor the color to clear the canvas to once it is created
+         * @param surroundColor the color to set the page area that surrounds the canvas or null to leave the
+         * page as is
+         *
          * @constructor
+         *
          * @throws {ReferenceError} if there is no element with the ID provided
          */
-        constructor(containerDivID: string, initialColor?: string);
+        constructor(containerDivID: string, initialColor?: string, canScale?: boolean, surroundColor?: string);
         /**
          * This function gets executed in a loop to run the game. Each execution will cause an update and
          * render to be issued to the current scene.
@@ -3911,6 +3936,15 @@ declare module nurdz.game {
          */
         calculateMousePos(mouseEvent: MouseEvent, point?: Point): Point;
         /**
+         * Recalculate the size of the current window and the scale factor that should be applied to the
+         * canvas and its container so that the canvas is maximized inside the client area of the containing
+         * page.
+         *
+         * This requires that the canvas and its container already exist, and that the canvas is a child of
+         * the container. Various styles are also required on the container.
+         */
+        private changeCanvasScale;
+        /**
          * Handler for key down events. This gets triggered whenever the game is running and any key is
          * pressed.
          *
@@ -3966,6 +4000,19 @@ declare module nurdz.game {
          * @param evt the event object for this event.
          */
         private mouseWheelEvent;
+        /**
+         * Perform a simple check to see if the given touch event is happening within the bounds of the
+         * canvas (regardless of its scale).
+         */
+        private touchInCanvas(touch);
+        /**
+         * Handler for touch events. When a touch event is triggered, it is handled by converting the touch
+         * event into an appropriate mouse event and then dispatching the mouse event. Thus on touch enabled
+         * devices (e.g. tablets), touching works as a mouse does.
+         *
+         * @param evt the event object for this event.
+         */
+        private touchEvent;
         /**
          * Turn on input handling for the game. This will capture keyboard events from the document and mouse
          * events for the canvas provided.

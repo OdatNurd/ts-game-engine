@@ -373,7 +373,7 @@ var nurdz;
         nurdz.contentLoaded(window, function () {
             try {
                 // Set up the stage.
-                var stage = new nurdz.game.Stage('gameContent');
+                var stage = new nurdz.game.Stage('gameContent', 'black', true, '#a0a0a0');
                 // Set up the default values used for creating a screen shot.
                 nurdz.game.Stage.screenshotFilenameBase = "screenshot";
                 nurdz.game.Stage.screenshotWindowTitle = "Screenshot";

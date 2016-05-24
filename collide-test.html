@@ -40,6 +40,9 @@
                         <a data-target="#controlsModal" data-toggle="modal" href="#controlsModal">Controls</a>
                     </li>
                     <li>
+                        <a href="https://gitlab.com/OdatNurd/ts-game-engine">Source Code</a>
+                    </li>
+                    <li>
                         <button id="controlBtn" class="btn navbar-btn btn-default">Stop Game</button>
                     </li>
                 </ul>
@@ -47,13 +50,14 @@
             <!--/.nav-collapse -->
         </div>
     </nav>
-    <div id="gameContent" class="container">
+    <div class="container-fluid">
+            <div id="gameContent"></div>
     </div>
-    <footer class="footer" data-pg-collapsed>
+    <div class="navbar navbar-default navbar-fixed-bottom" data-pg-collapsed>
         <div class="container">
             <p class="text-muted">Collision Test Copyright&copy; 2016 Terence Martin</p>
         </div>
-    </footer>
+    </div>
     <div class="modal fade pg-show-modal" id="helpAbout" tabindex="-1" role="dialog" aria-hidden="true"
          data-pg-collapsed>
         <div class="modal-dialog">
