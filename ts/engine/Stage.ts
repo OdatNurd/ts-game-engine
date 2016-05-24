@@ -278,7 +278,11 @@ module nurdz.game
             // Set up our scene manager object.
             this._sceneManager = new SceneManager (this);
 
-            // Save the scale setting we were given.
+            // Save the scale setting we were given. When the current device is a mobile device, we always
+            // turn on scaling because otherwise the canvas is unlikely to be sized nicely, and more
+            // importantly there is no way to otherwise fix it for the user.
+            if (/mobi/i.test(navigator.userAgent.toLowerCase()))
+                canScale = true;
             this._canScale = canScale;
 
             // Obtain the container element that we want to insert the canvas into.
