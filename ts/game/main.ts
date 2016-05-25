@@ -425,6 +425,11 @@ module nurdz.main
                     this._guy.toggleAnimation ();
                     return true;
 
+                // For the F key, toggle between full screen mode and windowed mode.
+                case KeyCodes.KEY_F:
+                    this._stage.toggleFullscreen();
+                    return true;
+
                 default:
                     // Let the super do what super does. This allows screen shots to still work as expected.
                     return super.inputKeyDown (eventObj);

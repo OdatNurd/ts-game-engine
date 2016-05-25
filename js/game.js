@@ -316,6 +316,10 @@ var nurdz;
                     case KeyCodes.KEY_SPACEBAR:
                         this._guy.toggleAnimation();
                         return true;
+                    // For the F key, toggle between full screen mode and windowed mode.
+                    case KeyCodes.KEY_F:
+                        this._stage.toggleFullscreen();
+                        return true;
                     default:
                         // Let the super do what super does. This allows screen shots to still work as expected.
                         return _super.prototype.inputKeyDown.call(this, eventObj);

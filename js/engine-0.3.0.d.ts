@@ -3682,6 +3682,17 @@ declare module nurdz.game {
          */
         tick: number;
         /**
+         * Determine if the anything is currently being presented full screen or not. This tracks the current
+         * state independent of what the user has explicitly requested, so for example if the user turns on
+         * fullscreen mode, then presses escape to exit it, this will return false the way you expect it to.
+         *
+         * Note: This doesn't check explicitly that it is the stage that is fullscreen, just that something
+         * on the page is fullscreen.
+         *
+         * @return {boolean} true if the canvas is currently fullscreen, or false otherwise
+         */
+        isFullscreen: boolean;
+        /**
          * Create the stage on which all rendering for the game will be done.
          *
          * A canvas will be created and inserted into the DOM as the last child of the container DIV with the
@@ -3728,6 +3739,19 @@ declare module nurdz.game {
          * @see Stage.run
          */
         stop(): void;
+        /**
+         * Attempt to either enter fullscreen mode for the stage or exit it, as determined by the boolean
+         * parameter provided. Trying to put the stage into the state that it is already in does nothing.
+         *
+         * This is not guaranteed to work, since it requires that the user allow the request to proceed.
+         *
+         * @param enter true to enter fullscreen if not already in it, or false to exit fullscreen.
+         */
+        fullscreen(enter?: boolean): void;
+        /**
+         * Toggle the current fullscreen state of the stage, depending on what the current state is.
+         */
+        toggleFullscreen(): void;
         /**
          * Request preloading of an image filename. When the run() method is invoked, the game loop will
          * not start until all images requested by this method call are available.

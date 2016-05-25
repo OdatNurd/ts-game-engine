@@ -250,6 +250,28 @@ module nurdz.game
         { return _updateTicks; }
 
         /**
+         * Determine if the anything is currently being presented full screen or not. This tracks the current
+         * state independent of what the user has explicitly requested, so for example if the user turns on
+         * fullscreen mode, then presses escape to exit it, this will return false the way you expect it to.
+         *
+         * Note: This doesn't check explicitly that it is the stage that is fullscreen, just that something
+         * on the page is fullscreen.
+         *
+         * @return {boolean} true if the canvas is currently fullscreen, or false otherwise
+         */
+        get isFullscreen () : boolean
+        {
+            // Various browsers store the element that is currently the fullscreen element (if any) in
+            // different properties of the document. This checks to see if any of them are set or not.
+            //
+            // Note that this naively does not check that the element is the canvas; it just checks that
+            // anything is fullscreen under the assumption that probably only our game is trying to go
+            // fullscreen on its own page.
+            return !(!document["fullscreenElement"] && !document["mozFullscreenElement"] &&
+                !document["webkitFullscreenElement"] && !document["msFullscreenElement"]);
+        }
+
+        /**
          * Create the stage on which all rendering for the game will be done.
          *
          * A canvas will be created and inserted into the DOM as the last child of the container DIV with the
@@ -438,6 +460,72 @@ module nurdz.game
 
             // Turn off input events.
             this.disableInputEvents (this._canvas);
+        }
+
+        /**
+         * Attempt to either enter fullscreen mode for the stage or exit it, as determined by the boolean
+         * parameter provided. Trying to put the stage into the state that it is already in does nothing.
+         *
+         * This is not guaranteed to work, since it requires that the user allow the request to proceed.
+         *
+         * @param enter true to enter fullscreen if not already in it, or false to exit fullscreen.
+         */
+        fullscreen (enter: boolean = true) : void
+        {
+            let element, methods;
+
+            // If the request for the fullscreen mode is the same as the current state of the fullscreen
+            // flag, then the code is asking us to do something that is already happening, so nothing else
+            // needs to occur.
+            if (enter == this.isFullscreen)
+            {
+                console.log("fullscreen request denied; already in the correct state");
+                return;
+            }
+
+            // Entering fullscreen mode requires us to invoke a method of a certain name on a certain element,
+            // but the element depends on whether we are entering or exiting fullscreen mode, and the method
+            // changes depending not only on what we are doing, but what browser this is.
+            if (enter == true)
+            {
+                // Entering fullscreen is a method to invoke on the canvas.
+                element = this._canvas;
+                methods = ["requestFullscreen", "webkitRequestFullscreen", "mozRequestFullScreen",
+                           "msRequestFullscreen"];
+            }
+            else
+            {
+                // Exiting fullscreen is a method to invoke on the document.
+                element = document;
+                methods = ["exitFullscreen", "webkitExitFullscreen", "mozCancelFullScreen",
+                           "msExitFullscreen"];
+            }
+
+            // Iterate over the methods on the element until we find one of them that's available, then invoke
+            // it and leave if we find one.
+            //
+            // If the request works, it triggers a resize event, which we're watching, so everything will
+            // do what we want it to. If scaling is not turned on, this is probably unsatisfactory, but why
+            // try to go fullscreen if you're not scaling?
+            for (let i = 0; i < methods.length; i++)
+            {
+                if (element[methods[i]] && typeof (element[methods[i]] == "function"))
+                {
+                    element[methods[i]]();
+                    return;
+                }
+            }
+
+            // If we get here, what we tried to do did not work. Unsupported browser?
+            console.log("Unable to " + (enter ? "enter" : "exit") + " fullscreen; no supported method found");
+        }
+
+        /**
+         * Toggle the current fullscreen state of the stage, depending on what the current state is.
+         */
+        toggleFullscreen () : void
+        {
+            this.fullscreen(!this.isFullscreen);
         }
 
         /**
