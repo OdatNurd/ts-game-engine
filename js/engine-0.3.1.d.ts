@@ -770,6 +770,33 @@ declare module nurdz.game {
          */
         y: number;
         /**
+         * Set the components of this Vector to the same as the vector or point provided. In the case of a
+         * point, the vector will be relative to the screen origin.
+         *
+         * @param point the point or vector to copy from
+         * @returns {Vector2D} this vector after the operation completes, for chaining calls.
+         */
+        setTo(point: Point | Vector2D): Vector2D;
+        /**
+         * Set the position of this vector to the same as the values passed in
+         *
+         * @param x new X-coordinate for this point
+         * @param y new Y-coordinate for this point
+         * @returns {Vector2D} this point after the operation completes, for chaining calls.
+         */
+        setToXY(x: number, y: number): Vector2D;
+        /**
+         * Set the components of this vector to the first two values in the array passed in, where the first
+         * value is treated as the X value and the second value is treated as the Y value.
+         *
+         * It is valid for the array to have more than two elements, but if it has fewer than two, nothing
+         * happens.
+         *
+         * @param array the array to get the new values from.
+         * @returns {Vector2D} this vector after the operation completes, for chaining calls.
+         */
+        setToArray(array: Array<number>): Vector2D;
+        /**
          * Get the magnitude of this vector.
          *
          * @returns {number} the length of this vector
@@ -1080,6 +1107,12 @@ declare module nurdz.game {
          * @see Vector2D.normalize
          */
         scale(factor: number): Vector2D;
+        /**
+         * Return a copy of this vector as an array of two numbers in x, y ordering.
+         *
+         * @returns {Array<number>} the vector as an array of two numbers.
+         */
+        toArray(): Array<number>;
         /**
          * Display a string version of the vector for debugging purposes.
          *
@@ -3534,6 +3567,27 @@ declare module nurdz.game {
          */
         private _canvas;
         /**
+         * The element that contains the canvas element; this is used to control the position of the
+         * canvas in the page.
+         *
+         * @type {HTMLElement}
+         */
+        private _container;
+        /**
+         * Controls whether the stage automatically scales itself to fill the
+         * window or not.
+         *
+         * When this is false, the stage is of a specific size, and although it
+         * will keep itself centered in the page, it will remain that size.
+         *
+         * When this is true, the canvas will expand itself to try and fill
+         * the entire page body (less the header and footer) while maintaining
+         * aspect.
+         *
+         * @type {Boolean}
+         */
+        private _canScale;
+        /**
          * The object responsible for rendering to our canvas.
          *
          * This is a simple wrapper around the canvas context and is the gateway to Rendering Magic (tm).
@@ -3619,8 +3673,8 @@ declare module nurdz.game {
          */
         currentScene: Scene;
         /**
-         * Obtain the current engine update tick. This is incremented once every time the frame update
-         * loop is invoked, and can be used to time things in a crude fashion.
+         * Obtain the current engine update tick. This is incremented once every time the frame update loop is
+         * invoked, and can be used to time things in a crude fashion.
          *
          * The frame update loop is invoked at a set frame rate.
          *
@@ -3628,20 +3682,35 @@ declare module nurdz.game {
          */
         tick: number;
         /**
+         * Determine if the anything is currently being presented full screen or not. This tracks the current
+         * state independent of what the user has explicitly requested, so for example if the user turns on
+         * fullscreen mode, then presses escape to exit it, this will return false the way you expect it to.
+         *
+         * Note: This doesn't check explicitly that it is the stage that is fullscreen, just that something
+         * on the page is fullscreen.
+         *
+         * @return {boolean} true if the canvas is currently fullscreen, or false otherwise
+         */
+        isFullscreen: boolean;
+        /**
          * Create the stage on which all rendering for the game will be done.
          *
          * A canvas will be created and inserted into the DOM as the last child of the container DIV with the
          * ID provided.
          *
-         * The CSS of the DIV will be modified to have a width and height of the canvas, with options that
-         * cause it to center itself.
+         * The style of the div will be modified so that the canvas is properly contained and positioned in
+         * the page.
          *
          * @param containerDivID the ID of the DIV that should contain the created canvas
          * @param initialColor the color to clear the canvas to once it is created
+         * @param surroundColor the color to set the page area that surrounds the canvas or null to leave the
+         * page as is
+         *
          * @constructor
+         *
          * @throws {ReferenceError} if there is no element with the ID provided
          */
-        constructor(containerDivID: string, initialColor?: string);
+        constructor(containerDivID: string, initialColor?: string, canScale?: boolean, surroundColor?: string);
         /**
          * This function gets executed in a loop to run the game. Each execution will cause an update and
          * render to be issued to the current scene.
@@ -3670,6 +3739,19 @@ declare module nurdz.game {
          * @see Stage.run
          */
         stop(): void;
+        /**
+         * Attempt to either enter fullscreen mode for the stage or exit it, as determined by the boolean
+         * parameter provided. Trying to put the stage into the state that it is already in does nothing.
+         *
+         * This is not guaranteed to work, since it requires that the user allow the request to proceed.
+         *
+         * @param enter true to enter fullscreen if not already in it, or false to exit fullscreen.
+         */
+        fullscreen(enter?: boolean): void;
+        /**
+         * Toggle the current fullscreen state of the stage, depending on what the current state is.
+         */
+        toggleFullscreen(): void;
         /**
          * Request preloading of an image filename. When the run() method is invoked, the game loop will
          * not start until all images requested by this method call are available.
@@ -3878,6 +3960,15 @@ declare module nurdz.game {
          */
         calculateMousePos(mouseEvent: MouseEvent, point?: Point): Point;
         /**
+         * Recalculate the size of the current window and the scale factor that should be applied to the
+         * canvas and its container so that the canvas is maximized inside the client area of the containing
+         * page.
+         *
+         * This requires that the canvas and its container already exist, and that the canvas is a child of
+         * the container. Various styles are also required on the container.
+         */
+        private changeCanvasScale;
+        /**
          * Handler for key down events. This gets triggered whenever the game is running and any key is
          * pressed.
          *
@@ -3933,6 +4024,19 @@ declare module nurdz.game {
          * @param evt the event object for this event.
          */
         private mouseWheelEvent;
+        /**
+         * Perform a simple check to see if the given touch event is happening within the bounds of the
+         * canvas (regardless of its scale).
+         */
+        private touchInCanvas(touch);
+        /**
+         * Handler for touch events. When a touch event is triggered, it is handled by converting the touch
+         * event into an appropriate mouse event and then dispatching the mouse event. Thus on touch enabled
+         * devices (e.g. tablets), touching works as a mouse does.
+         *
+         * @param evt the event object for this event.
+         */
+        private touchEvent;
         /**
          * Turn on input handling for the game. This will capture keyboard events from the document and mouse
          * events for the canvas provided.

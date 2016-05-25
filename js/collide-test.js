@@ -363,6 +363,10 @@ var nurdz;
                         this._mode = CollisionTestType.RECTANGLE;
                         this._currentCollider = this._rect;
                         return !eventObj.ctrlKey;
+                    // For the F key, toggle between full screen mode and windowed mode.
+                    case KeyCodes.KEY_F:
+                        this._stage.toggleFullscreen();
+                        return true;
                 }
                 // Let the default happen
                 return _super.prototype.inputKeyDown.call(this, eventObj);
@@ -373,7 +377,7 @@ var nurdz;
         nurdz.contentLoaded(window, function () {
             try {
                 // Set up the stage.
-                var stage = new nurdz.game.Stage('gameContent');
+                var stage = new nurdz.game.Stage('gameContent', 'black', true, '#a0a0a0');
                 // Set up the default values used for creating a screen shot.
                 nurdz.game.Stage.screenshotFilenameBase = "screenshot";
                 nurdz.game.Stage.screenshotWindowTitle = "Screenshot";

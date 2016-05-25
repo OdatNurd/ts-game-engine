@@ -40,6 +40,9 @@
                         <a data-target="#controlsModal" data-toggle="modal" href="#controlsModal">Controls</a>
                     </li>
                     <li>
+                        <a href="https://gitlab.com/OdatNurd/ts-game-engine">Source Code</a>
+                    </li>
+                    <li>
                         <button id="controlBtn" class="btn navbar-btn btn-default">Stop Game</button>
                     </li>
                 </ul>
@@ -47,13 +50,14 @@
             <!--/.nav-collapse -->
         </div>
     </nav>
-    <div id="gameContent" class="container">
+    <div class="container-fluid">
+            <div id="gameContent"></div>
     </div>
-    <footer class="footer" data-pg-collapsed>
+    <div class="navbar navbar-default navbar-fixed-bottom" data-pg-collapsed>
         <div class="container">
             <p class="text-muted">Collision Test Copyright&copy; 2016 Terence Martin</p>
         </div>
-    </footer>
+    </div>
     <div class="modal fade pg-show-modal" id="helpAbout" tabindex="-1" role="dialog" aria-hidden="true"
          data-pg-collapsed>
         <div class="modal-dialog">
@@ -93,6 +97,8 @@
                 </div>
                 <div class="modal-body">
                     <dl>
+                        <dt>F</dt>
+                        <dd>Toggle fullscreen mode on the canvas (if supported by the browser)</dd>
                         <dt>P</dt>
                         <dd>Change collision type to 'POINT'</dd>
                         <dt>R</dt>
@@ -114,7 +120,7 @@
     <script src="bootstrap/assets/js/jquery.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <script src="bootstrap/assets/js/ie10-viewport-bug-workaround.js"></script>
-    <script src="js/engine-0.3.0.js"></script>
+    <script src="js/engine-0.3.1.js"></script>
     <script src="js/collide-test.js"></script>
 </body>
 </html>

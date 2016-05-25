@@ -1431,6 +1431,45 @@ var nurdz;
                 enumerable: true,
                 configurable: true
             });
+            /**
+             * Set the components of this Vector to the same as the vector or point provided. In the case of a
+             * point, the vector will be relative to the screen origin.
+             *
+             * @param point the point or vector to copy from
+             * @returns {Vector2D} this vector after the operation completes, for chaining calls.
+             */
+            Vector2D.prototype.setTo = function (point) {
+                return this.setToXY(point.x, point.y);
+            };
+            /**
+             * Set the position of this vector to the same as the values passed in
+             *
+             * @param x new X-coordinate for this point
+             * @param y new Y-coordinate for this point
+             * @returns {Vector2D} this point after the operation completes, for chaining calls.
+             */
+            Vector2D.prototype.setToXY = function (x, y) {
+                this._x = x;
+                this._y = y;
+                return this;
+            };
+            /**
+             * Set the components of this vector to the first two values in the array passed in, where the first
+             * value is treated as the X value and the second value is treated as the Y value.
+             *
+             * It is valid for the array to have more than two elements, but if it has fewer than two, nothing
+             * happens.
+             *
+             * @param array the array to get the new values from.
+             * @returns {Vector2D} this vector after the operation completes, for chaining calls.
+             */
+            Vector2D.prototype.setToArray = function (array) {
+                if (array.length >= 2) {
+                    this._x = array[0];
+                    this._y = array[1];
+                    return this;
+                }
+            };
             Object.defineProperty(Vector2D.prototype, "magnitude", {
                 /**
                  * Get the magnitude of this vector.
@@ -1895,6 +1934,14 @@ var nurdz;
                 this._x *= factor;
                 this._y *= factor;
                 return this;
+            };
+            /**
+             * Return a copy of this vector as an array of two numbers in x, y ordering.
+             *
+             * @returns {Array<number>} the vector as an array of two numbers.
+             */
+            Vector2D.prototype.toArray = function () {
+                return [this._x, this._y];
             };
             /**
              * Display a string version of the vector for debugging purposes.
@@ -5003,17 +5050,23 @@ var nurdz;
              * A canvas will be created and inserted into the DOM as the last child of the container DIV with the
              * ID provided.
              *
-             * The CSS of the DIV will be modified to have a width and height of the canvas, with options that
-             * cause it to center itself.
+             * The style of the div will be modified so that the canvas is properly contained and positioned in
+             * the page.
              *
              * @param containerDivID the ID of the DIV that should contain the created canvas
              * @param initialColor the color to clear the canvas to once it is created
+             * @param surroundColor the color to set the page area that surrounds the canvas or null to leave the
+             * page as is
+             *
              * @constructor
+             *
              * @throws {ReferenceError} if there is no element with the ID provided
              */
-            function Stage(containerDivID, initialColor) {
+            function Stage(containerDivID, initialColor, canScale, surroundColor) {
                 var _this = this;
                 if (initialColor === void 0) { initialColor = 'black'; }
+                if (canScale === void 0) { canScale = true; }
+                if (surroundColor === void 0) { surroundColor = null; }
                 /**
                  * This function gets executed in a loop to run the game. Each execution will cause an update and
                  * render to be issued to the current scene.
@@ -5049,6 +5102,60 @@ var nurdz;
                         _gameTimerID = null;
                         throw error;
                     }
+                };
+                /**
+                 * Recalculate the size of the current window and the scale factor that should be applied to the
+                 * canvas and its container so that the canvas is maximized inside the client area of the containing
+                 * page.
+                 *
+                 * This requires that the canvas and its container already exist, and that the canvas is a child of
+                 * the container. Various styles are also required on the container.
+                 */
+                this.changeCanvasScale = function () {
+                    // Obtain the viewable size of the window our document is being displayed in.
+                    var windowWidth = document.documentElement.clientWidth;
+                    var windowHeight = document.documentElement.clientHeight;
+                    // Now get the top and bottom margins for the document body. These tell us how much of the space
+                    // at the top and the bottom of the window are taken up by page navigation.
+                    //
+                    // As far as I can tell, when computing the style the units used are always pixels, even if the
+                    // CSS specifies the margins in another format like em.
+                    var bodyStyle = window.getComputedStyle(document.body, null);
+                    var marginTop = parseInt(bodyStyle.getPropertyValue("margin-top"));
+                    var marginBottom = parseInt(bodyStyle.getPropertyValue("margin-bottom"));
+                    // Modify the height of thw window by the margins given; this tells us the usable window size.
+                    windowHeight -= marginTop + marginBottom;
+                    // Calculate the aspect ratio of the canvas object and of the current window.
+                    var canvasAspect = _this._canvas.width / _this._canvas.height;
+                    var windowAspect = windowWidth / windowHeight;
+                    // These will store the new canvas size; they default to the usable size of the window if we
+                    // are allowed to scale the canvas to the window, or just the stage size otherwise.
+                    var newWidth = _this._canScale ? windowWidth : game.STAGE_WIDTH;
+                    var newHeight = _this._canScale ? windowHeight : game.STAGE_HEIGHT;
+                    // If we have scaling turned on, check to see if we need to change the canvas size. In theory this
+                    // will the canvas untouched if scaling is turned off because the canvas aspect is changed
+                    // relative to itself. However, small rounding errors can make things look a little hinky, so it's
+                    // visually more pleasing to just not noodle the numbers.
+                    if (_this._canScale) {
+                        if (windowAspect > canvasAspect)
+                            // The window is too wide relative to the aspect ratio of our canvas, so modify the width to
+                            // be correctly sized based on the height we got.
+                            newWidth = newHeight * canvasAspect;
+                        else
+                            // THe window height is too tall relative to the aspect ratio of our canvas, so modify the
+                            // height of the canvas relative to the width.
+                            newHeight = newWidth / canvasAspect;
+                    }
+                    // Modify the style of the container div to make it center horizontally and vertically.
+                    _this._container.style.width = newWidth + "px";
+                    _this._container.style.height = newHeight + "px";
+                    _this._container.style.marginLeft = (-newWidth / 2) + "px";
+                    _this._container.style.marginTop = (-newHeight / 2) + "px";
+                    // Now we can use the new width and height to set the CSS style for our canvas. This changes its
+                    // size on the page, which might alter the scale factor that things draw at if it doesn't
+                    // match the rendering size.
+                    _this._canvas.style.width = newWidth + "px";
+                    _this._canvas.style.height = newHeight + "px";
                 };
                 /**
                  * Handler for key down events. This gets triggered whenever the game is running and any key is
@@ -5131,6 +5238,50 @@ var nurdz;
                         evt.preventDefault();
                 };
                 /**
+                 * Handler for touch events. When a touch event is triggered, it is handled by converting the touch
+                 * event into an appropriate mouse event and then dispatching the mouse event. Thus on touch enabled
+                 * devices (e.g. tablets), touching works as a mouse does.
+                 *
+                 * @param evt the event object for this event.
+                 */
+                this.touchEvent = function (evt) {
+                    // Get the list of touches, and then the first touch.
+                    var touches = evt.changedTouches, first = touches[0], type = "";
+                    // Based on the type of touch event, attempt to map it to an appropriate mosue event; if this
+                    // fails, just leave.
+                    switch (evt.type) {
+                        case "touchstart":
+                            type = "mousedown";
+                            break;
+                        case "touchmove":
+                            type = "mousemove";
+                            break;
+                        case "touchend":
+                            type = "mouseup";
+                            break;
+                        default: return;
+                    }
+                    // Ignore a mouse movement event that is outside of the canvas. This mimics how the mousemove
+                    // event is bound to the canvas element and not the document. The touchmove event is bound to the
+                    // document so that we can block all moves in the document to stop page scrolls from happening
+                    // even if outside of the canvas.
+                    if (type == "mousemove" && _this.touchInCanvas(first) == false)
+                        return;
+                    // Create and initialize a Mouse event using the event information from the touch event (primarily
+                    // the location of the touch).
+                    var simulatedEvent = document.createEvent("MouseEvent");
+                    simulatedEvent.initMouseEvent(type, true, true, window, 1, first.screenX, first.screenY, first.clientX, first.clientY, false, false, false, false, 0, null);
+                    // Dispatch the event now. If this is a touch move (or "mouse move", now), then stop the default
+                    // handling from triggering. This will stop the touch from scrolling the display while the game
+                    // is running; it's still possible to do so by stopping the game first.
+                    //
+                    // Note also that if we prevent the default on other events, then the browser's simulation of
+                    // events (e.g. for clicking on links) will also be blocked, which is not what we want.
+                    first.target.dispatchEvent(simulatedEvent);
+                    if (type == "mousemove")
+                        event.preventDefault();
+                };
+                /**
                  * Turn on input handling for the game. This will capture keyboard events from the document and mouse
                  * events for the canvas provided.
                  *
@@ -5143,12 +5294,20 @@ var nurdz;
                     canvas.addEventListener('click', _this.mouseClickEvent);
                     canvas.addEventListener('dblclick', _this.mouseDblClickEvent);
                     canvas.addEventListener('wheel', _this.mouseWheelEvent);
-                    // This one has to be on the document, or else pressing the mouse and moving outside of the
-                    // canvas and letting go of the button will not be captured.
+                    // This one has to be on the document, or else pressing the mouse and moving outside of the canvas
+                    // and letting go of the button will not be captured.
                     document.addEventListener('mouseup', _this.mouseUpEvent);
                     // Keyboard events are document wide because a canvas can't hold the input focus.
                     document.addEventListener('keydown', _this.keyDownEvent);
                     document.addEventListener('keyup', _this.keyUpEvent);
+                    // These ones are on the document, and translate touch events to mouse events. The touch event for
+                    // touchmove is bound to the document instead of just the canvas because our handler for it blocks
+                    // the default handling for it so that the screen doesn't scroll. We want that to happen even if
+                    // the touch originates outside of the canvas.
+                    document.addEventListener('touchstart', _this.touchEvent);
+                    document.addEventListener('touchmove', _this.touchEvent);
+                    document.addEventListener('touchend', _this.touchEvent);
+                    document.addEventListener('touchcancel', _this.touchEvent);
                 };
                 /**
                  * Turn off input handling for the game. This will turn off keyboard events from the document and
@@ -5163,6 +5322,10 @@ var nurdz;
                     document.addEventListener('mouseup', _this.mouseUpEvent);
                     document.removeEventListener('keydown', _this.keyDownEvent);
                     document.removeEventListener('keyup', _this.keyUpEvent);
+                    document.removeEventListener('touchstart', _this.touchEvent);
+                    document.removeEventListener('touchmove', _this.touchEvent);
+                    document.removeEventListener('touchend', _this.touchEvent);
+                    document.removeEventListener('touchcancel', _this.touchEvent);
                 };
                 // We don't start off having done a preload.
                 this._didPreload = false;
@@ -5170,24 +5333,41 @@ var nurdz;
                 this._knownSounds = [];
                 // Set up our scene manager object.
                 this._sceneManager = new game.SceneManager(this);
+                // Save the scale setting we were given. When the current device is a mobile device, we always
+                // turn on scaling because otherwise the canvas is unlikely to be sized nicely, and more
+                // importantly there is no way to otherwise fix it for the user.
+                if (/mobi/i.test(navigator.userAgent.toLowerCase()))
+                    canScale = true;
+                this._canScale = canScale;
                 // Obtain the container element that we want to insert the canvas into.
-                var container = document.getElementById(containerDivID);
-                if (container == null)
+                this._container = document.getElementById(containerDivID);
+                if (this._container == null)
                     throw new ReferenceError("Unable to create stage: No such element with ID '" + containerDivID + "'");
-                // Create the canvas and give it the appropriate dimensions.
+                // Create the canvas and give it the appropriate dimensions. The dimensions set here are the ones
+                // that determine the size of the rendering area of the canvas.
                 this._canvas = document.createElement("canvas");
                 this._canvas.width = game.STAGE_WIDTH;
                 this._canvas.height = game.STAGE_HEIGHT;
-                // Modify the style of the container div to make it center horizontally.
-                container.style.width = game.STAGE_WIDTH + "px";
-                container.style.height = game.STAGE_HEIGHT + "px";
-                container.style.marginLeft = "auto";
-                container.style.marginRight = "auto";
-                // Create our rendering object and then use it to clear the stage.
+                // Create our rendering object to wrap this canvas, and then use the given color to clear the
+                // stage. We also set the background color of the page if requested.
                 this._renderer = new game.CanvasRenderer(this._canvas);
                 this._renderer.clear(initialColor);
-                // Append the canvas to the container
-                container.appendChild(this._canvas);
+                if (surroundColor)
+                    document.body.style.backgroundColor = surroundColor;
+                // Append the canvas to the container; this makes it visible.
+                this._container.appendChild(this._canvas);
+                // Add in event listeners that will check to determine when the window size changes for any reason
+                // or when the orientation changes (mobile devices), and invoke a handler that will scale and
+                // reposition the canvas in the containing page as needed.
+                //
+                // This event handler gets set here because it should always be active, even if the game is not
+                // run ing.
+                //
+                // Once that's done, invoke the handler manually to set the initial size and position of the
+                // canvas.
+                window.addEventListener('resize', this.changeCanvasScale, false);
+                window.addEventListener('orientationchange', this.changeCanvasScale, false);
+                this.changeCanvasScale();
                 // Set the global stage object to be us, for debugging or other nefarious purposes.
                 nurdz.stage = this;
             }
@@ -5291,14 +5471,38 @@ var nurdz;
             });
             Object.defineProperty(Stage.prototype, "tick", {
                 /**
-                 * Obtain the current engine update tick. This is incremented once every time the frame update
-                 * loop is invoked, and can be used to time things in a crude fashion.
+                 * Obtain the current engine update tick. This is incremented once every time the frame update loop is
+                 * invoked, and can be used to time things in a crude fashion.
                  *
                  * The frame update loop is invoked at a set frame rate.
                  *
                  * @returns {number}
                  */
                 get: function () { return _updateTicks; },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Stage.prototype, "isFullscreen", {
+                /**
+                 * Determine if the anything is currently being presented full screen or not. This tracks the current
+                 * state independent of what the user has explicitly requested, so for example if the user turns on
+                 * fullscreen mode, then presses escape to exit it, this will return false the way you expect it to.
+                 *
+                 * Note: This doesn't check explicitly that it is the stage that is fullscreen, just that something
+                 * on the page is fullscreen.
+                 *
+                 * @return {boolean} true if the canvas is currently fullscreen, or false otherwise
+                 */
+                get: function () {
+                    // Various browsers store the element that is currently the fullscreen element (if any) in
+                    // different properties of the document. This checks to see if any of them are set or not.
+                    //
+                    // Note that this naively does not check that the element is the canvas; it just checks that
+                    // anything is fullscreen under the assumption that probably only our game is trying to go
+                    // fullscreen on its own page.
+                    return !(!document["fullscreenElement"] && !document["mozFullscreenElement"] &&
+                        !document["webkitFullscreenElement"] && !document["msFullscreenElement"]);
+                },
                 enumerable: true,
                 configurable: true
             });
@@ -5360,6 +5564,60 @@ var nurdz;
                 _ticksPerSec = 0;
                 // Turn off input events.
                 this.disableInputEvents(this._canvas);
+            };
+            /**
+             * Attempt to either enter fullscreen mode for the stage or exit it, as determined by the boolean
+             * parameter provided. Trying to put the stage into the state that it is already in does nothing.
+             *
+             * This is not guaranteed to work, since it requires that the user allow the request to proceed.
+             *
+             * @param enter true to enter fullscreen if not already in it, or false to exit fullscreen.
+             */
+            Stage.prototype.fullscreen = function (enter) {
+                if (enter === void 0) { enter = true; }
+                var element, methods;
+                // If the request for the fullscreen mode is the same as the current state of the fullscreen
+                // flag, then the code is asking us to do something that is already happening, so nothing else
+                // needs to occur.
+                if (enter == this.isFullscreen) {
+                    console.log("fullscreen request denied; already in the correct state");
+                    return;
+                }
+                // Entering fullscreen mode requires us to invoke a method of a certain name on a certain element,
+                // but the element depends on whether we are entering or exiting fullscreen mode, and the method
+                // changes depending not only on what we are doing, but what browser this is.
+                if (enter == true) {
+                    // Entering fullscreen is a method to invoke on the canvas.
+                    element = this._canvas;
+                    methods = ["requestFullscreen", "webkitRequestFullscreen", "mozRequestFullScreen",
+                        "msRequestFullscreen"];
+                }
+                else {
+                    // Exiting fullscreen is a method to invoke on the document.
+                    element = document;
+                    methods = ["exitFullscreen", "webkitExitFullscreen", "mozCancelFullScreen",
+                        "msExitFullscreen"];
+                }
+                // Iterate over the methods on the element until we find one of them that's available, then invoke
+                // it and leave if we find one.
+                //
+                // If the request works, it triggers a resize event, which we're watching, so everything will
+                // do what we want it to. If scaling is not turned on, this is probably unsatisfactory, but why
+                // try to go fullscreen if you're not scaling?
+                for (var i = 0; i < methods.length; i++) {
+                    if (element[methods[i]] && typeof (element[methods[i]] == "function")) {
+                        element[methods[i]]();
+                        return;
+                    }
+                }
+                // If we get here, what we tried to do did not work. Unsupported browser?
+                console.log("Unable to " + (enter ? "enter" : "exit") + " fullscreen; no supported method found");
+            };
+            /**
+             * Toggle the current fullscreen state of the stage, depending on what the current state is.
+             */
+            Stage.prototype.toggleFullscreen = function () {
+                this.fullscreen(!this.isFullscreen);
             };
             /**
              * Request preloading of an image filename. When the run() method is invoked, the game loop will
@@ -5644,6 +5902,11 @@ var nurdz;
                 var root = document.documentElement;
                 var mouseX = mouseEvent.clientX - rect.left - root.scrollLeft;
                 var mouseY = mouseEvent.clientY - rect.top - root.scrollTop;
+                // Since the canvas bounds are not the same as the canvas rendering area, we need to adjust the
+                // coordinates that we ended up with by our scale factor in both dimensions to put things back
+                // into the proper scale.
+                mouseX = Math.floor(mouseX / (rect.width / game.STAGE_WIDTH));
+                mouseY = Math.floor(mouseY / (rect.height / game.STAGE_HEIGHT));
                 // Create a new point or reuse the existing one, as desired.
                 if (point == null)
                     return new game.Point(mouseX, mouseY);
@@ -5651,6 +5914,22 @@ var nurdz;
                     point.setToXY(mouseX, mouseY);
                     return point;
                 }
+            };
+            /**
+             * Perform a simple check to see if the given touch event is happening within the bounds of the
+             * canvas (regardless of its scale).
+             */
+            Stage.prototype.touchInCanvas = function (touch) {
+                // Calculate where the canvas is and where the touch happened.
+                var rect = this._canvas.getBoundingClientRect();
+                var root = document.documentElement;
+                var touchX = touch.clientX - rect.left - root.scrollLeft;
+                var touchY = touch.clientY - rect.top - root.scrollTop;
+                // Did the touch happen inside the canvas? Our rect value tells us
+                // the document coordinates that the canvas is taking up, but our calculated
+                // position is in canvas coordinates.
+                return touchX >= 0 && touchY >= 0 &&
+                    touchX <= rect.width && touchY <= rect.height;
             };
             /**
              * Return a string representation of the object, for debugging purposes.
