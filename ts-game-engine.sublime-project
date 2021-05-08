@@ -4,5 +4,31 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"build_systems": [
+		{
+			"name": "ts-game-engine",
+	        "target": "terminus_exec",
+	        "cancel": "terminus_cancel_build",
+
+	        "shell_cmd": "tsc",
+	        "working_dir": "${folder:${file_path}}",
+	        "file_regex": "^(.*):(\\d+):(\\d+) - (.*)",
+
+	        "variants": [
+	        	{
+	        		"name": "game",
+	        		"working_dir": "${folder}/ts/game/"
+	        	},
+	        	{
+	        		"name": "collide-test",
+	        		"working_dir": "${folder}/ts/collide-test/"
+	        	},
+	        	{
+	        		"name": "engine",
+	        		"working_dir": "${folder}/ts/engine/"
+	        	}
+	        ],
+		}
+	],
 }
