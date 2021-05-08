@@ -1,8 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var nurdz;
 (function (nurdz) {
     var main;
@@ -45,6 +53,8 @@ var nurdz;
                     console.log("Exception generated while toggling game state");
                     throw error;
                 }
+                // No matter what, toggle the game state. This will put the button back into sync for the next
+                // click if it got out of sync.
                 finally {
                     // No matter what, toggle the state.
                     gameRunning = !gameRunning;
@@ -86,7 +96,7 @@ var nurdz;
         var Vector2D = nurdz.game.Vector2D;
         var Collider = nurdz.game.Collider;
         var ColliderType = nurdz.game.ColliderType;
-        var TestScene = (function (_super) {
+        var TestScene = /** @class */ (function (_super) {
             __extends(TestScene, _super);
             /**
              * Create a new test scene to be managed by the provided stage.
@@ -94,26 +104,26 @@ var nurdz;
              * @param stage the stage to manage us/
              */
             function TestScene(stage) {
-                _super.call(this, "A Scene", stage);
+                var _this = _super.call(this, "A Scene", stage) || this;
                 /**
                  * The intersection point or points (if any) between the vector ray and all of the static
                  * collision objects on the stage. This is always an array but it might be empty if there are no
                  * active intersections.
                  */
-                this._vectorIntersects = [];
+                _this._vectorIntersects = [];
                 /**
                  * A list of origin points that we can use for our collision objects.
                  *
                  * @type {nurdz.game.Point[]}
                  * @private
                  */
-                this._originList = [new Point(0, 0),
+                _this._originList = [new Point(0, 0),
                     new Point(64, 0),
                     new Point(64, 64),
                     new Point(0, 64),
                     new Point(32, 32)];
                 // No mouse position by default, so set one up.
-                this._mouse = new Point(0, 0);
+                _this._mouse = new Point(0, 0);
                 // A list of locations to put actors down to keep them separated enough for easy hit testing.
                 // The Y coordinate is translated after they're used to make room for the next row.
                 var testPos = [new Point(128, 128),
@@ -122,7 +132,7 @@ var nurdz;
                     new Point(512, 192),
                     new Point(672, 160)];
                 // Create the array to hold our colliders.
-                this._colliders = [];
+                _this._colliders = [];
                 // Set up all rectangles and their origins; once done we translate the point down for the next
                 // row of actors.
                 for (var i = 0; i < testPos.length; i++) {
@@ -130,10 +140,10 @@ var nurdz;
                     var point = testPos[i];
                     // Create the collider and set its origin
                     var collider = new Collider(stage, ColliderType.RECTANGLE, point.x, point.y, 64, 64);
-                    collider.origin.setTo(this._originList[i]);
+                    collider.origin.setTo(_this._originList[i]);
                     // Store the collider into our array, and translate the point itself for the next row of
                     // items.
-                    this._colliders.push(collider);
+                    _this._colliders.push(collider);
                     point.translateXY(0, 192);
                 }
                 // Now we can do the circles; this works as above, only we don't need to translate the points
@@ -143,28 +153,29 @@ var nurdz;
                     var point = testPos[i];
                     // Create the collider and set its origin
                     var collider = new Collider(stage, ColliderType.CIRCLE, point.x, point.y, 32);
-                    collider.origin.setTo(this._originList[i]);
-                    this._colliders.push(collider);
+                    collider.origin.setTo(_this._originList[i]);
+                    _this._colliders.push(collider);
                 }
                 // Create a rectangle and a circle to use to follow the mouse in the appropriate mode. These
                 // aren't added to the actor list; we render them manually.
-                this._rect = new Collider(stage, ColliderType.RECTANGLE, 0, 0, 64, 64);
-                this._circle = new Collider(stage, ColliderType.CIRCLE, 0, 0, 32);
+                _this._rect = new Collider(stage, ColliderType.RECTANGLE, 0, 0, 64, 64);
+                _this._circle = new Collider(stage, ColliderType.CIRCLE, 0, 0, 32);
                 // The points that control our lines for intersection testing; there is no dragged control
                 // initially.
-                this._draggedControl = null;
-                this._lineControls = [];
-                this._lineControls[0] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 150, 450, 8);
-                this._lineControls[1] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 750, 550, 8);
-                this._lineControls[2] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 150, 550, 8);
-                this._lineControls[3] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 750, 450, 8);
-                this._lineControls[4] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 350, 250, 8);
-                this._lineControls[5] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 550, 250, 8);
+                _this._draggedControl = null;
+                _this._lineControls = [];
+                _this._lineControls[0] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 150, 450, 8);
+                _this._lineControls[1] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 750, 550, 8);
+                _this._lineControls[2] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 150, 550, 8);
+                _this._lineControls[3] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 750, 450, 8);
+                _this._lineControls[4] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 350, 250, 8);
+                _this._lineControls[5] = new nurdz.game.Collider(stage, ColliderType.CIRCLE, 550, 250, 8);
                 // Get the initial intersection (if any).
-                this.recalculateIntersect();
+                _this.recalculateIntersect();
                 // Default mode: point; the current collider is thus null.
-                this._mode = CollisionTestType.POINT;
-                this._currentCollider = null;
+                _this._mode = CollisionTestType.POINT;
+                _this._currentCollider = null;
+                return _this;
             }
             /**
              * Perform a calculation to see where our lines intersect; this only needs to be invoked when one

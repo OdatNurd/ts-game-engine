@@ -133,7 +133,7 @@ declare module nurdz.game {
         KEY_F9 = 120,
         KEY_F10 = 121,
         KEY_F11 = 122,
-        KEY_F12 = 123,
+        KEY_F12 = 123
     }
 }
 declare module nurdz.game.Preloader {
@@ -146,12 +146,12 @@ declare module nurdz.game.Preloader {
      * The type of a callback function to invoke when an image preload is completed. The function is passed as
      * an argument the handle to the loaded image element and returns no value.
      */
-    type ImagePreloadCallback = (HTMLImageElement) => void;
+    type ImagePreloadCallback = (HTMLImageElement: any) => void;
     /**
      * The type of a callback function to invoke when a sound preload is completed. The function is passed as
      * an argument the handle to the loaded audio element and returns no value.
      */
-    type SoundPreloadCallback = (Sound) => void;
+    type SoundPreloadCallback = (Sound: any) => void;
     /**
      * Add the image filename specified to the list of images that will be preloaded. The "filename" is
      * assumed to be a path that is relative to the page that the game is being served from and inside of
@@ -419,23 +419,25 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
+        get x(): number;
         /**
          * Set the x-coordinate of this point
          *
          * @param newX the new X to set.
          */
-        x: number;
+        set x(newX: number);
         /**
          * Y-coordinate of this point.
          *
          * @returns {number}
          */
+        get y(): number;
         /**
          * Set the y-coordinate of this point
          *
          * @param newY the new y to set.
          */
-        y: number;
+        set y(newY: number);
         /**
          * Construct a new point that uses the provided X and Y values as its initial coordinate.
          *
@@ -752,23 +754,25 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
+        get x(): number;
         /**
          * Set the x component of this vector.
          *
          * @param newX the new X to set.
          */
-        x: number;
+        set x(newX: number);
         /**
          * The y component of this vector.
          *
          * @returns {number}
          */
+        get y(): number;
         /**
          * Set the y component of this vector.
          *
          * @param newY the new y to set.
          */
-        y: number;
+        set y(newY: number);
         /**
          * Set the components of this Vector to the same as the vector or point provided. In the case of a
          * point, the vector will be relative to the screen origin.
@@ -801,6 +805,7 @@ declare module nurdz.game {
          *
          * @returns {number} the length of this vector
          */
+        get magnitude(): number;
         /**
          * Set the magnitude of this vector. This retains the current direction of the vector but modifies
          * the components so that the magnitude is the new magnitude.
@@ -809,7 +814,7 @@ declare module nurdz.game {
          *
          * @param newMagnitude the new magnitude for the vector
          */
-        magnitude: number;
+        set magnitude(newMagnitude: number);
         /**
          * Get the angle (in radians) that this vector is currently pointing.
          *
@@ -825,6 +830,17 @@ declare module nurdz.game {
          * @returns {number} the angle in radians that the vector is pointing.
          * @see Vector2D.directionDeg
          */
+        get direction(): number;
+        /**
+         * Get the angle (in degrees) that this vector is currently pointing.
+         *
+         * This does what direction does but converts the angle to degrees and constrains it to the range
+         * 0-359.
+         *
+         * @returns {number} the angle in degrees that the vector is pointing.
+         * @see Vector2D.direction
+         */
+        get directionDeg(): number;
         /**
          * Set the angle (in radians) that this vector points. This keeps the current magnitude of the
          * vector intact.
@@ -838,16 +854,7 @@ declare module nurdz.game {
          * @param newDirection the new direction angle, in radians
          * @see Vector2D.directionDeg
          */
-        direction: number;
-        /**
-         * Get the angle (in degrees) that this vector is currently pointing.
-         *
-         * This does what direction does but converts the angle to degrees and constrains it to the range
-         * 0-359.
-         *
-         * @returns {number} the angle in degrees that the vector is pointing.
-         * @see Vector2D.direction
-         */
+        set direction(newDirection: number);
         /**
          * Set the angle (in degrees) that this vector points. This keeps the current magnitude of the
          * vector intact.
@@ -861,7 +868,7 @@ declare module nurdz.game {
          * @param newDirection the new direction angle, in degrees
          * @see Vector2D.direction
          */
-        directionDeg: number;
+        set directionDeg(newDirection: number);
         /**
          * Get the squared magnitude of this vector. The true magnitude is the square root of this value,
          * which can be a costly operation; for comparison purposes you may want to skip that portion of
@@ -869,7 +876,7 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
-        magnitudeSquared: number;
+        get magnitudeSquared(): number;
         /**
          * Construct a new 2D vector, optionally also providing one or both components of the vector itself.
          *
@@ -1134,7 +1141,7 @@ declare module nurdz.game {
      * first, this happens after the preload is finished, while for other SpriteSheets it will get invoked
      * before the constructor of the SpriteSheet returns.
      */
-    type SpriteSheetSetupCallback = (SpriteSheet) => void;
+    type SpriteSheetSetupCallback = (SpriteSheet: any) => void;
     /**
      * This class represents the basics of a sprite sheet; this takes the URL to an image, and will
      * preload that image and internally slice it into sprites at given size boundaries for later rendering.
@@ -1182,21 +1189,21 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
-        width: number;
+        get width(): number;
         /**
          * Obtain the height of sprites that are present in this sprite sheet; this is not available until
          * the sprite sheet has finished loading the underlying image.
          *
          * @returns {number}
          */
-        height: number;
+        get height(): number;
         /**
          * Obtain the total number of sprites available in this sprite sheet; this is not available until
          * the sprite sheet has finished loading the underlying image.
          *
          * @returns {number}
          */
-        count: number;
+        get count(): number;
         /**
          * Construct a new sprite sheet either from a previously loaded image or by preloading an image.
          *
@@ -1297,14 +1304,14 @@ declare module nurdz.game {
          *
          * @returns {string}
          */
-        current: string;
+        get current(): string;
         /**
          * Determine if the current animation is playing or not. The return value is always false if there
          * is no current animation.
          *
          * @returns {boolean}
          */
-        isPlaying: boolean;
+        get isPlaying(): boolean;
         /**
          * Construct a new animation list
          */
@@ -1319,7 +1326,7 @@ declare module nurdz.game {
          * stop
          * @param frameList the list of frames that make up this animation.
          */
-        private createAnimation(name, fps, loop, frameList);
+        private createAnimation;
         /**
          * Add a new animation with a textual name, which will run at the frames per second provided. The
          * animation can be set to loop or not as desired.
@@ -1349,7 +1356,7 @@ declare module nurdz.game {
          * @returns {AnimationInformation} the animation information for the named animation, or null if
          * not found
          */
-        private fetchAnimation(name, purpose);
+        private fetchAnimation;
         /**
          * Start playing the provided animation; this will take effect on the next call to the update method.
          *
@@ -1437,7 +1444,7 @@ declare module nurdz.game {
          * the center of the circle as one might expect. This can of course be changed if the position is
          * best referenced from some other point.
          */
-        CIRCLE = 2,
+        CIRCLE = 2
     }
     /**
      * This class represents the basis of an object that can be positioned on the stage and can collide
@@ -1515,13 +1522,14 @@ declare module nurdz.game {
          *
          * @returns {ColliderType}
          */
-        type: ColliderType;
+        get type(): ColliderType;
         /**
          * Get the rotation angle of this collider (in degrees); 0 is to the right and 90 is downward (due
          * to the Y axis increasing downwards).
          *
          * @returns {number}
          */
+        get angle(): number;
         /**
          * Set the rotation angle of this collider (in degrees, does not affect collision
          * detection).
@@ -1530,20 +1538,20 @@ declare module nurdz.game {
          *
          * @param newAngle the new angle to render at
          */
-        angle: number;
+        set angle(newAngle: number);
         /**
          * The origin of this collision object, which is an offset from its position and is used to
          * determine at what point inside the collision object the position represents.
          *
          * @returns {Point}
          */
-        origin: Point;
+        get origin(): Point;
         /**
          * The position of this collision object in the world. These coordinates are in pixel coordinates.
          *
          * @returns {Point}
          */
-        position: Point;
+        get position(): Point;
         /**
          * Obtain the radius of this collision object, in pixels.
          *
@@ -1551,21 +1559,21 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
-        radius: number;
+        get radius(): number;
         /**
          * Obtain the width of this collision object, in pixels. This represents how wide the collision
          * volume is at its widest point, even if the collision type itself is not rectangular.
          *
          * @returns {number}
          */
-        width: number;
+        get width(): number;
         /**
          * Obtain the height of this collision object, in pixels. This represents how tall the collision
          * volume is at its tallest point, even if the collision type itself is not rectangular.
          *
          * @returns {number}
          */
-        height: number;
+        get height(): number;
         /**
          * Construct a new collider object of a provided type with the given properties. The origin of the
          * object is set to a sensible default for the collider type provided.
@@ -1620,7 +1628,7 @@ declare module nurdz.game {
          * @param other the other collision object, which needs to be a circle
          * @returns {boolean} true if we collide with this circle, or false otherwise
          */
-        private circleCircleCollide(other);
+        private circleCircleCollide;
         /**
          * Perform a collision with the other object under the assumption that both us and the other
          * object are rectangles.
@@ -1628,7 +1636,7 @@ declare module nurdz.game {
          * @param other the other collision object, which needs to be a rectangle
          * @returns {boolean} true if we collide with this rectangle, false otherwise
          */
-        private rectRectCollide(other);
+        private rectRectCollide;
         /**
          * Perform a collision with the other object under the assumption that one of us is a rectangle
          * and the other is a circle. Which is which does not matter, this works both ways.
@@ -1637,7 +1645,7 @@ declare module nurdz.game {
          * (whichever we are not)
          * @returns {boolean} true if we collide with this rectangle, false otherwise
          */
-        private circleRectCollide(other);
+        private circleRectCollide;
         /**
          * Perform a collision check between this collision object and some other collision object. This
          * takes into account the types of each object and collides them as appropriate.
@@ -1745,32 +1753,32 @@ declare module nurdz.game {
          *
          * @returns {Point}
          */
-        mapPosition: Point;
+        get mapPosition(): Point;
         /**
          * The position of this actor in the world. These coordinates are in pixel coordinates.
          *
          * @returns {Point}
          */
-        position: Point;
+        get position(): Point;
         /**
          * Get the origin of this actor, which is the offset from its position that is used to determine
          * where it renders and its hit box is located.
          *
          * @returns {Point}
          */
-        origin: Point;
+        get origin(): Point;
         /**
          * Get the width of this actor, in pixels.
          *
          * @returns {number}
          */
-        width: number;
+        get width(): number;
         /**
          * Get the height of this actor, in pixels.
          *
          * @returns {number}
          */
-        height: number;
+        get height(): number;
         /**
          * Get the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered
          * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
@@ -1778,6 +1786,7 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
+        get zOrder(): number;
         /**
          * Set the layer (Z-Order) of this actor. When rendered, actors with a lower Z-Order are rendered
          * before actors with a higher Z-Order; thus this sets the rendering and display order for actors
@@ -1785,13 +1794,13 @@ declare module nurdz.game {
          *
          * @param newZOrder the new zOrder value
          */
-        zOrder: number;
+        set zOrder(newZOrder: number);
         /**
          * Get the stage that owns this actor.
          *
          * @returns {Stage}
          */
-        stage: Stage;
+        get stage(): Stage;
         /**
          * Get the animation list for this actor. This does not exist until the first time you query this
          * property.
@@ -1800,26 +1809,28 @@ declare module nurdz.game {
          *
          * @returns {AnimationList}
          */
-        animations: AnimationList;
+        get animations(): AnimationList;
         /**
          * The sprite sheet that is attached to this actor, or null if there is no sprite sheet currently
          * attached.
          *
          * @returns {SpriteSheet}
          */
+        get sheet(): SpriteSheet;
         /**
          * Change the sprite sheet associated with this actor to the sheet passed in. Setting the sheet to
          * null turns off the sprite sheet for this actor.
          *
          * @param newSheet the new sprite sheet to attach or null to remove the current sprite sheet
          */
-        sheet: SpriteSheet;
+        set sheet(newSheet: SpriteSheet);
         /**
          * Get the sprite index of the sprite in the attached sprite sheet that this actor uses to render
          * itself. This value has no meaning if no sprite sheet is currently attached to this actor.
          *
          * @returns {number}
          */
+        get sprite(): number;
         /**
          * Change the sprite index of the sprite in the attached sprite sheet that this actor uses to
          * render itself. If there is no sprite sheet currently attached to this actor, or if the sprite
@@ -1827,7 +1838,7 @@ declare module nurdz.game {
          *
          * @param newSprite the new sprite value to use from the given sprite sheet.
          */
-        sprite: number;
+        set sprite(newSprite: number);
         /**
          * Get the rotation angle that this Actor renders at (in degrees); 0 is to the right, 90 is
          * downward and 270 is upward (because the Y axis increases downward). This only affects rendering,
@@ -1835,6 +1846,7 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
+        get angle(): number;
         /**
          * Set the rotation angle that this Actor renders at (in degrees, does not affect collision
          * detection).
@@ -1843,7 +1855,7 @@ declare module nurdz.game {
          *
          * @param newAngle the new angle to render at
          */
-        angle: number;
+        set angle(newAngle: number);
         /**
          * Construct a new actor instance at the given position with the provided width and height.
          *
@@ -2038,7 +2050,7 @@ declare module nurdz.game {
          *
          * @returns {EntityProperties}
          */
-        properties: EntityProperties;
+        get properties(): EntityProperties;
         /**
          * Construct a new entity instance at a given location with given dimensions.
          *
@@ -2091,7 +2103,7 @@ declare module nurdz.game {
          *
          * @returns {string}
          */
-        private static createDefaultID();
+        private static createDefaultID;
         /**
          * This helper method is for validating entity properties. The method checks to see if a property
          * exists or not, if it is supposed to. It can also optionally confirm that the value is in some
@@ -2765,7 +2777,7 @@ declare module nurdz.game {
         /**
          * Both ends of the line should have an arrowhead.
          */
-        BOTH = 3,
+        BOTH = 3
     }
     /**
      * This enum is used in the drawArrow method to determine what kind of arrow head to render onto the
@@ -2794,7 +2806,7 @@ declare module nurdz.game {
         /**
          * The arrowhead is curbed using a bezier curve
          */
-        BEZIER = 4,
+        BEZIER = 4
     }
     /**
      * This represents a point in a polygon as defined by the Polygon API.
@@ -3170,19 +3182,19 @@ declare module nurdz.game {
          *
          * @type {number} the width of the stage area in pixels
          */
-        width: number;
+        get width(): number;
         /**
          * The height of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @type {number} the height of the stage area in pixels
          */
-        height: number;
+        get height(): number;
         /**
          * Get the underlying rendering context for the stage.
          *
          * @returns {CanvasRenderingContext2D} the underlying rendering context for the stage
          */
-        context: CanvasRenderingContext2D;
+        get context(): CanvasRenderingContext2D;
         /**
          * Construct an instance of the class that knows how to render to the canvas provided. All
          * rendering will be performed by this canvas.
@@ -3248,7 +3260,7 @@ declare module nurdz.game {
          *
          * @param pointList the polygon to do something with.
          */
-        private renderPolygon(pointList);
+        private renderPolygon;
         /**
          * Render an arbitrary polygon by connecting all of the points provided in the polygon and then
          * filling the result.
@@ -3282,7 +3294,7 @@ declare module nurdz.game {
          * @param lineCap the line cap style to use for rendering lines
          * @see Render.setArrowStyle
          */
-        setLineStyle(color: string, lineWidth?: number, lineCap?: string): void;
+        setLineStyle(color: string, lineWidth?: number, lineCap?: CanvasLineCap): void;
         /**
          * This helper method draws the actual arrow head onto the canvas for a line. It assumes that all
          * styles have been set.
@@ -3303,7 +3315,7 @@ declare module nurdz.game {
          * @param y2 the Y coordinate of the right end of the arrow head line
          * @param style the style of arrow to drw
          */
-        private drawHead(x0, y0, x1, y1, x2, y2, style);
+        private drawHead;
         /**
          * Set the style for all subsequent drawArrow() calls to use when drawing arrows. This needs to be
          * called prior to drawing any arrows to ensure that the canvas style used to draw arrows is updated;
@@ -3620,26 +3632,26 @@ declare module nurdz.game {
          *
          * @type {number} the width of the stage area in pixels
          */
-        width: number;
+        get width(): number;
         /**
          * The height of the stage, in pixels. This is set at creation time and cannot change.
          *
          * @type {number} the height of the stage area in pixels
          */
-        height: number;
+        get height(): number;
         /**
          * Get the underlying canvas object for the stage.
          *
          * @returns {HTMLCanvasElement} the underlying canvas element for the stage
          */
-        canvas: HTMLCanvasElement;
+        get canvas(): HTMLCanvasElement;
         /**
          * Get the underlying rendering object for the stage. This is the object responsible for all
          * rendering on the stage.
          *
          * @returns {Renderer} the underlying rendering object for the stage
          */
-        renderer: Renderer;
+        get renderer(): Renderer;
         /**
          * The stage keeps track of the current frame rate that the update loop is being called at, and this
          * returns the most recently calculated value. The value is recalculated once per second so that
@@ -3648,7 +3660,7 @@ declare module nurdz.game {
          *
          * @returns {Number} the current fps, which is o when the game is stopped orr just started
          */
-        fps: number;
+        get fps(): number;
         /**
          * When the game is running (i.e. the run() method has been invoked), this indicates the tick
          * speed of the update loop, which is the parameter given to the run() method.
@@ -3665,13 +3677,13 @@ declare module nurdz.game {
          * @returns {number}
          * @see Stage.run
          */
-        tickSpeed: number;
+        get tickSpeed(): number;
         /**
          * Determine what scene is the current scene on this stage.
          *
          * @returns {Scene}
          */
-        currentScene: Scene;
+        get currentScene(): Scene;
         /**
          * Obtain the current engine update tick. This is incremented once every time the frame update loop is
          * invoked, and can be used to time things in a crude fashion.
@@ -3680,7 +3692,7 @@ declare module nurdz.game {
          *
          * @returns {number}
          */
-        tick: number;
+        get tick(): number;
         /**
          * Determine if the anything is currently being presented full screen or not. This tracks the current
          * state independent of what the user has explicitly requested, so for example if the user turns on
@@ -3691,7 +3703,7 @@ declare module nurdz.game {
          *
          * @return {boolean} true if the canvas is currently fullscreen, or false otherwise
          */
-        isFullscreen: boolean;
+        get isFullscreen(): boolean;
         /**
          * Create the stage on which all rendering for the game will be done.
          *
@@ -4028,7 +4040,7 @@ declare module nurdz.game {
          * Perform a simple check to see if the given touch event is happening within the bounds of the
          * canvas (regardless of its scale).
          */
-        private touchInCanvas(touch);
+        private touchInCanvas;
         /**
          * Handler for touch events. When a touch event is triggered, it is handled by converting the touch
          * event into an appropriate mouse event and then dispatching the mouse event. Thus on touch enabled
@@ -4095,7 +4107,7 @@ declare module nurdz.game {
          *
          * @returns {Scene} the current scene
          */
-        currentScene: Scene;
+        get currentScene(): Scene;
         /**
          * The scene that will imminently become active the next time a scene change check is scheduled.
          *
@@ -4103,7 +4115,7 @@ declare module nurdz.game {
          *
          * @returns {Scene}
          */
-        nextScene: Scene;
+        get nextScene(): Scene;
         /**
          * Create a new instance of the Scene manager that will manage scenes for the passed in stage.
          *
@@ -4183,13 +4195,13 @@ declare module nurdz.game {
          *
          * @returns {string}
          */
-        name: string;
+        get name(): string;
         /**
          * Get the numeric id of this tile.
          *
          * @returns {number}
          */
-        value: number;
+        get value(): number;
         /**
          * Construct a new tile instance with the given name and ID values. This instance will render
          * itself using the debug color provided (as a filled rectangle).
@@ -4360,27 +4372,27 @@ declare module nurdz.game {
          *
          * @returns {number} the width of the map data in tiles.
          */
-        width: number;
+        get width(): number;
         /**
          * The height of this level data, in tiles.
          *
          * @returns {number} the height of the map data in tiles
          */
-        height: number;
+        get height(): number;
         /**
          * The underlying map data that describes the map in this instance. This is an array of numbers
          * that are interpreted as numeric tile ID values and is width * height numbers long.
          *
          * @returns {Array<number>} the underlying map data
          */
-        mapData: Array<number>;
+        get mapData(): Array<number>;
         /**
          * The tileset that is used to render the map in this level data; the data in the mapData array is
          * verified to only contain tiles that appear in this tileset.
          *
          * @returns {Tileset} the tileset to use to render this map
          */
-        tileset: Tileset;
+        get tileset(): Tileset;
         /**
          * The list of all entities that are associated with this particular level data instance. This is
          * just an array of entity objects.
@@ -4388,7 +4400,7 @@ declare module nurdz.game {
          * @returns {Array<Entity>} the list of entities
          * @see LevelData.entitiesByID
          */
-        entities: Array<Entity>;
+        get entities(): Array<Entity>;
         /**
          * A duplicate list of entities, where the entities are indexed by their ID values for faster
          * lookup at runtime.
@@ -4396,7 +4408,7 @@ declare module nurdz.game {
          * @returns {Object<String,Entity>} an object which contains the entities, keyed by their id values.
          * @see LevelData.entities
          */
-        entitiesByID: Object;
+        get entitiesByID(): Object;
         /**
          * Construct a new level data object with the provided properties.
          *
@@ -4414,7 +4426,7 @@ declare module nurdz.game {
          *
          * @param message the error to throw
          */
-        private error(message);
+        private error;
         /**
          * Validate the data that is contained in this level to ensure that it is as consistent as we can
          * determine.
@@ -4423,7 +4435,7 @@ declare module nurdz.game {
          *
          * @throws {Error} if the level data is inconsistent in some way
          */
-        private validateData();
+        private validateData;
         /**
          * Return a string representation of the object, for debugging purposes.
          *
@@ -4661,53 +4673,56 @@ declare module nurdz.game {
          *
          * @returns {HTMLAudioElement}
          */
-        tag: HTMLAudioElement;
+        get tag(): HTMLAudioElement;
         /**
          * Determine if this sound represents music or not.
          *
          * @returns {boolean}
          */
-        isMusic: boolean;
+        get isMusic(): boolean;
         /**
          * Determines if this sound is currently playing or not.
          *
          * @returns {boolean}
          */
-        isPlaying: boolean;
+        get isPlaying(): boolean;
         /**
          * Get the current volume that this sound is playing at. This ranges between 0 and 1.
          *
          * @returns {number}
          */
+        get volume(): number;
         /**
          * Set the volume that this sound plays back on, which should be a value between 0 and 1.
          *
          * @param newVolume the new volume level for the sound (0.0 to 1.0)
          */
-        volume: number;
+        set volume(newVolume: number);
         /**
          * Determines if this sound loops during playback or not.
          *
          * @returns {boolean}
          */
+        get loop(): boolean;
         /**
          * Change the state of looping for this sound. When true, playback will loop continuously until
          * told to stop.
          *
          * @param newLoop the new loop state (true to loop playback, false to play once and stop)
          */
-        loop: boolean;
+        set loop(newLoop: boolean);
         /**
          * Determine if this sound object is currently muted or not.
          *
          * @returns {boolean}
          */
+        get muted(): boolean;
         /**
          * Change the mute state of this object.
          *
          * @param newMuted the new muted state (true for mute, false for un-muted)
          */
-        muted: boolean;
+        set muted(newMuted: boolean);
         /**
          * Start the sound playing, optionally also restarting the playback from the beginning if it is
          * already playing.

@@ -1,8 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 // Only attempt to include this static method if it does not already exist. This of course means that if
 // it DOES already exist, our code is going to be unhappy. However, I would rather make my own code
 // unstable than someone else's in this situation because I (hopefully) understand what my own code does.
@@ -157,6 +165,7 @@ var nurdz;
          * This enumeration contains key code constants for use in keyboard events. Not all useful keys are
          * implemented here just yet. Add as required.
          */
+        var KeyCodes;
         (function (KeyCodes) {
             KeyCodes[KeyCodes["KEY_ENTER"] = 13] = "KEY_ENTER";
             KeyCodes[KeyCodes["KEY_SPACEBAR"] = 32] = "KEY_SPACEBAR";
@@ -216,8 +225,7 @@ var nurdz;
             KeyCodes[KeyCodes["KEY_F10"] = 121] = "KEY_F10";
             KeyCodes[KeyCodes["KEY_F11"] = 122] = "KEY_F11";
             KeyCodes[KeyCodes["KEY_F12"] = 123] = "KEY_F12";
-        })(game.KeyCodes || (game.KeyCodes = {}));
-        var KeyCodes = game.KeyCodes;
+        })(KeyCodes = game.KeyCodes || (game.KeyCodes = {}));
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
 var nurdz;
@@ -699,6 +707,10 @@ var nurdz;
  * otherwise fit into a class.
  */
 var nurdz;
+/**
+ * This module exports various helper routines that might be handy in a game context but which don't
+ * otherwise fit into a class.
+ */
 (function (nurdz) {
     var game;
     (function (game) {
@@ -951,7 +963,7 @@ var nurdz;
          * so that calling code can use whatever it most appropriate for the situation without having to box
          * or un-box values.
          */
-        var Point = (function () {
+        var Point = /** @class */ (function () {
             /**
              * Construct a new point that uses the provided X and Y values as its initial coordinate.
              *
@@ -976,7 +988,7 @@ var nurdz;
                  * @param newX the new X to set.
                  */
                 set: function (newX) { this._x = newX; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Point.prototype, "y", {
@@ -992,7 +1004,7 @@ var nurdz;
                  * @param newY the new y to set.
                  */
                 set: function (newY) { this._y = newY; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -1382,7 +1394,7 @@ var nurdz;
          * a row matrix which should be Transposed, but we're not doing that here due to the aforementioned
          * laziness.
          */
-        var Vector2D = (function () {
+        var Vector2D = /** @class */ (function () {
             /**
              * Construct a new 2D vector, optionally also providing one or both components of the vector itself.
              *
@@ -1412,7 +1424,7 @@ var nurdz;
                  * @param newX the new X to set.
                  */
                 set: function (newX) { this._x = newX; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Vector2D.prototype, "y", {
@@ -1428,7 +1440,7 @@ var nurdz;
                  * @param newY the new y to set.
                  */
                 set: function (newY) { this._y = newY; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -1499,7 +1511,7 @@ var nurdz;
                     this._x = Math.cos(direction) * newMagnitude;
                     this._y = Math.sin(direction) * newMagnitude;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Vector2D.prototype, "direction", {
@@ -1541,7 +1553,7 @@ var nurdz;
                     this._x = Math.cos(newDirection) * currentLength;
                     this._y = Math.sin(newDirection) * currentLength;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Vector2D.prototype, "directionDeg", {
@@ -1577,7 +1589,7 @@ var nurdz;
                     // from degrees to radians.
                     this.direction = game.Utils.toRadians(newDirection);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Vector2D.prototype, "magnitudeSquared", {
@@ -1593,7 +1605,7 @@ var nurdz;
                     // We don't take the square root here.
                     return (this._x * this._x) + (this._y * this._y);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -1952,7 +1964,7 @@ var nurdz;
              * @returns {string}
              */
             Vector2D.prototype.toString = function () {
-                return ("V<(" + this._x.toFixed(3) + "," + this._y.toFixed(3) + "), ") +
+                return "V<(" + this._x.toFixed(3) + "," + this._y.toFixed(3) + "), " +
                     (this.directionDeg.toFixed(3) + "\u00B0, " + this.magnitude.toFixed(3) + ">");
             };
             return Vector2D;
@@ -1970,7 +1982,7 @@ var nurdz;
          *
          * This version of the class requires all sprites in the same sprite sheet to have the same dimensions.
          */
-        var SpriteSheet = (function () {
+        var SpriteSheet = /** @class */ (function () {
             /**
              * Construct a new sprite sheet either from a previously loaded image or by preloading an image.
              *
@@ -2062,6 +2074,7 @@ var nurdz;
                 // requires
                 if (typeof (image) == "string")
                     this._image = stage.preloadImage(image, this.imageLoadComplete);
+                // If we got an actual image, then we can set up right now (theoretically).
                 else if (image instanceof HTMLImageElement) {
                     // Here we were given an image and not a filename; ensure that it was actually already loaded.
                     if (image.complete == false || image.naturalWidth == 0)
@@ -2081,7 +2094,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._spriteWidth; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(SpriteSheet.prototype, "height", {
@@ -2092,7 +2105,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._spriteHeight; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(SpriteSheet.prototype, "count", {
@@ -2103,7 +2116,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._spriteCount; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -2159,7 +2172,7 @@ var nurdz;
          * This class represents a list of animations, which are represented by a list of frames by numeric
          * ID. Generally this would be associated with a sprite sheet of some king.
          */
-        var AnimationList = (function () {
+        var AnimationList = /** @class */ (function () {
             /**
              * Construct a new animation list
              */
@@ -2181,7 +2194,7 @@ var nurdz;
                     else
                         return null;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(AnimationList.prototype, "isPlaying", {
@@ -2195,7 +2208,7 @@ var nurdz;
                     // Is there a current animation?
                     return this._current != null && this._current.direction != 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -2404,9 +2417,13 @@ var nurdz;
                                 this._current.direction = -1;
                                 this._current.position = this._current.frames.length - 2;
                             }
+                            // Not ping ponging, but if the animation is supposed to loop, then this is where
+                            // we reset the position back to the start of the animation.
                             else if (this._current.loop) {
                                 this._current.position = 0;
                             }
+                            // Not ping ponging OR looping; in that case we need to set the frame back to the
+                            // last one in the frame list and set the direction to 0 so that we no longer advance.
                             else {
                                 this._current.position = this._current.frames.length - 1;
                                 this._current.direction = 0;
@@ -2422,6 +2439,8 @@ var nurdz;
                                 this._current.direction = 1;
                                 this._current.position = 1;
                             }
+                            // If we're not looping, we've reached the end of a ping pong, so just freeze on
+                            // the first frame.
                             else {
                                 this._current.direction = 0;
                                 this._current.position = 0;
@@ -2451,6 +2470,7 @@ var nurdz;
          * Where actual collisions are concerned, the actual collision volume it somewhere inside of the
          * positioning rectangle as outlined in the description of the collider type below.
          */
+        var ColliderType;
         (function (ColliderType) {
             /**
              * No collision volume at all; no collisions are possible with this collider type. All of the
@@ -2474,8 +2494,7 @@ var nurdz;
              * best referenced from some other point.
              */
             ColliderType[ColliderType["CIRCLE"] = 2] = "CIRCLE";
-        })(game.ColliderType || (game.ColliderType = {}));
-        var ColliderType = game.ColliderType;
+        })(ColliderType = game.ColliderType || (game.ColliderType = {}));
         /**
          * This class represents the basis of an object that can be positioned on the stage and can collide
          * with other such instances. Collider objects can be one of the types in the ColliderType enumeration,
@@ -2486,7 +2505,7 @@ var nurdz;
          *
          * @see ColliderType
          */
-        var Collider = (function () {
+        var Collider = /** @class */ (function () {
             /**
              * Construct a new collider object of a provided type with the given properties. The origin of the
              * object is set to a sensible default for the collider type provided.
@@ -2535,7 +2554,7 @@ var nurdz;
                  * @returns {ColliderType}
                  */
                 get: function () { return this._type; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Collider.prototype, "angle", {
@@ -2555,7 +2574,7 @@ var nurdz;
                  * @param newAngle the new angle to render at
                  */
                 set: function (newAngle) { this._angle = game.Utils.normalizeDegrees(newAngle); },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Collider.prototype, "origin", {
@@ -2566,7 +2585,7 @@ var nurdz;
                  * @returns {Point}
                  */
                 get: function () { return this._origin; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Collider.prototype, "position", {
@@ -2576,7 +2595,7 @@ var nurdz;
                  * @returns {Point}
                  */
                 get: function () { return this._position; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Collider.prototype, "radius", {
@@ -2590,7 +2609,7 @@ var nurdz;
                 get: function () {
                     return (this._type == ColliderType.CIRCLE) ? this._width : 0;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Collider.prototype, "width", {
@@ -2605,7 +2624,7 @@ var nurdz;
                     // indicates how wide this entity is; circular entities have a square positioning rectangle.
                     return (this._type == ColliderType.CIRCLE) ? this._height : this._width;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Collider.prototype, "height", {
@@ -2616,7 +2635,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._height; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -2846,7 +2865,7 @@ var nurdz;
          * implementation has a position and knows how to render itself.
          *
          */
-        var Actor = (function (_super) {
+        var Actor = /** @class */ (function (_super) {
             __extends(Actor, _super);
             /**
              * Construct a new actor instance at the given position with the provided width and height.
@@ -2872,17 +2891,19 @@ var nurdz;
             function Actor(name, stage, x, y, width, height, zOrder, debugColor) {
                 if (zOrder === void 0) { zOrder = 1; }
                 if (debugColor === void 0) { debugColor = 'white'; }
+                var _this = 
                 // Invoke the super to set things up.
-                _super.call(this, stage, game.ColliderType.RECTANGLE, x, y, width, height);
+                _super.call(this, stage, game.ColliderType.RECTANGLE, x, y, width, height) || this;
                 // Save the other passed in values.
-                this._name = name;
-                this._zOrder = zOrder;
-                this._debugColor = debugColor;
+                _this._name = name;
+                _this._zOrder = zOrder;
+                _this._debugColor = debugColor;
                 // Default to the first sprite of a nonexistent sprite sheet
-                this._sheet = null;
-                this._sprite = 0;
+                _this._sheet = null;
+                _this._sprite = 0;
                 // Make a reduced copy of the given position to give this actor's map position.
-                this._mapPosition = this._position.copyReduced(game.TILE_SIZE);
+                _this._mapPosition = _this._position.copyReduced(game.TILE_SIZE);
+                return _this;
             }
             Object.defineProperty(Actor.prototype, "mapPosition", {
                 /**
@@ -2891,7 +2912,7 @@ var nurdz;
                  * @returns {Point}
                  */
                 get: function () { return this._mapPosition; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "position", {
@@ -2901,7 +2922,7 @@ var nurdz;
                  * @returns {Point}
                  */
                 get: function () { return this._position; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "origin", {
@@ -2912,7 +2933,7 @@ var nurdz;
                  * @returns {Point}
                  */
                 get: function () { return this._origin; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "width", {
@@ -2922,7 +2943,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._width; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "height", {
@@ -2932,7 +2953,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._height; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "zOrder", {
@@ -2952,7 +2973,7 @@ var nurdz;
                  * @param newZOrder the new zOrder value
                  */
                 set: function (newZOrder) { this._zOrder = newZOrder; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "stage", {
@@ -2962,7 +2983,7 @@ var nurdz;
                  * @returns {Stage}
                  */
                 get: function () { return this._stage; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "animations", {
@@ -2980,7 +3001,7 @@ var nurdz;
                         this._animations = new game.AnimationList();
                     return this._animations;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "sheet", {
@@ -2998,7 +3019,7 @@ var nurdz;
                  * @param newSheet the new sprite sheet to attach or null to remove the current sprite sheet
                  */
                 set: function (newSheet) { this._sheet = newSheet; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "sprite", {
@@ -3017,7 +3038,7 @@ var nurdz;
                  * @param newSprite the new sprite value to use from the given sprite sheet.
                  */
                 set: function (newSprite) { this._sprite = newSprite; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Actor.prototype, "angle", {
@@ -3038,7 +3059,7 @@ var nurdz;
                  * @param newAngle the new angle to render at
                  */
                 set: function (newAngle) { this._angle = game.Utils.normalizeDegrees(newAngle); },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -3245,7 +3266,7 @@ var nurdz;
          *   - 'id': string (default: auto generated value)
          *      - specifies the id of this entity for use in identifying/finding/triggering this entity.
          */
-        var Entity = (function (_super) {
+        var Entity = /** @class */ (function (_super) {
             __extends(Entity, _super);
             /**
              * Construct a new entity instance at a given location with given dimensions.
@@ -3278,12 +3299,14 @@ var nurdz;
             function Entity(name, stage, x, y, width, height, zOrder, properties, defaults, debugColor) {
                 if (defaults === void 0) { defaults = {}; }
                 if (debugColor === void 0) { debugColor = 'white'; }
+                var _this = 
                 // Invoke the super class constructor.
-                _super.call(this, name, stage, x, y, width, height, zOrder, debugColor);
+                _super.call(this, name, stage, x, y, width, height, zOrder, debugColor) || this;
                 // Save our properties, apply defaults, and then validate them
-                this._properties = properties;
-                this.applyDefaultProperties(defaults);
-                this.validateProperties();
+                _this._properties = properties;
+                _this.applyDefaultProperties(defaults);
+                _this.validateProperties();
+                return _this;
             }
             Object.defineProperty(Entity.prototype, "properties", {
                 /**
@@ -3292,7 +3315,7 @@ var nurdz;
                  * @returns {EntityProperties}
                  */
                 get: function () { return this._properties; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -3922,7 +3945,7 @@ var nurdz;
          * This base class defines the behaviour of a scene as it applies to a game; you should subclass it to
          * implement your own specific handling as needed.
          */
-        var Scene = (function () {
+        var Scene = /** @class */ (function () {
             /**
              * Construct a new scene instances that has the given name and is managed by the provided stage.
              *
@@ -4264,6 +4287,7 @@ var nurdz;
          * This enum is used in the drawArrow method to determine what end of the line that makes up the arrow
          * a head should be drawn at.
          */
+        var ArrowType;
         (function (ArrowType) {
             /**
              * Neither end of the line should have an arrow head. This is just basically a slightly more
@@ -4282,8 +4306,7 @@ var nurdz;
              * Both ends of the line should have an arrowhead.
              */
             ArrowType[ArrowType["BOTH"] = 3] = "BOTH";
-        })(game.ArrowType || (game.ArrowType = {}));
-        var ArrowType = game.ArrowType;
+        })(ArrowType = game.ArrowType || (game.ArrowType = {}));
         /**
          * This enum is used in the drawArrow method to determine what kind of arrow head to render onto the
          * arrow.
@@ -4291,6 +4314,7 @@ var nurdz;
          * Most of these provide an arrow with a curved head and just vary the method used to draw the curve,
          * which has subtle effects on how the curve appears.
          */
+        var ArrowStyle;
         (function (ArrowStyle) {
             /**
              * The arrowhead is curved using a simple arc.
@@ -4312,8 +4336,7 @@ var nurdz;
              * The arrowhead is curbed using a bezier curve
              */
             ArrowStyle[ArrowStyle["BEZIER"] = 4] = "BEZIER";
-        })(game.ArrowStyle || (game.ArrowStyle = {}));
-        var ArrowStyle = game.ArrowStyle;
+        })(ArrowStyle = game.ArrowStyle || (game.ArrowStyle = {}));
     })(game = nurdz.game || (nurdz.game = {}));
 })(nurdz || (nurdz = {}));
 var nurdz;
@@ -4326,7 +4349,7 @@ var nurdz;
          * The class knows how to create the stage and do some rendering. This is also where the core
          * rendering loop is contained.
          */
-        var CanvasRenderer = (function () {
+        var CanvasRenderer = /** @class */ (function () {
             /**
              * Construct an instance of the class that knows how to render to the canvas provided. All
              * rendering will be performed by this canvas.
@@ -4346,7 +4369,7 @@ var nurdz;
                  * @type {number} the width of the stage area in pixels
                  */
                 get: function () { return game.STAGE_WIDTH; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(CanvasRenderer.prototype, "height", {
@@ -4356,7 +4379,7 @@ var nurdz;
                  * @type {number} the height of the stage area in pixels
                  */
                 get: function () { return game.STAGE_HEIGHT; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(CanvasRenderer.prototype, "context", {
@@ -4366,7 +4389,7 @@ var nurdz;
                  * @returns {CanvasRenderingContext2D} the underlying rendering context for the stage
                  */
                 get: function () { return this._canvasContext; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -5043,7 +5066,7 @@ var nurdz;
          * The class knows how to create the stage and do some rendering. This is also where the core
          * rendering loop is contained.
          */
-        var Stage = (function () {
+        var Stage = /** @class */ (function () {
             /**
              * Create the stage on which all rendering for the game will be done.
              *
@@ -5378,7 +5401,7 @@ var nurdz;
                  * @type {number} the width of the stage area in pixels
                  */
                 get: function () { return game.STAGE_WIDTH; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "height", {
@@ -5388,7 +5411,7 @@ var nurdz;
                  * @type {number} the height of the stage area in pixels
                  */
                 get: function () { return game.STAGE_HEIGHT; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "canvas", {
@@ -5398,7 +5421,7 @@ var nurdz;
                  * @returns {HTMLCanvasElement} the underlying canvas element for the stage
                  */
                 get: function () { return this._canvas; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "renderer", {
@@ -5409,7 +5432,7 @@ var nurdz;
                  * @returns {Renderer} the underlying rendering object for the stage
                  */
                 get: function () { return this._renderer; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "fps", {
@@ -5422,7 +5445,7 @@ var nurdz;
                  * @returns {Number} the current fps, which is o when the game is stopped orr just started
                  */
                 get: function () { return _fps; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "tickSpeed", {
@@ -5443,7 +5466,7 @@ var nurdz;
                  * @see Stage.run
                  */
                 get: function () { return _ticksPerSec; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "currentScene", {
@@ -5466,7 +5489,7 @@ var nurdz;
                         ? this._sceneManager.currentScene
                         : (this._sceneManager.nextScene || this._sceneManager.currentScene);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "tick", {
@@ -5479,7 +5502,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return _updateTicks; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Stage.prototype, "isFullscreen", {
@@ -5503,7 +5526,7 @@ var nurdz;
                     return !(!document["fullscreenElement"] && !document["mozFullscreenElement"] &&
                         !document["webkitFullscreenElement"] && !document["msFullscreenElement"]);
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -5969,7 +5992,7 @@ var nurdz;
          *
          * This is used by the Stage class to manage the scenes in the game and switch between them.
          */
-        var SceneManager = (function () {
+        var SceneManager = /** @class */ (function () {
             /**
              * Create a new instance of the Scene manager that will manage scenes for the passed in stage.
              *
@@ -6013,7 +6036,7 @@ var nurdz;
                  * @returns {Scene} the current scene
                  */
                 get: function () { return this._currentScene; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(SceneManager.prototype, "nextScene", {
@@ -6025,7 +6048,7 @@ var nurdz;
                  * @returns {Scene}
                  */
                 get: function () { return this._nextScene; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -6114,7 +6137,7 @@ var nurdz;
          * to what the textual (for debugging) and numeric (for map data) ID's of a tile are, as well as the
          * ability to render to a stage and provide other information such as blocking.
          */
-        var Tile = (function () {
+        var Tile = /** @class */ (function () {
             /**
              * Construct a new tile instance with the given name and ID values. This instance will render
              * itself using the debug color provided (as a filled rectangle).
@@ -6137,7 +6160,7 @@ var nurdz;
                  * @returns {string}
                  */
                 get: function () { return this._name; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Tile.prototype, "value", {
@@ -6147,7 +6170,7 @@ var nurdz;
                  * @returns {number}
                  */
                 get: function () { return this._tileID; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -6198,7 +6221,7 @@ var nurdz;
          * will be used to render a level. The class provides the ability to look up tiles based on either
          * their name or their numeric ID values, as well as validating whether or not tiles are valid.
          */
-        var Tileset = (function () {
+        var Tileset = /** @class */ (function () {
             /**
              * Construct a new tile instance with the given name and ID values. This instance will render
              * itself using the debug color provided (as a filled rectangle).
@@ -6282,7 +6305,7 @@ var nurdz;
          *
          * Various checks are done to ensure that the level data provided is actually valid.
          */
-        var LevelData = (function () {
+        var LevelData = /** @class */ (function () {
             /**
              * Construct a new level data object with the provided properties.
              *
@@ -6331,7 +6354,7 @@ var nurdz;
                  * @returns {number} the width of the map data in tiles.
                  */
                 get: function () { return this._width; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(LevelData.prototype, "height", {
@@ -6341,7 +6364,7 @@ var nurdz;
                  * @returns {number} the height of the map data in tiles
                  */
                 get: function () { return this._height; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(LevelData.prototype, "mapData", {
@@ -6352,7 +6375,7 @@ var nurdz;
                  * @returns {Array<number>} the underlying map data
                  */
                 get: function () { return this._levelData; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(LevelData.prototype, "tileset", {
@@ -6363,7 +6386,7 @@ var nurdz;
                  * @returns {Tileset} the tileset to use to render this map
                  */
                 get: function () { return this._tileset; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(LevelData.prototype, "entities", {
@@ -6375,7 +6398,7 @@ var nurdz;
                  * @see LevelData.entitiesByID
                  */
                 get: function () { return this._entities; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(LevelData.prototype, "entitiesByID", {
@@ -6387,7 +6410,7 @@ var nurdz;
                  * @see LevelData.entities
                  */
                 get: function () { return this._entitiesByID; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**
@@ -6447,7 +6470,7 @@ var nurdz;
          * LevelData class that gives it information about the layout of the level and its other contents, and
          * provides an API for rendering that map to the stage and for querying the map data in various ways.
          */
-        var Level = (function () {
+        var Level = /** @class */ (function () {
             /**
              * Construct a new level object that will display on the provided stage and which represents the
              * provided data.
@@ -6726,7 +6749,7 @@ var nurdz;
          * This class wraps an HTML audio tag to provide an extended API for sound and music playing. This
          * shields the client code from having to work with the tag directly and provides an enhanced API.
          */
-        var Sound = (function () {
+        var Sound = /** @class */ (function () {
             /**
              * Construct a new sound object, telling it to wrap the provided audio tag, which it will use for
              * its playback.
@@ -6752,7 +6775,7 @@ var nurdz;
                  * @returns {HTMLAudioElement}
                  */
                 get: function () { return this._tag; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Sound.prototype, "isMusic", {
@@ -6762,7 +6785,7 @@ var nurdz;
                  * @returns {boolean}
                  */
                 get: function () { return this._isMusic; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Sound.prototype, "isPlaying", {
@@ -6772,7 +6795,7 @@ var nurdz;
                  * @returns {boolean}
                  */
                 get: function () { return this._tag.paused == false; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Sound.prototype, "volume", {
@@ -6790,7 +6813,7 @@ var nurdz;
                 set: function (newVolume) {
                     this._tag.volume = newVolume;
                 },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Sound.prototype, "loop", {
@@ -6807,7 +6830,7 @@ var nurdz;
                  * @param newLoop the new loop state (true to loop playback, false to play once and stop)
                  */
                 set: function (newLoop) { this._tag.loop = newLoop; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             Object.defineProperty(Sound.prototype, "muted", {
@@ -6823,7 +6846,7 @@ var nurdz;
                  * @param newMuted the new muted state (true for mute, false for un-muted)
                  */
                 set: function (newMuted) { this._tag.muted = newMuted; },
-                enumerable: true,
+                enumerable: false,
                 configurable: true
             });
             /**

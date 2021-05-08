@@ -237,7 +237,7 @@ module nurdz.game
          * @param lineCap the line cap style to use for rendering lines
          * @see Render.setArrowStyle
          */
-        setLineStyle (color : string, lineWidth : number = 3, lineCap : string = "round") : void
+        setLineStyle (color : string, lineWidth : number = 3, lineCap : CanvasLineCap = "round") : void
         {
             this._canvasContext.strokeStyle = color;
             this._canvasContext.lineWidth = lineWidth;
