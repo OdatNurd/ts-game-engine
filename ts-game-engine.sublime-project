@@ -2,12 +2,6 @@
 	"folders":
 	[
 		{
-			"folder_exclude_patterns":
-			[
-				"tools",
-				"bootstrap",
-				".idea"
-			],
 			"path": "."
 		}
 	]
